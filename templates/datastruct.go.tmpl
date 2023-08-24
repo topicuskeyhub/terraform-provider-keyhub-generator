@@ -1,0 +1,5 @@
+type {{ .DataStructName }} struct {
+{{- range .AllProperties }}
+	{{ .GoName }} {{ .TFType }} `tfsdk:"{{ .TFName }}"`
+{{- end }}
+}

@@ -2,12 +2,18 @@ package main
 
 import (
 	"context"
+	"embed"
 	"log"
+	"os"
+	"text/template"
 
 	"github.com/getkin/kin-openapi/openapi3"
 	keyhubsdk "github.com/topicuskeyhub/sdk-go"
 	apimodel "github.com/topicuskeyhub/terraform-provider-keyhub-generator/model"
 )
+
+//go:embed templates/*
+var tmpls embed.FS
 
 func main() {
 	ctx := context.Background()
@@ -22,6 +28,15 @@ func main() {
 	}
 
 	model := apimodel.BuildModel(doc)
-	tmp := model["directoryAccountDirectory"]
-	log.Printf(("(%+v)"), tmp)
+	t, err := template.New("provider").ParseFS(tmpls, "templates/*")
+	if err != nil {
+		log.Fatalf("Template parsing failed: %s", err)
+	}
+
+	for _, curType := range model["groupGroup"].AllRequiredTypes() {
+		err = t.ExecuteTemplate(os.Stdout, "datastruct.go.tmpl", curType)
+		if err != nil {
+			log.Fatalf("Template failed: %s", err)
+		}
+	}
 }
