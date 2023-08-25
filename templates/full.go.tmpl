@@ -20,3 +20,20 @@ func init() {
 {{- range $name, $type := . }}
 {{ template "tkhtotfobject.go.tmpl" $type }}
 {{- end }}
+
+func SliceToTF[T interface{}](elemType attr.Type, vals []T, toValue func(T, *diag.Diagnostics) attr.Value) (attr.Value, diag.Diagnostics) {
+	var diags diag.Diagnostics
+	ret := make([]attr.Value, len(vals))
+	for _, curVal := range vals {
+		ret = append(ret, toValue(curVal, &diags))
+	}
+	return types.ListValue(elemType, ret)
+}
+
+func Int32PToInt64P(in *int32) *int64 {
+	if in == nil {
+		return nil
+	}
+	ret := int64(*in)
+	return &ret
+}
