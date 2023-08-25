@@ -1,0 +1,27 @@
+func tkhToTFObject{{ .GoTypeName }}(tkh {{ .SDKTypeName }}) (types.Object, diag.Diagnostics) {
+    var diags diag.Diagnostics
+    attrs := {{ .ObjectAttrTypesName }}
+    if tkh == nil {
+        return types.ObjectNull(attrs), diags
+    }
+
+    obj := make(map[string]attr.Value)
+{{- range .AllProperties }}
+{{- if .Type.TFAttrWithDiag }}
+    {
+{{- if .Type.TFAttrNeeded }}
+        elemType := attrs["{{ .TFName }}"].(types.ListType).ElemType
+{{- end }}
+        val, d := {{ .TKHToTF }}
+        diags.Append(d...)
+        obj["{{ .TFName }}"] = val
+    }
+{{- else }}
+    obj["{{ .TFName }}"] = {{ .TKHToTF }}
+{{- end }}
+{{- end }}
+
+    objVal, d := types.ObjectValue(attrs, obj)
+    diags.Append(d...)
+    return objVal, diags
+}

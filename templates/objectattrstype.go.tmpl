@@ -1,0 +1,3 @@
+{{- range .AllProperties }}
+	{{ $.ObjectAttrTypesName }}["{{ .TFName }}"] = {{ .TFAttrType }}
+{{- end }}

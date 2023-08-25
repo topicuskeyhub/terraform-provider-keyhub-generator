@@ -1,3 +1,4 @@
+var {{ .ObjectAttrTypesName }} = make(map[string]attr.Type)
 type {{ .DataStructName }} struct {
 {{- range .AllProperties }}
 	{{ .GoName }} {{ .TFType }} `tfsdk:"{{ .TFName }}"`

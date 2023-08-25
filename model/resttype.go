@@ -4,61 +4,35 @@ import (
 	"strings"
 	"unicode"
 	"unicode/utf8"
-
-	"golang.org/x/exp/maps"
 )
 
-type RestType struct {
-	SuperClass *RestType
-	Name       string
-	Properties []*RestProperty
+type RestType interface {
+	ObjectAttrTypesName() string
+	DataStructName() string
+	GoTypeName() string
+	SDKTypeName() string
+	AllProperties() []*RestProperty
 }
 
 type RestProperty struct {
 	Name     string
-	Type     *RestPropertyType
+	Type     RestPropertyType
 	Required bool
 }
 
 type RestPropertyType interface {
 	PropertyNameSuffix() string
 	TFName() string
-	NestedType() *RestType
-}
-
-func (t *RestType) DataStructName() string {
-	return firstCharToUpper(t.Name) + "Data"
-}
-
-func (t *RestType) AllProperties() []*RestProperty {
-	if t.SuperClass == nil {
-		ret := make([]*RestProperty, len(t.Properties))
-		copy(ret, t.Properties)
-		return ret
-	}
-	return append(t.SuperClass.AllProperties(), t.Properties...)
-}
-
-func (t *RestType) AllRequiredTypes() []*RestType {
-	types := make(map[string]*RestType)
-	t.addAllRequiredTypes(types)
-	return maps.Values(types)
-}
-
-func (t *RestType) addAllRequiredTypes(types map[string]*RestType) {
-	types[t.Name] = t
-	for _, prop := range t.Properties {
-		if prop.Type != nil && (*prop.Type).NestedType() != nil {
-			(*prop.Type).NestedType().addAllRequiredTypes(types)
-		}
-	}
+	TFAttrType() string
+	TFAttrWithDiag() bool
+	TFAttrNeeded() bool
+	TKHToTF(value string) string
+	NestedType() RestType
+	SDKTypeName() string
 }
 
 func (p *RestProperty) internalName() string {
-	if p.Type == nil {
-		return p.Name
-	}
-	return p.Name + (*p.Type).PropertyNameSuffix()
+	return p.Name + p.Type.PropertyNameSuffix()
 }
 
 func (p *RestProperty) GoName() string {
@@ -83,10 +57,15 @@ func (p *RestProperty) TFName() string {
 }
 
 func (p *RestProperty) TFType() string {
-	if p.Type == nil {
-		return "UNKNOWN"
-	}
-	return (*p.Type).TFName()
+	return p.Type.TFName()
+}
+
+func (p *RestProperty) TFAttrType() string {
+	return p.Type.TFAttrType()
+}
+
+func (p *RestProperty) TKHToTF() string {
+	return p.Type.TKHToTF("tkh.Get" + firstCharToUpper(p.Name) + "()")
 }
 
 func firstCharToUpper(input string) string {

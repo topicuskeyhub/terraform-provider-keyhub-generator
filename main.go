@@ -1,8 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"embed"
+	"go/format"
 	"log"
 	"os"
 	"text/template"
@@ -33,10 +35,22 @@ func main() {
 		log.Fatalf("Template parsing failed: %s", err)
 	}
 
-	for _, curType := range model["groupGroup"].AllRequiredTypes() {
-		err = t.ExecuteTemplate(os.Stdout, "datastruct.go.tmpl", curType)
-		if err != nil {
-			log.Fatalf("Template failed: %s", err)
-		}
+	f, err := os.Create("./full.go")
+	if err != nil {
+		log.Fatalf("cannot create file: %s", err)
 	}
+
+	var buf bytes.Buffer
+	err = t.ExecuteTemplate(&buf, "full.go.tmpl", model)
+	if err != nil {
+		log.Fatalf("Template failed: %s", err)
+	}
+
+	p, err := format.Source(buf.Bytes())
+	if err != nil {
+		log.Fatalf("Format failed: %s", err)
+	}
+	f.Write(p)
+
+	f.Close()
 }

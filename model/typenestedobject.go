@@ -1,10 +1,10 @@
 package model
 
 type restNestedObjectType struct {
-	nestedType *RestType
+	nestedType RestType
 }
 
-func NewNestedObjectType(nestedType *RestType) RestPropertyType {
+func NewNestedObjectType(nestedType RestType) RestPropertyType {
 	return &restNestedObjectType{
 		nestedType: nestedType,
 	}
@@ -18,6 +18,26 @@ func (t *restNestedObjectType) TFName() string {
 	return "types.Object"
 }
 
-func (t *restNestedObjectType) NestedType() *RestType {
+func (t *restNestedObjectType) TFAttrType() string {
+	return "types.ObjectType{AttrTypes: " + t.nestedType.ObjectAttrTypesName() + "}"
+}
+
+func (t *restNestedObjectType) NestedType() RestType {
 	return t.nestedType
+}
+
+func (t *restNestedObjectType) TFAttrWithDiag() bool {
+	return true
+}
+
+func (t *restNestedObjectType) TFAttrNeeded() bool {
+	return false
+}
+
+func (t *restNestedObjectType) TKHToTF(value string) string {
+	return "tkhToTFObject" + t.nestedType.GoTypeName() + "(" + value + ")"
+}
+
+func (t *restNestedObjectType) SDKTypeName() string {
+	return t.nestedType.SDKTypeName()
 }
