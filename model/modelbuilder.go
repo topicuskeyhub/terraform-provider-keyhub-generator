@@ -30,16 +30,23 @@ func getOrBuildTypeModel(types map[string]RestType, name string, schema *openapi
 	}
 
 	ownType := findOwnTypeSchema(schema)
-	ret := &restClassType{
-		Name: name,
-	}
-	types[name] = ret
-	if name == "Linkable" {
-		ret.Properties = make([]*RestProperty, 0)
+	if ownType.Value.Type == "string" && len(ownType.Value.Enum) > 0 {
+		ret := &restEnumType{
+			Name: name,
+		}
+		return ret
 	} else {
-		ret.Properties = buildProperties(name, ownType, types)
+		ret := &restClassType{
+			Name: name,
+		}
+		types[name] = ret
+		if name == "Linkable" {
+			ret.Properties = make([]*RestProperty, 0)
+		} else {
+			ret.Properties = buildProperties(name, ownType, types)
+		}
+		return ret
 	}
-	return ret
 }
 
 func findOwnTypeSchema(schema *openapi3.SchemaRef) *openapi3.SchemaRef {
@@ -73,10 +80,17 @@ func buildProperties(baseTypeName string, schema *openapi3.SchemaRef, types map[
 func buildType(baseTypeName string, propertyName string, ref *openapi3.SchemaRef, types map[string]RestType) RestPropertyType {
 	schema := ref.Value
 	if len(schema.AllOf) > 0 {
+		if ref.Ref == "" {
+			ref = schema.AllOf[0]
+		}
 		schema = schema.AllOf[0].Value
 	}
 	if schema.Type == "array" {
 		return NewRestArrayType(buildType(baseTypeName, propertyName, schema.Items, types))
+	}
+	if ref.Ref != "" && schema.Type == "string" && len(schema.Enum) > 0 {
+		enum := getOrBuildTypeModel(types, refToName(ref.Ref), ref)
+		return NewEnumPropertyType(enum)
 	}
 	if schema.Type == "boolean" || schema.Type == "integer" || schema.Type == "string" {
 		return NewRestSimpleType(schema.Type, schema.Format)

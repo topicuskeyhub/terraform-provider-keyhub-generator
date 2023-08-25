@@ -34,21 +34,21 @@ func (t *restArrayType) TFAttrNeeded() bool {
 	return true
 }
 
-func (t *restArrayType) TKHToTF(value string) string {
-	sdkType := t.itemType.SDKTypeName()
+func (t *restArrayType) TKHToTF(value string, list bool) string {
+	sdkType := t.itemType.SDKTypeName(true)
 	var body string
 	if t.itemType.TFAttrWithDiag() {
-		body = "            val, d := " + t.itemType.TKHToTF("tkh") + "\n" +
+		body = "            val, d := " + t.itemType.TKHToTF("tkh", true) + "\n" +
 			"            diags.Append(d...)\n" +
 			"            return val\n"
 	} else {
-		body = "            return " + t.itemType.TKHToTF("tkh") + "\n"
+		body = "            return " + t.itemType.TKHToTF("tkh", true) + "\n"
 	}
 	return "SliceToTF(elemType, " + value + ", func(tkh " + sdkType + ", diags *diag.Diagnostics) attr.Value {\n" +
 		body +
 		"        })"
 }
 
-func (t *restArrayType) SDKTypeName() string {
-	return "[]" + t.itemType.SDKTypeName()
+func (t *restArrayType) SDKTypeName(list bool) string {
+	return "[]" + t.itemType.SDKTypeName(true)
 }

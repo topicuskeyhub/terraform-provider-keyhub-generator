@@ -34,10 +34,10 @@ func (t *restFindByUUIDObjectType) TFAttrNeeded() bool {
 	return false
 }
 
-func (t *restFindByUUIDObjectType) TKHToTF(value string) string {
+func (t *restFindByUUIDObjectType) TKHToTF(value string, list bool) string {
 	return "types.StringPointerValue(" + value + ".GetUuid())"
 }
 
-func (t *restFindByUUIDObjectType) SDKTypeName() string {
+func (t *restFindByUUIDObjectType) SDKTypeName(list bool) string {
 	return t.nestedType.SDKTypeName()
 }

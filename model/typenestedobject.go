@@ -34,10 +34,10 @@ func (t *restNestedObjectType) TFAttrNeeded() bool {
 	return false
 }
 
-func (t *restNestedObjectType) TKHToTF(value string) string {
+func (t *restNestedObjectType) TKHToTF(value string, list bool) string {
 	return "tkhToTFObject" + t.nestedType.GoTypeName() + "(" + value + ")"
 }
 
-func (t *restNestedObjectType) SDKTypeName() string {
+func (t *restNestedObjectType) SDKTypeName(list bool) string {
 	return t.nestedType.SDKTypeName()
 }

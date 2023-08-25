@@ -1,6 +1,9 @@
 package provider
 
 import (
+	"fmt"
+	"time"
+
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -8,17 +11,23 @@ import (
 )
 
 {{- range $name, $type := . }}
+{{- if $type.IsObject }}
 {{ template "datastruct.go.tmpl" $type }}
+{{- end }}
 {{- end }}
 
 func init() {
 {{- range $name, $type := . }}
+{{- if $type.IsObject }}
 {{ template "objectattrstype.go.tmpl" $type }}
+{{- end }}
 {{- end }}
 }
 
 {{- range $name, $type := . }}
+{{- if $type.IsObject }}
 {{ template "tkhtotfobject.go.tmpl" $type }}
+{{- end }}
 {{- end }}
 
 func SliceToTF[T interface{}](elemType attr.Type, vals []T, toValue func(T, *diag.Diagnostics) attr.Value) (attr.Value, diag.Diagnostics) {
@@ -36,4 +45,24 @@ func Int32PToInt64P(in *int32) *int64 {
 	}
 	ret := int64(*in)
 	return &ret
+}
+
+func EnumToTF[T fmt.Stringer](val *T) attr.Value {
+	if val == nil {
+		return types.StringNull()
+	}
+	return types.StringValue((*val).String())
+}
+
+func TimeToTF(val time.Time) attr.Value {
+	ret, _ := val.MarshalText()
+	return ret
+}
+
+func TimePointerToTF(val *time.Time) attr.Value {
+	if val == nil {
+		return types.StringNull()
+	}
+	ret, _ := val.MarshalText()
+	return ret
 }

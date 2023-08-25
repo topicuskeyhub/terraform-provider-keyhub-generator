@@ -6,6 +6,10 @@ type restClassType struct {
 	Properties []*RestProperty
 }
 
+func (t *restClassType) IsObject() bool {
+	return true
+}
+
 func (t *restClassType) ObjectAttrTypesName() string {
 	return t.Name + "AttrTypes"
 }

@@ -7,6 +7,7 @@ import (
 )
 
 type RestType interface {
+	IsObject() bool
 	ObjectAttrTypesName() string
 	DataStructName() string
 	GoTypeName() string
@@ -26,9 +27,9 @@ type RestPropertyType interface {
 	TFAttrType() string
 	TFAttrWithDiag() bool
 	TFAttrNeeded() bool
-	TKHToTF(value string) string
 	NestedType() RestType
-	SDKTypeName() string
+	TKHToTF(value string, list bool) string
+	SDKTypeName(list bool) string
 }
 
 func (p *RestProperty) internalName() string {
@@ -65,7 +66,7 @@ func (p *RestProperty) TFAttrType() string {
 }
 
 func (p *RestProperty) TKHToTF() string {
-	return p.Type.TKHToTF("tkh.Get" + firstCharToUpper(p.Name) + "()")
+	return p.Type.TKHToTF("tkh.Get"+firstCharToUpper(p.Name)+"()", false)
 }
 
 func firstCharToUpper(input string) string {
