@@ -33,13 +33,18 @@ func (t *restClassType) AllProperties() []*RestProperty {
 		return ret
 	}
 	super := t.SuperClass.AllProperties()
-	for _, p := range t.Properties {
-		for is, ps := range super {
-			if p.Name == ps.Name {
-				super = append(super[:is], super[is+1:]...)
+	sub := make([]*RestProperty, 0)
+	for _, pt := range t.Properties {
+		found := false
+		for _, ps := range super {
+			if pt.Name == ps.Name {
+				found = true
 				break
 			}
 		}
+		if !found {
+			sub = append(sub, pt)
+		}
 	}
-	return append(super, t.Properties...)
+	return append(super, sub...)
 }

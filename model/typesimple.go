@@ -68,6 +68,8 @@ func (t *restSimpleType) TKHToTF(value string, list bool) string {
 		case "string":
 			if t.openapiFormat == "date-time" {
 				return "TimeToTF(" + value + ")"
+			} else if t.openapiFormat == "uuid" || t.openapiFormat == "date" {
+				return "types.StringValue(" + value + ".String())"
 			}
 			return "types.StringValue(" + value + ")"
 		case "integer":
@@ -86,6 +88,8 @@ func (t *restSimpleType) TKHToTF(value string, list bool) string {
 		case "string":
 			if t.openapiFormat == "date-time" {
 				return "TimePointerToTF(" + value + ")"
+			} else if t.openapiFormat == "uuid" || t.openapiFormat == "date" {
+				return "StringerToTF(" + value + ")"
 			}
 			return "types.StringPointerValue(" + value + ")"
 		case "integer":
@@ -108,6 +112,8 @@ func (t *restSimpleType) SDKTypeName(list bool) string {
 	case "string":
 		if t.openapiFormat == "date-time" {
 			ret = "time.Time"
+		} else if t.openapiFormat == "uuid" {
+			ret = "uuid.UUID"
 		} else {
 			ret = "string"
 		}

@@ -12,6 +12,9 @@ import (
 func BuildModel(openapi *openapi3.T) map[string]RestType {
 	ret := make(map[string]RestType, 100)
 	for name, schema := range openapi.Components.Schemas {
+		if name == "RequestRange" {
+			continue
+		}
 		getOrBuildTypeModel(ret, name, schema)
 	}
 	for name, typeModel := range ret {
@@ -40,11 +43,7 @@ func getOrBuildTypeModel(types map[string]RestType, name string, schema *openapi
 			Name: name,
 		}
 		types[name] = ret
-		if name == "Linkable" {
-			ret.Properties = make([]*RestProperty, 0)
-		} else {
-			ret.Properties = buildProperties(name, ownType, types)
-		}
+		ret.Properties = buildProperties(name, ownType, types)
 		return ret
 	}
 }
@@ -62,6 +61,15 @@ func buildProperties(baseTypeName string, schema *openapi3.SchemaRef, types map[
 	for name, property := range schema.Value.Properties {
 		if name == "$type" {
 			continue
+		}
+		if name == "type" {
+			if baseTypeName == "RestLink" || baseTypeName == "authPermission" {
+				name = "typeEscaped"
+			} else {
+				name = baseTypeName + "Type"
+			}
+		} else if name == "vendor" {
+			name = "vendorEscaped"
 		}
 
 		restProperty := &RestProperty{

@@ -38,7 +38,7 @@ func (t *restEnumPropertyType) TKHToTF(value string, list bool) string {
 	if list {
 		return "types.StringValue(" + value + ".String())"
 	}
-	return "EnumToTF(" + value + ")"
+	return "StringerToTF(" + value + ")"
 }
 
 func (t *restEnumPropertyType) SDKTypeName(list bool) string {
