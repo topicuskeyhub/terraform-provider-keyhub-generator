@@ -48,6 +48,20 @@ func (t *restSimpleType) TFAttrType() string {
 	}
 }
 
+func (t *restSimpleType) TFValueType() string {
+	switch t.openapiType {
+	case "boolean":
+		return "basetypes.BoolValue"
+	case "string":
+		return "basetypes.StringValue"
+	case "integer":
+		return "basetypes.Int64Value"
+	default:
+		log.Fatalf("Unknown simple type: %s", t.openapiType)
+		return "error"
+	}
+}
+
 func (t *restSimpleType) NestedType() RestType {
 	return nil
 }

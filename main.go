@@ -48,7 +48,8 @@ func main() {
 
 	p, err := format.Source(buf.Bytes())
 	if err != nil {
-		log.Fatalf("Format failed: %s", err)
+		log.Printf("Format failed: %s", err)
+		p = buf.Bytes()
 	}
 	f.Write(p)
 

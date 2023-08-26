@@ -22,6 +22,10 @@ func (t *restNestedObjectType) TFAttrType() string {
 	return "types.ObjectType{AttrTypes: " + t.nestedType.ObjectAttrTypesName() + "}"
 }
 
+func (t *restNestedObjectType) TFValueType() string {
+	return "basetypes.ObjectValue"
+}
+
 func (t *restNestedObjectType) NestedType() RestType {
 	return t.nestedType
 }

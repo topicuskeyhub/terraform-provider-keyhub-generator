@@ -22,6 +22,10 @@ func (t *restEnumPropertyType) TFAttrType() string {
 	return "types.StringType"
 }
 
+func (t *restEnumPropertyType) TFValueType() string {
+	return "basetypes.StringValue"
+}
+
 func (t *restEnumPropertyType) NestedType() RestType {
 	return t.enumType
 }

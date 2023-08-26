@@ -1,0 +1,6 @@
+func fillDataStructFromTFObject{{ .GoTypeName }}(data *{{ .DataStructName }}, obj types.Object) {
+    attrs := obj.Attributes()
+{{- range .AllProperties }}
+    data.{{ .GoName }} = attrs["{{ .TFName }}"].({{ .Type.TFValueType }})
+{{- end }}
+}

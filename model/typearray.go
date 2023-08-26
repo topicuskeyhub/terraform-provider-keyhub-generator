@@ -22,6 +22,10 @@ func (t *restArrayType) TFAttrType() string {
 	return "types.ListType{ElemType: " + t.itemType.TFAttrType() + "}"
 }
 
+func (t *restArrayType) TFValueType() string {
+	return "basetypes.ListValue"
+}
+
 func (t *restArrayType) NestedType() RestType {
 	return t.itemType.NestedType()
 }

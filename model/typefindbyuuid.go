@@ -22,6 +22,10 @@ func (t *restFindByUUIDObjectType) TFAttrType() string {
 	return "types.StringType"
 }
 
+func (t *restFindByUUIDObjectType) TFValueType() string {
+	return "basetypes.StringValue"
+}
+
 func (t *restFindByUUIDObjectType) NestedType() RestType {
 	return nil
 }

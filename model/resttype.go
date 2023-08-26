@@ -24,6 +24,7 @@ type RestProperty struct {
 type RestPropertyType interface {
 	PropertyNameSuffix() string
 	TFName() string
+	TFValueType() string
 	TFAttrType() string
 	TFAttrWithDiag() bool
 	TFAttrNeeded() bool
