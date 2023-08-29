@@ -26,6 +26,10 @@ func (t *restFindByUUIDObjectType) TFValueType() string {
 	return "basetypes.StringValue"
 }
 
+func (t *restFindByUUIDObjectType) Complex() bool {
+	return false
+}
+
 func (t *restFindByUUIDObjectType) NestedType() RestType {
 	return nil
 }
@@ -39,9 +43,19 @@ func (t *restFindByUUIDObjectType) TFAttrNeeded() bool {
 }
 
 func (t *restFindByUUIDObjectType) TKHToTF(value string, list bool) string {
-	return "types.StringPointerValue(" + value + ".GetUuid())"
+	return "withUuidToTF(" + value + ")"
 }
 
 func (t *restFindByUUIDObjectType) SDKTypeName(list bool) string {
 	return t.nestedType.SDKTypeName()
+}
+
+func (t *restFindByUUIDObjectType) DSSchemaTemplate() string {
+	return "data_source_schema_attr_simple.go.tmpl"
+}
+
+func (t *restFindByUUIDObjectType) DSSchemaTemplateData() map[string]interface{} {
+	return map[string]interface{}{
+		"Type": "dsschema.StringAttribute",
+	}
 }

@@ -1,0 +1,13 @@
+{{- if .Type.Complex -}}
+dsschema.ListNestedAttribute{
+    NestedObject: dsschema.NestedAttributeObject{
+        Attributes: dataSourceSchemaAttrs{{ .Type.NestedType.GoTypeName }}({{ RecurseCutOff .Parent }}),
+    },
+    Computed: true,
+}
+{{- else -}}
+dsschema.ListAttribute{
+    ElementType: {{ .Type.DSSchemaTemplateData.ElementType }},
+    Computed: true,
+}
+{{- end }}

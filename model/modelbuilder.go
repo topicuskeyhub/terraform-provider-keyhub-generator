@@ -43,7 +43,7 @@ func getOrBuildTypeModel(types map[string]RestType, name string, schema *openapi
 			Name: name,
 		}
 		types[name] = ret
-		ret.Properties = buildProperties(name, ownType, types)
+		ret.Properties = buildProperties(ret, name, ownType, types)
 		return ret
 	}
 }
@@ -55,7 +55,7 @@ func findOwnTypeSchema(schema *openapi3.SchemaRef) *openapi3.SchemaRef {
 	return schema
 }
 
-func buildProperties(baseTypeName string, schema *openapi3.SchemaRef, types map[string]RestType) []*RestProperty {
+func buildProperties(parent RestType, baseTypeName string, schema *openapi3.SchemaRef, types map[string]RestType) []*RestProperty {
 	required := schema.Value.Required
 	ret := make([]*RestProperty, 0)
 	for name, property := range schema.Value.Properties {
@@ -73,10 +73,11 @@ func buildProperties(baseTypeName string, schema *openapi3.SchemaRef, types map[
 		}
 
 		restProperty := &RestProperty{
+			Parent:   parent,
 			Name:     name,
-			Type:     buildType(baseTypeName, name, property, types),
 			Required: slices.Contains(required, name),
 		}
+		restProperty.Type = buildType(baseTypeName, name, property, types, restProperty)
 		ret = append(ret, restProperty)
 	}
 	sort.Slice(ret, func(i, j int) bool {
@@ -85,7 +86,7 @@ func buildProperties(baseTypeName string, schema *openapi3.SchemaRef, types map[
 	return ret
 }
 
-func buildType(baseTypeName string, propertyName string, ref *openapi3.SchemaRef, types map[string]RestType) RestPropertyType {
+func buildType(baseTypeName string, propertyName string, ref *openapi3.SchemaRef, types map[string]RestType, restProperty *RestProperty) RestPropertyType {
 	schema := ref.Value
 	if len(schema.AllOf) > 0 {
 		if ref.Ref == "" {
@@ -94,7 +95,7 @@ func buildType(baseTypeName string, propertyName string, ref *openapi3.SchemaRef
 		schema = schema.AllOf[0].Value
 	}
 	if schema.Type == "array" {
-		return NewRestArrayType(buildType(baseTypeName, propertyName, schema.Items, types))
+		return NewRestArrayType(buildType(baseTypeName, propertyName, schema.Items, types, restProperty))
 	}
 	if ref.Ref != "" && schema.Type == "string" && len(schema.Enum) > 0 {
 		enum := getOrBuildTypeModel(types, refToName(ref.Ref), ref)
@@ -113,7 +114,7 @@ func buildType(baseTypeName string, propertyName string, ref *openapi3.SchemaRef
 			nestedTypeName = baseTypeName + "_" + propertyName
 		}
 		nested := getOrBuildTypeModel(types, nestedTypeName, ref)
-		return NewNestedObjectType(nested)
+		return NewNestedObjectType(restProperty, nested)
 	}
 
 	log.Fatalf("Cannot construct a type for (%v+)", ref)

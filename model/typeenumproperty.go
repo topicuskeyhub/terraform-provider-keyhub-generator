@@ -26,6 +26,10 @@ func (t *restEnumPropertyType) TFValueType() string {
 	return "basetypes.StringValue"
 }
 
+func (t *restEnumPropertyType) Complex() bool {
+	return false
+}
+
 func (t *restEnumPropertyType) NestedType() RestType {
 	return t.enumType
 }
@@ -42,9 +46,19 @@ func (t *restEnumPropertyType) TKHToTF(value string, list bool) string {
 	if list {
 		return "types.StringValue(" + value + ".String())"
 	}
-	return "StringerToTF(" + value + ")"
+	return "stringerToTF(" + value + ")"
 }
 
 func (t *restEnumPropertyType) SDKTypeName(list bool) string {
 	return t.enumType.SDKTypeName()
+}
+
+func (t *restEnumPropertyType) DSSchemaTemplate() string {
+	return "data_source_schema_attr_simple.go.tmpl"
+}
+
+func (t *restEnumPropertyType) DSSchemaTemplateData() map[string]interface{} {
+	return map[string]interface{}{
+		"Type": "dsschema.StringAttribute",
+	}
 }

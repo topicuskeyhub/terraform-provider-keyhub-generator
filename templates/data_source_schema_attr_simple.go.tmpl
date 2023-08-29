@@ -1,0 +1,8 @@
+{{ .Type.DSSchemaTemplateData.Type }}{
+{{- if eq .Name "uuid" }}
+    Required: recurse,
+    Computed: !recurse,
+{{- else }}
+    Computed: true,
+{{- end }}
+}

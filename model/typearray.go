@@ -26,6 +26,10 @@ func (t *restArrayType) TFValueType() string {
 	return "basetypes.ListValue"
 }
 
+func (t *restArrayType) Complex() bool {
+	return false
+}
+
 func (t *restArrayType) NestedType() RestType {
 	return t.itemType.NestedType()
 }
@@ -48,11 +52,21 @@ func (t *restArrayType) TKHToTF(value string, list bool) string {
 	} else {
 		body = "            return " + t.itemType.TKHToTF("tkh", true) + "\n"
 	}
-	return "SliceToTF(elemType, " + value + ", func(tkh " + sdkType + ", diags *diag.Diagnostics) attr.Value {\n" +
+	return "sliceToTF(elemType, " + value + ", func(tkh " + sdkType + ", diags *diag.Diagnostics) attr.Value {\n" +
 		body +
 		"        })"
 }
 
 func (t *restArrayType) SDKTypeName(list bool) string {
 	return "[]" + t.itemType.SDKTypeName(true)
+}
+
+func (t *restArrayType) DSSchemaTemplate() string {
+	return "data_source_schema_attr_array.go.tmpl"
+}
+
+func (t *restArrayType) DSSchemaTemplateData() map[string]interface{} {
+	return map[string]interface{}{
+		"ElementType": t.itemType.TFAttrType(),
+	}
 }

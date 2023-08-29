@@ -16,6 +16,7 @@ type RestType interface {
 }
 
 type RestProperty struct {
+	Parent   RestType
 	Name     string
 	Type     RestPropertyType
 	Required bool
@@ -28,9 +29,12 @@ type RestPropertyType interface {
 	TFAttrType() string
 	TFAttrWithDiag() bool
 	TFAttrNeeded() bool
+	Complex() bool
 	NestedType() RestType
 	TKHToTF(value string, list bool) string
 	SDKTypeName(list bool) string
+	DSSchemaTemplate() string
+	DSSchemaTemplateData() map[string]interface{}
 }
 
 func (p *RestProperty) internalName() string {
@@ -70,7 +74,38 @@ func (p *RestProperty) TKHToTF() string {
 	return p.Type.TKHToTF("tkh.Get"+firstCharToUpper(p.Name)+"()", false)
 }
 
+func firstCharToLower(input string) string {
+	r, i := utf8.DecodeRuneInString(input)
+	return string(unicode.ToLower(r)) + input[i:]
+}
+
 func firstCharToUpper(input string) string {
 	r, i := utf8.DecodeRuneInString(input)
 	return string(unicode.ToUpper(r)) + input[i:]
+}
+
+func RecurseCutOff(restType RestType) string {
+	if AdditionalObjectsProperty(restType) != nil {
+		return "false"
+	}
+	return "recurse"
+}
+
+func AdditionalObjectsProperty(restType RestType) *RestProperty {
+	for _, curProperty := range restType.AllProperties() {
+		if curProperty.Name == "additionalObjects" {
+			return curProperty
+		}
+	}
+	return nil
+}
+
+func AllDirectProperties(restType RestType) []*RestProperty {
+	ret := make([]*RestProperty, 0)
+	for _, curProperty := range restType.AllProperties() {
+		if curProperty.Name != "additionalObjects" {
+			ret = append(ret, curProperty)
+		}
+	}
+	return ret
 }

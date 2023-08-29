@@ -1,0 +1,12 @@
+func objectAttrsType{{ .GoTypeName }}(recurse bool) map[string]attr.Type {
+    objectAttrs := make(map[string]attr.Type)
+{{- with AdditionalObjectsProperty . }}
+    if recurse {
+        objectAttrs["{{ .TFName }}"] = {{ .TFAttrType }}
+    }
+{{- end }}
+{{- range AllDirectProperties . }}
+    objectAttrs["{{ .TFName }}"] = {{ .TFAttrType }}
+{{- end }}
+    return objectAttrs
+}

@@ -1,0 +1,7 @@
+var {{ .ObjectAttrTypesName }} = objectAttrsType{{ .GoTypeName }}(false)
+var {{ .ObjectAttrTypesName }}Recurse = objectAttrsType{{ .GoTypeName }}(true)
+type {{ .DataStructName }} struct {
+{{- range .AllProperties }}
+	{{ .GoName }} {{ .TFType }} `tfsdk:"{{ .TFName }}"`
+{{- end }}
+}

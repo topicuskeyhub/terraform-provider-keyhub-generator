@@ -1,0 +1,40 @@
+{{- define "propconvert" }}
+{{- if .Type.TFAttrWithDiag }}
+    {
+{{- if .Type.TFAttrNeeded }}
+        elemType := attrs["{{ .TFName }}"].(types.ListType).ElemType
+{{- end }}
+        val, d := {{ .TKHToTF }}
+        diags.Append(d...)
+        obj["{{ .TFName }}"] = val
+    }
+{{- else }}
+    obj["{{ .TFName }}"] = {{ .TKHToTF }}
+{{- end }}
+{{- end }}
+func tkhToTFObject{{ .GoTypeName }}(recurse bool, tkh {{ .SDKTypeName }}) (types.Object, diag.Diagnostics) {
+    var diags diag.Diagnostics
+    var attrs map[string]attr.Type
+    if recurse {
+        attrs = {{ .ObjectAttrTypesName }}Recurse
+    } else {
+        attrs = {{ .ObjectAttrTypesName }}
+    }
+    if tkh == nil {
+        return types.ObjectNull(attrs), diags
+    }
+
+    obj := make(map[string]attr.Value)
+{{- with AdditionalObjectsProperty . }}
+    if recurse {
+{{- template "propconvert" . }}
+    }
+{{- end }}
+{{- range AllDirectProperties . }}
+{{- template "propconvert" . }}
+{{- end }}
+
+    objVal, d := types.ObjectValue(attrs, obj)
+    diags.Append(d...)
+    return objVal, diags
+}

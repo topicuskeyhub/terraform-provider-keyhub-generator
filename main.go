@@ -29,13 +29,18 @@ func main() {
 		log.Fatalf("Validation of openapi file failed: %s", err)
 	}
 
+	functions := template.FuncMap{
+		"RecurseCutOff":             apimodel.RecurseCutOff,
+		"AdditionalObjectsProperty": apimodel.AdditionalObjectsProperty,
+		"AllDirectProperties":       apimodel.AllDirectProperties,
+	}
 	model := apimodel.BuildModel(doc)
-	t, err := template.New("provider").ParseFS(tmpls, "templates/*")
+	t, err := template.New("provider").Funcs(functions).ParseFS(tmpls, "templates/*")
 	if err != nil {
 		log.Fatalf("Template parsing failed: %s", err)
 	}
 
-	f, err := os.Create("./full.go")
+	f, err := os.Create("./impl.go")
 	if err != nil {
 		log.Fatalf("cannot create file: %s", err)
 	}

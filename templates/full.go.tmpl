@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	dsschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -13,40 +14,44 @@ import (
 
 {{- range $name, $type := . }}
 {{- if $type.IsObject }}
-{{ template "datastruct.go.tmpl" $type }}
-{{- end }}
-{{- end }}
-
-func init() {
-{{- range $name, $type := . }}
-{{- if $type.IsObject }}
-{{ template "objectattrstype.go.tmpl" $type }}
-{{- end }}
-{{- end }}
-}
-
-{{- range $name, $type := . }}
-{{- if $type.IsObject }}
-{{ template "tkhtotfobject.go.tmpl" $type }}
+{{ template "data_struct.go.tmpl" $type }}
 {{- end }}
 {{- end }}
 
 {{- range $name, $type := . }}
 {{- if $type.IsObject }}
-{{ template "tfobjecttodatastruct.go.tmpl" $type }}
+{{ template "object_attrs_type.go.tmpl" $type }}
 {{- end }}
 {{- end }}
 
-func SliceToTF[T interface{}](elemType attr.Type, vals []T, toValue func(T, *diag.Diagnostics) attr.Value) (attr.Value, diag.Diagnostics) {
+{{- range $name, $type := . }}
+{{- if $type.IsObject }}
+{{ template "tkh_to_tf_object.go.tmpl" $type }}
+{{- end }}
+{{- end }}
+
+{{- range $name, $type := . }}
+{{- if $type.IsObject }}
+{{ template "tf_object_to_data_struct.go.tmpl" $type }}
+{{- end }}
+{{- end }}
+
+{{- range $name, $type := . }}
+{{- if $type.IsObject }}
+{{ template "data_source_schema_attrs.go.tmpl" $type }}
+{{- end }}
+{{- end }}
+
+func sliceToTF[T interface{}](elemType attr.Type, vals []T, toValue func(T, *diag.Diagnostics) attr.Value) (attr.Value, diag.Diagnostics) {
 	var diags diag.Diagnostics
-	ret := make([]attr.Value, len(vals))
+	ret := make([]attr.Value, 0, len(vals))
 	for _, curVal := range vals {
 		ret = append(ret, toValue(curVal, &diags))
 	}
 	return types.ListValue(elemType, ret)
 }
 
-func Int32PToInt64P(in *int32) *int64 {
+func int32PToInt64P(in *int32) *int64 {
 	if in == nil {
 		return nil
 	}
@@ -54,22 +59,29 @@ func Int32PToInt64P(in *int32) *int64 {
 	return &ret
 }
 
-func StringerToTF[T fmt.Stringer](val *T) attr.Value {
+func stringerToTF[T fmt.Stringer](val *T) attr.Value {
 	if val == nil {
 		return types.StringNull()
 	}
 	return types.StringValue((*val).String())
 }
 
-func TimeToTF(val time.Time) attr.Value {
+func timeToTF(val time.Time) attr.Value {
 	ret, _ := val.MarshalText()
 	return types.StringValue(string(ret))
 }
 
-func TimePointerToTF(val *time.Time) attr.Value {
+func timePointerToTF(val *time.Time) attr.Value {
 	if val == nil {
 		return types.StringNull()
 	}
 	ret, _ := val.MarshalText()
 	return types.StringValue(string(ret))
+}
+
+func withUuidToTF(val interface{ GetUuid() *string }) attr.Value {
+	if val == nil {
+		return types.StringNull()
+	}
+	return types.StringPointerValue(val.GetUuid())
 }

@@ -62,6 +62,10 @@ func (t *restSimpleType) TFValueType() string {
 	}
 }
 
+func (t *restSimpleType) Complex() bool {
+	return false
+}
+
 func (t *restSimpleType) NestedType() RestType {
 	return nil
 }
@@ -81,7 +85,7 @@ func (t *restSimpleType) TKHToTF(value string, list bool) string {
 			return "types.BoolValue(" + value + ")"
 		case "string":
 			if t.openapiFormat == "date-time" {
-				return "TimeToTF(" + value + ")"
+				return "timeToTF(" + value + ")"
 			} else if t.openapiFormat == "uuid" || t.openapiFormat == "date" {
 				return "types.StringValue(" + value + ".String())"
 			}
@@ -101,14 +105,14 @@ func (t *restSimpleType) TKHToTF(value string, list bool) string {
 			return "types.BoolPointerValue(" + value + ")"
 		case "string":
 			if t.openapiFormat == "date-time" {
-				return "TimePointerToTF(" + value + ")"
+				return "timePointerToTF(" + value + ")"
 			} else if t.openapiFormat == "uuid" || t.openapiFormat == "date" {
-				return "StringerToTF(" + value + ")"
+				return "stringerToTF(" + value + ")"
 			}
 			return "types.StringPointerValue(" + value + ")"
 		case "integer":
 			if t.openapiFormat == "int32" {
-				return "types.Int64PointerValue(Int32PToInt64P(" + value + "))"
+				return "types.Int64PointerValue(int32PToInt64P(" + value + "))"
 			}
 			return "types.Int64PointerValue(" + value + ")"
 		default:
@@ -145,4 +149,27 @@ func (t *restSimpleType) SDKTypeName(list bool) string {
 		ret = "*" + ret
 	}
 	return ret
+}
+
+func (t *restSimpleType) DSSchemaTemplate() string {
+	return "data_source_schema_attr_simple.go.tmpl"
+}
+
+func (t *restSimpleType) DSSchemaTemplateData() map[string]interface{} {
+	var attrType string
+	switch t.openapiType {
+	case "boolean":
+		attrType = "dsschema.BoolAttribute"
+	case "string":
+		attrType = "dsschema.StringAttribute"
+	case "integer":
+		attrType = "dsschema.Int64Attribute"
+	default:
+		log.Fatalf("Unknown simple type: %s", t.openapiType)
+		attrType = "error"
+	}
+
+	return map[string]interface{}{
+		"Type": attrType,
+	}
 }

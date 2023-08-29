@@ -11,11 +11,11 @@ func (t *restClassType) IsObject() bool {
 }
 
 func (t *restClassType) ObjectAttrTypesName() string {
-	return t.Name + "AttrTypes"
+	return firstCharToLower(t.Name) + "AttrTypes"
 }
 
 func (t *restClassType) DataStructName() string {
-	return t.Name + "Data"
+	return firstCharToLower(t.Name) + "Data"
 }
 
 func (t *restClassType) GoTypeName() string {
