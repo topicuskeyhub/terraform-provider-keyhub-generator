@@ -34,7 +34,11 @@ func (t *restArrayType) NestedType() RestType {
 	return t.itemType.NestedType()
 }
 
-func (t *restArrayType) TFAttrWithDiag() bool {
+func (t *restArrayType) ToTFAttrWithDiag() bool {
+	return true
+}
+
+func (t *restArrayType) ToTKHAttrWithDiag() bool {
 	return true
 }
 
@@ -42,10 +46,10 @@ func (t *restArrayType) TFAttrNeeded() bool {
 	return true
 }
 
-func (t *restArrayType) TKHToTF(value string, list bool) string {
+func (t *restArrayType) TKHToTF(value string, listItem bool) string {
 	sdkType := t.itemType.SDKTypeName(true)
 	var body string
-	if t.itemType.TFAttrWithDiag() {
+	if t.itemType.ToTFAttrWithDiag() {
 		body = "            val, d := " + t.itemType.TKHToTF("tkh", true) + "\n" +
 			"            diags.Append(d...)\n" +
 			"            return val\n"
@@ -57,8 +61,27 @@ func (t *restArrayType) TKHToTF(value string, list bool) string {
 		"        })"
 }
 
-func (t *restArrayType) SDKTypeName(list bool) string {
+func (t *restArrayType) TFToTKH(value string, listItem bool) string {
+	sdkType := t.itemType.SDKTypeName(true)
+	var body string
+	if t.itemType.ToTKHAttrWithDiag() {
+		body = "            tkh, d := " + t.itemType.TFToTKH("val", true) + "\n" +
+			"            diags.Append(d...)\n" +
+			"            return tkh\n"
+	} else {
+		body = "            return " + t.itemType.TFToTKH("val", true) + "\n"
+	}
+	return "tfToSlice(" + value + ".(basetypes.ListValue), func(val attr.Value, diags *diag.Diagnostics) " + sdkType + " {\n" +
+		body +
+		"        })"
+}
+
+func (t *restArrayType) SDKTypeName(listItem bool) string {
 	return "[]" + t.itemType.SDKTypeName(true)
+}
+
+func (t *restArrayType) SDKTypeConstructor() string {
+	return "make([]" + t.itemType.SDKTypeName(true) + ", 0)"
 }
 
 func (t *restArrayType) DSSchemaTemplate() string {

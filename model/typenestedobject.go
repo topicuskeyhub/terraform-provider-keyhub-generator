@@ -36,7 +36,11 @@ func (t *restNestedObjectType) NestedType() RestType {
 	return t.nestedType
 }
 
-func (t *restNestedObjectType) TFAttrWithDiag() bool {
+func (t *restNestedObjectType) ToTFAttrWithDiag() bool {
+	return true
+}
+
+func (t *restNestedObjectType) ToTKHAttrWithDiag() bool {
 	return true
 }
 
@@ -44,12 +48,20 @@ func (t *restNestedObjectType) TFAttrNeeded() bool {
 	return false
 }
 
-func (t *restNestedObjectType) TKHToTF(value string, list bool) string {
-	return "tkhToTFObject" + t.nestedType.GoTypeName() + "(false, " + value + ")"
+func (t *restNestedObjectType) TKHToTF(value string, listItem bool) string {
+	return "tkhToTFObject" + t.nestedType.GoTypeName() + "(" + RecurseCutOff(t.property.Parent) + ", " + value + ")"
 }
 
-func (t *restNestedObjectType) SDKTypeName(list bool) string {
+func (t *restNestedObjectType) TFToTKH(value string, listItem bool) string {
+	return "tfObjectToTKH" + t.nestedType.GoTypeName() + "(ctx, " + RecurseCutOff(t.property.Parent) + ", " + value + ".(basetypes.ObjectValue))"
+}
+
+func (t *restNestedObjectType) SDKTypeName(listItem bool) string {
 	return t.nestedType.SDKTypeName()
+}
+
+func (t *restNestedObjectType) SDKTypeConstructor() string {
+	return t.nestedType.SDKTypeConstructor()
 }
 
 func (t *restNestedObjectType) DSSchemaTemplate() string {

@@ -34,23 +34,39 @@ func (t *restEnumPropertyType) NestedType() RestType {
 	return t.enumType
 }
 
-func (t *restEnumPropertyType) TFAttrWithDiag() bool {
+func (t *restEnumPropertyType) ToTFAttrWithDiag() bool {
 	return false
+}
+
+func (t *restEnumPropertyType) ToTKHAttrWithDiag() bool {
+	return true
 }
 
 func (t *restEnumPropertyType) TFAttrNeeded() bool {
 	return false
 }
 
-func (t *restEnumPropertyType) TKHToTF(value string, list bool) string {
-	if list {
+func (t *restEnumPropertyType) TKHToTF(value string, listItem bool) string {
+	if listItem {
 		return "types.StringValue(" + value + ".String())"
 	}
 	return "stringerToTF(" + value + ")"
 }
 
-func (t *restEnumPropertyType) SDKTypeName(list bool) string {
+func (t *restEnumPropertyType) TFToTKH(value string, listItem bool) string {
+	caster := "func(val any) " + t.SDKTypeName(listItem) + " { return val.(" + t.SDKTypeName(listItem) + ") }"
+	if listItem {
+		return "parseCast(" + value + ".(basetypes.StringValue), " + t.SDKTypeConstructor() + ", " + caster + ")"
+	}
+	return "parseCastPointer(" + value + ".(basetypes.StringValue), " + t.SDKTypeConstructor() + ", " + caster + ")"
+}
+
+func (t *restEnumPropertyType) SDKTypeName(listItem bool) string {
 	return t.enumType.SDKTypeName()
+}
+
+func (t *restEnumPropertyType) SDKTypeConstructor() string {
+	return t.enumType.SDKTypeConstructor()
 }
 
 func (t *restEnumPropertyType) DSSchemaTemplate() string {

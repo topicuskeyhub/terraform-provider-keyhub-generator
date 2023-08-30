@@ -6,6 +6,10 @@ type restClassType struct {
 	Properties []*RestProperty
 }
 
+func (t *restClassType) Extends(typeName string) bool {
+	return t.Name == typeName || (t.SuperClass != nil && t.SuperClass.Extends(typeName))
+}
+
 func (t *restClassType) IsObject() bool {
 	return true
 }
@@ -24,6 +28,10 @@ func (t *restClassType) GoTypeName() string {
 
 func (t *restClassType) SDKTypeName() string {
 	return "keyhubmodel." + firstCharToUpper(t.Name) + "able"
+}
+
+func (t *restClassType) SDKTypeConstructor() string {
+	return "keyhubmodel.New" + firstCharToUpper(t.Name) + "()"
 }
 
 func (t *restClassType) AllProperties() []*RestProperty {

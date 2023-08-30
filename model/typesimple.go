@@ -70,16 +70,21 @@ func (t *restSimpleType) NestedType() RestType {
 	return nil
 }
 
-func (t *restSimpleType) TFAttrWithDiag() bool {
+func (t *restSimpleType) ToTFAttrWithDiag() bool {
 	return false
+}
+
+func (t *restSimpleType) ToTKHAttrWithDiag() bool {
+	return t.openapiType == "string" &&
+		(t.openapiFormat == "date-time" || t.openapiFormat == "uuid" || t.openapiFormat == "date")
 }
 
 func (t *restSimpleType) TFAttrNeeded() bool {
 	return false
 }
 
-func (t *restSimpleType) TKHToTF(value string, list bool) string {
-	if list {
+func (t *restSimpleType) TKHToTF(value string, listItem bool) string {
+	if listItem {
 		switch t.openapiType {
 		case "boolean":
 			return "types.BoolValue(" + value + ")"
@@ -122,7 +127,55 @@ func (t *restSimpleType) TKHToTF(value string, list bool) string {
 	}
 }
 
-func (t *restSimpleType) SDKTypeName(list bool) string {
+func (t *restSimpleType) TFToTKH(value string, listItem bool) string {
+	if listItem {
+		switch t.openapiType {
+		case "boolean":
+			return value + ".(basetypes.BoolValue).ValueBool()"
+		case "string":
+			if t.openapiFormat == "date-time" {
+				return "tfToTime(" + value + ".(basetypes.StringValue))"
+			} else if t.openapiFormat == "uuid" {
+				return "parse(" + value + ".(basetypes.StringValue), uuid.Parse)"
+			} else if t.openapiFormat == "date" {
+				return "parse(" + value + ".(basetypes.StringValue), serialization.ParseDateOnly)"
+			}
+			return value + ".(basetypes.StringValue).ValueString()"
+		case "integer":
+			if t.openapiFormat == "int32" {
+				return "int32(" + value + ".(basetypes.Int64Value).ValueInt64())"
+			}
+			return value + ".(basetypes.Int64Value).ValueInt64()"
+		default:
+			log.Fatalf("Unknown simple type: %s", t.openapiType)
+			return "error"
+		}
+	} else {
+		switch t.openapiType {
+		case "boolean":
+			return value + ".(basetypes.BoolValue).ValueBoolPointer()"
+		case "string":
+			if t.openapiFormat == "date-time" {
+				return "tfToTimePointer(" + value + ".(basetypes.StringValue))"
+			} else if t.openapiFormat == "uuid" {
+				return "parsePointer(" + value + ".(basetypes.StringValue), uuid.Parse)"
+			} else if t.openapiFormat == "date" {
+				return "parsePointer2(" + value + ".(basetypes.StringValue), serialization.ParseDateOnly)"
+			}
+			return value + ".(basetypes.StringValue).ValueStringPointer()"
+		case "integer":
+			if t.openapiFormat == "int32" {
+				return "int64PToInt32P(" + value + ".(basetypes.Int64Value).ValueInt64Pointer())"
+			}
+			return value + ".(basetypes.Int64Value).ValueInt64Pointer()"
+		default:
+			log.Fatalf("Unknown simple type: %s", t.openapiType)
+			return "error"
+		}
+	}
+}
+
+func (t *restSimpleType) SDKTypeName(listItem bool) string {
 	var ret string
 	switch t.openapiType {
 	case "boolean":
@@ -145,10 +198,14 @@ func (t *restSimpleType) SDKTypeName(list bool) string {
 		log.Fatalf("Unknown simple type: %s", t.openapiType)
 		return "error"
 	}
-	if !list {
+	if !listItem {
 		ret = "*" + ret
 	}
 	return ret
+}
+
+func (t *restSimpleType) SDKTypeConstructor() string {
+	return "ERROR"
 }
 
 func (t *restSimpleType) DSSchemaTemplate() string {

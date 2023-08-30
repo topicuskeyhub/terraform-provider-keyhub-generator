@@ -1,5 +1,5 @@
-{{- define "propconvert" }}
-{{- if .Type.TFAttrWithDiag }}
+{{- define "tfpropconvert" }}
+{{- if .Type.ToTFAttrWithDiag }}
     {
 {{- if .Type.TFAttrNeeded }}
         elemType := attrs["{{ .TFName }}"].(types.ListType).ElemType
@@ -27,11 +27,11 @@ func tkhToTFObject{{ .GoTypeName }}(recurse bool, tkh {{ .SDKTypeName }}) (types
     obj := make(map[string]attr.Value)
 {{- with AdditionalObjectsProperty . }}
     if recurse {
-{{- template "propconvert" . }}
+{{- template "tfpropconvert" . }}
     }
 {{- end }}
 {{- range AllDirectProperties . }}
-{{- template "propconvert" . }}
+{{- template "tfpropconvert" . }}
 {{- end }}
 
     objVal, d := types.ObjectValue(attrs, obj)

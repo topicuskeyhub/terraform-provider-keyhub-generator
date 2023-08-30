@@ -17,19 +17,17 @@ func BuildModel(openapi *openapi3.T) map[string]RestType {
 		}
 		getOrBuildTypeModel(ret, name, schema)
 	}
-	for name, typeModel := range ret {
-		schema := openapi.Components.Schemas[name]
-		if schema != nil && schema.Value.AllOf != nil {
-			superClassName := refToName(schema.Value.AllOf[0].Ref)
-			typeModel.(*restClassType).SuperClass = ret[superClassName]
-		}
-	}
 	return ret
 }
 
 func getOrBuildTypeModel(types map[string]RestType, name string, schema *openapi3.SchemaRef) RestType {
 	if ret, ok := types[name]; ok {
 		return ret
+	}
+
+	var superType RestType
+	if schema != nil && schema.Value.AllOf != nil {
+		superType = getOrBuildTypeModel(types, refToName(schema.Value.AllOf[0].Ref), schema.Value.AllOf[0])
 	}
 
 	ownType := findOwnTypeSchema(schema)
@@ -40,7 +38,8 @@ func getOrBuildTypeModel(types map[string]RestType, name string, schema *openapi
 		return ret
 	} else {
 		ret := &restClassType{
-			Name: name,
+			SuperClass: superType,
+			Name:       name,
 		}
 		types[name] = ret
 		ret.Properties = buildProperties(ret, name, ownType, types)
@@ -106,7 +105,9 @@ func buildType(baseTypeName string, propertyName string, ref *openapi3.SchemaRef
 	}
 	if ref.Ref != "" && schema.Type == "object" && hasUUID(ref) {
 		nested := getOrBuildTypeModel(types, refToName(ref.Ref), ref)
-		return NewFindByUUIDObjectType(nested)
+		if nested.Extends("Linkable") {
+			return NewFindByUUIDObjectType(nested)
+		}
 	}
 	if schema.Type == "object" || (len(ref.Value.AllOf) > 1 && ref.Value.AllOf[1].Value.Type == "object") {
 		nestedTypeName := refToName(ref.Ref)

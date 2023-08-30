@@ -1,0 +1,31 @@
+{{- define "tkhpropconvert" }}
+{{- if .Type.ToTKHAttrWithDiag }}
+    {
+        val, d := {{ .TFToTKH }}
+        diags.Append(d...)
+        tkh.{{ .TKHSetter }}(val)
+    }
+{{- else }}
+    tkh.{{ .TKHSetter }}({{ .TFToTKH }})
+{{- end }}
+{{- end }}
+func tfObjectToTKH{{ .GoTypeName }}(ctx context.Context, recurse bool, objVal types.Object) ({{ .SDKTypeName }}, diag.Diagnostics) {
+    var diags diag.Diagnostics
+    if objVal.IsNull() {
+        return nil, diags
+    }
+
+    tkh := {{ .SDKTypeConstructor }}
+{{- if .AllProperties }}
+    objAttrs := objVal.Attributes()
+{{- with AdditionalObjectsProperty . }}
+    if recurse {
+{{- template "tkhpropconvert" . }}
+    }
+{{- end }}
+{{- range AllDirectProperties . }}
+{{- template "tkhpropconvert" . }}
+{{- end }}
+{{- end }}
+    return tkh, diags
+}

@@ -34,20 +34,32 @@ func (t *restFindByUUIDObjectType) NestedType() RestType {
 	return nil
 }
 
-func (t *restFindByUUIDObjectType) TFAttrWithDiag() bool {
+func (t *restFindByUUIDObjectType) ToTFAttrWithDiag() bool {
 	return false
+}
+
+func (t *restFindByUUIDObjectType) ToTKHAttrWithDiag() bool {
+	return true
 }
 
 func (t *restFindByUUIDObjectType) TFAttrNeeded() bool {
 	return false
 }
 
-func (t *restFindByUUIDObjectType) TKHToTF(value string, list bool) string {
+func (t *restFindByUUIDObjectType) TKHToTF(value string, listItem bool) string {
 	return "withUuidToTF(" + value + ")"
 }
 
-func (t *restFindByUUIDObjectType) SDKTypeName(list bool) string {
+func (t *restFindByUUIDObjectType) TFToTKH(value string, listItem bool) string {
+	return "find" + t.nestedType.GoTypeName() + "ByUUID(ctx, " + value + ".(basetypes.StringValue).ValueStringPointer())"
+}
+
+func (t *restFindByUUIDObjectType) SDKTypeName(listItem bool) string {
 	return t.nestedType.SDKTypeName()
+}
+
+func (t *restFindByUUIDObjectType) SDKTypeConstructor() string {
+	return t.nestedType.SDKTypeConstructor()
 }
 
 func (t *restFindByUUIDObjectType) DSSchemaTemplate() string {

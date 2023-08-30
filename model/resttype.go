@@ -7,11 +7,13 @@ import (
 )
 
 type RestType interface {
+	Extends(typeName string) bool
 	IsObject() bool
 	ObjectAttrTypesName() string
 	DataStructName() string
 	GoTypeName() string
 	SDKTypeName() string
+	SDKTypeConstructor() string
 	AllProperties() []*RestProperty
 }
 
@@ -27,12 +29,15 @@ type RestPropertyType interface {
 	TFName() string
 	TFValueType() string
 	TFAttrType() string
-	TFAttrWithDiag() bool
+	ToTFAttrWithDiag() bool
+	ToTKHAttrWithDiag() bool
 	TFAttrNeeded() bool
 	Complex() bool
 	NestedType() RestType
-	TKHToTF(value string, list bool) string
-	SDKTypeName(list bool) string
+	TKHToTF(value string, listItem bool) string
+	TFToTKH(value string, listItem bool) string
+	SDKTypeName(listItem bool) string
+	SDKTypeConstructor() string
 	DSSchemaTemplate() string
 	DSSchemaTemplateData() map[string]interface{}
 }
@@ -72,6 +77,14 @@ func (p *RestProperty) TFAttrType() string {
 
 func (p *RestProperty) TKHToTF() string {
 	return p.Type.TKHToTF("tkh.Get"+firstCharToUpper(p.Name)+"()", false)
+}
+
+func (p *RestProperty) TKHSetter() string {
+	return "Set" + firstCharToUpper(p.Name)
+}
+
+func (p *RestProperty) TFToTKH() string {
+	return p.Type.TFToTKH("objAttrs[\""+p.TFName()+"\"]", false)
 }
 
 func firstCharToLower(input string) string {

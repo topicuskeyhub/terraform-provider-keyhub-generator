@@ -7,6 +7,10 @@ type restEnumType struct {
 	Values []string
 }
 
+func (t *restEnumType) Extends(typeName string) bool {
+	return false
+}
+
 func (t *restEnumType) IsObject() bool {
 	return false
 }
@@ -28,6 +32,10 @@ func (t *restEnumType) GoTypeName() string {
 
 func (t *restEnumType) SDKTypeName() string {
 	return "keyhubmodel." + firstCharToUpper(t.Name)
+}
+
+func (t *restEnumType) SDKTypeConstructor() string {
+	return "keyhubmodel.Parse" + firstCharToUpper(t.Name)
 }
 
 func (t *restEnumType) AllProperties() []*RestProperty {
