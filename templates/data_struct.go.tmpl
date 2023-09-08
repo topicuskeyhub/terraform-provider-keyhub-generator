@@ -1,6 +1,6 @@
-var {{ .ObjectAttrTypesName }} = objectAttrsType{{ .GoTypeName }}(false)
-var {{ .ObjectAttrTypesName }}Recurse = objectAttrsType{{ .GoTypeName }}(true)
-type {{ .DataStructName }} struct {
+var {{ .ObjectAttrTypesName }}{{ .Suffix }} = objectAttrsType{{ .Suffix }}{{ .GoTypeName }}(false)
+var {{ .ObjectAttrTypesName }}{{ .Suffix }}Recurse = objectAttrsType{{ .Suffix }}{{ .GoTypeName }}(true)
+type {{ .DataStructName }}{{ .Suffix }} struct {
 {{- range .AllProperties }}
 	{{ .GoName }} {{ .TFType }} `tfsdk:"{{ .TFName }}"`
 {{- end }}

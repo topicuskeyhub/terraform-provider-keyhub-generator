@@ -1,0 +1,12 @@
+{{ .Type.RSSchemaTemplateData.Type }}{
+{{- if eq .Type.RSSchemaTemplateData.Mode "Optional_Default" }}
+    Computed: true,
+    Optional: true,
+    Default: {{ .Type.RSSchemaTemplateData.DefaultVal }},
+{{- else if eq .Type.RSSchemaTemplateData.Mode "Computed_UseStateForUnknown" }}
+    Computed: true,
+    PlanModifiers: []{{ .Type.RSSchemaTemplateData.PlanModifierType }}{ {{ .Type.RSSchemaTemplateData.PlanModifierPkg }}.UseStateForUnknown() },
+{{- else }}
+    {{ .Type.RSSchemaTemplateData.Mode }}: true,
+{{- end }}
+}

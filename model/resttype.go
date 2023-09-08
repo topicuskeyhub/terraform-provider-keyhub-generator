@@ -15,13 +15,16 @@ type RestType interface {
 	SDKTypeName() string
 	SDKTypeConstructor() string
 	AllProperties() []*RestProperty
+	Suffix() string
+	DS() RestType
 }
 
 type RestProperty struct {
-	Parent   RestType
-	Name     string
-	Type     RestPropertyType
-	Required bool
+	Parent     RestType
+	Name       string
+	Type       RestPropertyType
+	Required   bool
+	dsProperty *RestProperty
 }
 
 type RestPropertyType interface {
@@ -39,7 +42,10 @@ type RestPropertyType interface {
 	SDKTypeName(listItem bool) string
 	SDKTypeConstructor() string
 	DSSchemaTemplate() string
-	DSSchemaTemplateData() map[string]interface{}
+	DSSchemaTemplateData() map[string]any
+	RSSchemaTemplate() string
+	RSSchemaTemplateData() map[string]any
+	DS() RestPropertyType
 }
 
 func (p *RestProperty) internalName() string {
@@ -85,6 +91,21 @@ func (p *RestProperty) TKHSetter() string {
 
 func (p *RestProperty) TFToTKH() string {
 	return p.Type.TFToTKH("objAttrs[\""+p.TFName()+"\"]", false)
+}
+
+func (p *RestProperty) DS() *RestProperty {
+	if p.dsProperty != nil {
+		// break recursion
+		return p.dsProperty
+	}
+
+	p.dsProperty = &RestProperty{
+		Parent:   p.Parent,
+		Name:     p.Name,
+		Required: p.Required,
+	}
+	p.dsProperty.Type = p.Type.DS()
+	return p.dsProperty
 }
 
 func firstCharToLower(input string) string {

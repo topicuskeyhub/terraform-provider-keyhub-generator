@@ -11,6 +11,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	dsschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	rsschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/google/uuid"
@@ -27,46 +35,56 @@ import (
 	keyhubserviceaccount "github.com/topicuskeyhub/sdk-go/serviceaccount"
 	keyhubsystem "github.com/topicuskeyhub/sdk-go/system"
 	keyhubvaultrecord "github.com/topicuskeyhub/sdk-go/vaultrecord"
-	keyhubwebhook "github.com/topicuskeyhub/sdk-go/webhook"
 )
 
 {{- range $name, $type := . }}
 {{- if $type.IsObject }}
 {{ template "data_struct.go.tmpl" $type }}
+{{ template "data_struct.go.tmpl" $type.DS }}
 {{- end }}
 {{- end }}
 
 {{- range $name, $type := . }}
 {{- if $type.IsObject }}
 {{ template "object_attrs_type.go.tmpl" $type }}
+{{ template "object_attrs_type.go.tmpl" $type.DS }}
 {{- end }}
 {{- end }}
 
 {{- range $name, $type := . }}
 {{- if $type.IsObject }}
 {{ template "tkh_to_tf_object.go.tmpl" $type }}
+{{ template "tkh_to_tf_object.go.tmpl" $type.DS }}
 {{- end }}
 {{- end }}
 
 {{- range $name, $type := . }}
 {{- if $type.IsObject }}
 {{ template "tf_object_to_tkh.go.tmpl" $type }}
+{{ template "tf_object_to_tkh.go.tmpl" $type.DS }}
 {{- end }}
 {{- end }}
 
 {{- range $name, $type := . }}
 {{- if $type.IsObject }}
 {{ template "tf_object_to_data_struct.go.tmpl" $type }}
+{{ template "tf_object_to_data_struct.go.tmpl" $type.DS }}
 {{- end }}
 {{- end }}
 
 {{- range $name, $type := . }}
 {{- if $type.IsObject }}
-{{ template "data_source_schema_attrs.go.tmpl" $type }}
+{{ template "data_source_schema_attrs.go.tmpl" $type.DS }}
 {{- end }}
 {{- end }}
 
-func sliceToTF[T interface{}](elemType attr.Type, vals []T, toValue func(T, *diag.Diagnostics) attr.Value) (attr.Value, diag.Diagnostics) {
+{{- range $name, $type := . }}
+{{- if $type.IsObject }}
+{{ template "resource_schema_attrs.go.tmpl" $type }}
+{{- end }}
+{{- end }}
+
+func sliceToTF[T any](elemType attr.Type, vals []T, toValue func(T, *diag.Diagnostics) attr.Value) (attr.Value, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	ret := make([]attr.Value, 0, len(vals))
 	for _, curVal := range vals {
@@ -75,7 +93,7 @@ func sliceToTF[T interface{}](elemType attr.Type, vals []T, toValue func(T, *dia
 	return types.ListValue(elemType, ret)
 }
 
-func tfToSlice[T interface{}](val basetypes.ListValue, toValue func(attr.Value, *diag.Diagnostics) T) ([]T, diag.Diagnostics) {
+func tfToSlice[T any](val basetypes.ListValue, toValue func(attr.Value, *diag.Diagnostics) T) ([]T, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	vals := val.Elements()
 	ret := make([]T, 0, len(vals))
@@ -145,7 +163,7 @@ func withUuidToTF(val interface{ GetUuid() *string }) attr.Value {
 	return types.StringPointerValue(val.GetUuid())
 }
 
-func parsePointer[T interface{}](val basetypes.StringValue, parser func(string) (T, error)) (*T, diag.Diagnostics) {
+func parsePointer[T any](val basetypes.StringValue, parser func(string) (T, error)) (*T, diag.Diagnostics) {
 	if val.IsNull() {
 		return nil, diag.Diagnostics{}
 	}
@@ -153,7 +171,7 @@ func parsePointer[T interface{}](val basetypes.StringValue, parser func(string) 
 	return &parsed, diags
 }
 
-func parsePointer2[T interface{}](val basetypes.StringValue, parser func(string) (*T, error)) (*T, diag.Diagnostics) {
+func parsePointer2[T any](val basetypes.StringValue, parser func(string) (*T, error)) (*T, diag.Diagnostics) {
 	if val.IsNull() {
 		return nil, diag.Diagnostics{}
 	}
@@ -161,7 +179,7 @@ func parsePointer2[T interface{}](val basetypes.StringValue, parser func(string)
 	return parsed, diags
 }
 
-func parse[T interface{}](val basetypes.StringValue, parser func(string) (T, error)) (T, diag.Diagnostics) {
+func parse[T any](val basetypes.StringValue, parser func(string) (T, error)) (T, diag.Diagnostics) {
 	var diags diag.Diagnostics
 	parsed, err := parser(val.ValueString())
 	if err != nil {
@@ -291,19 +309,6 @@ func findClientClientApplicationPrimerByUUID(ctx context.Context, uuid *string) 
 		},
 	})
 	return findFirst[keyhubmodel.ClientClientApplicationable](wrapper, "client application", uuid, err)
-}
-
-func findWebhookWebhookByUUID(ctx context.Context, uuid *string) (keyhubmodel.WebhookWebhookable, diag.Diagnostics) {
-	if uuid == nil {
-		return nil, diag.Diagnostics{}
-	}
-	client := ctx.Value("keyhub_client").(*keyhub.KeyHubClient)
-	wrapper, err := client.Webhook().Get(ctx, &keyhubwebhook.WebhookRequestBuilderGetRequestConfiguration{
-		QueryParameters: &keyhubwebhook.WebhookRequestBuilderGetQueryParameters{
-			Uuid: []string{*uuid},
-		},
-	})
-	return findFirst[keyhubmodel.WebhookWebhookable](wrapper, "webhook", uuid, err)
 }
 
 func findAuthAccountPrimerByUUID(ctx context.Context, uuid *string) (keyhubmodel.AuthAccountPrimerable, diag.Diagnostics) {

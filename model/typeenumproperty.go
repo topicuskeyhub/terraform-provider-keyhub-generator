@@ -1,12 +1,20 @@
 package model
 
+import (
+	"fmt"
+
+	"golang.org/x/exp/maps"
+)
+
 type restEnumPropertyType struct {
-	enumType RestType
+	enumType             RestType
+	rsSchemaTemplateBase map[string]any
 }
 
-func NewEnumPropertyType(enumType RestType) RestPropertyType {
+func NewEnumPropertyType(enumType RestType, rsSchemaTemplateBase map[string]any) RestPropertyType {
 	return &restEnumPropertyType{
-		enumType: enumType,
+		enumType:             enumType,
+		rsSchemaTemplateBase: rsSchemaTemplateBase,
 	}
 }
 
@@ -73,8 +81,27 @@ func (t *restEnumPropertyType) DSSchemaTemplate() string {
 	return "data_source_schema_attr_simple.go.tmpl"
 }
 
-func (t *restEnumPropertyType) DSSchemaTemplateData() map[string]interface{} {
-	return map[string]interface{}{
+func (t *restEnumPropertyType) DSSchemaTemplateData() map[string]any {
+	return map[string]any{
 		"Type": "dsschema.StringAttribute",
 	}
+}
+
+func (t *restEnumPropertyType) RSSchemaTemplate() string {
+	return "resource_schema_attr_simple.go.tmpl"
+}
+
+func (t *restEnumPropertyType) RSSchemaTemplateData() map[string]any {
+	ret := map[string]any{
+		"Type":             "rsschema.StringAttribute",
+		"PlanModifierType": "planmodifier.String",
+		"PlanModifierPkg":  "stringplanmodifier",
+		"DefaultVal":       fmt.Sprintf("stringdefault.StaticString(\"%v\")", t.rsSchemaTemplateBase["Default"]),
+	}
+	maps.Copy(ret, t.rsSchemaTemplateBase)
+	return ret
+}
+
+func (t *restEnumPropertyType) DS() RestPropertyType {
+	return NewEnumPropertyType(t.enumType.DS(), t.rsSchemaTemplateBase)
 }

@@ -12,13 +12,13 @@
     obj["{{ .TFName }}"] = {{ .TKHToTF }}
 {{- end }}
 {{- end }}
-func tkhToTFObject{{ .GoTypeName }}(recurse bool, tkh {{ .SDKTypeName }}) (types.Object, diag.Diagnostics) {
+func tkhToTFObject{{ .Suffix }}{{ .GoTypeName }}(recurse bool, tkh {{ .SDKTypeName }}) (types.Object, diag.Diagnostics) {
     var diags diag.Diagnostics
     var attrs map[string]attr.Type
     if recurse {
-        attrs = {{ .ObjectAttrTypesName }}Recurse
+        attrs = {{ .ObjectAttrTypesName }}{{ .Suffix }}Recurse
     } else {
-        attrs = {{ .ObjectAttrTypesName }}
+        attrs = {{ .ObjectAttrTypesName }}{{ .Suffix }}
     }
     if tkh == nil {
         return types.ObjectNull(attrs), diags

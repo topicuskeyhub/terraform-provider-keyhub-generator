@@ -1,18 +1,25 @@
 package model
 
 import (
+	"fmt"
 	"log"
+
+	"golang.org/x/exp/maps"
 )
 
 type restSimpleType struct {
-	openapiType   string
-	openapiFormat string
+	property             *RestProperty
+	openapiType          string
+	openapiFormat        string
+	rsSchemaTemplateBase map[string]any
 }
 
-func NewRestSimpleType(name string, format string) RestPropertyType {
+func NewRestSimpleType(property *RestProperty, name string, format string, rsSchemaTemplateBase map[string]any) RestPropertyType {
 	return &restSimpleType{
-		openapiType:   name,
-		openapiFormat: format,
+		property:             property,
+		openapiType:          name,
+		openapiFormat:        format,
+		rsSchemaTemplateBase: rsSchemaTemplateBase,
 	}
 }
 
@@ -212,7 +219,7 @@ func (t *restSimpleType) DSSchemaTemplate() string {
 	return "data_source_schema_attr_simple.go.tmpl"
 }
 
-func (t *restSimpleType) DSSchemaTemplateData() map[string]interface{} {
+func (t *restSimpleType) DSSchemaTemplateData() map[string]any {
 	var attrType string
 	switch t.openapiType {
 	case "boolean":
@@ -226,7 +233,52 @@ func (t *restSimpleType) DSSchemaTemplateData() map[string]interface{} {
 		attrType = "error"
 	}
 
-	return map[string]interface{}{
-		"Type": attrType,
+	return map[string]any{
+		"Type":     attrType,
+		"Required": t.property.Name == "uuid",
 	}
+}
+
+func (t *restSimpleType) RSSchemaTemplate() string {
+	return "resource_schema_attr_simple.go.tmpl"
+}
+
+func (t *restSimpleType) RSSchemaTemplateData() map[string]any {
+	var attrType string
+	var planModifierType string
+	var planModifierPkg string
+	var defaultVal string
+	switch t.openapiType {
+	case "boolean":
+		attrType = "rsschema.BoolAttribute"
+		planModifierType = "planmodifier.Bool"
+		planModifierPkg = "boolplanmodifier"
+		defaultVal = fmt.Sprintf("booldefault.StaticBool(%v)", t.rsSchemaTemplateBase["Default"])
+	case "string":
+		attrType = "rsschema.StringAttribute"
+		planModifierType = "planmodifier.String"
+		planModifierPkg = "stringplanmodifier"
+		defaultVal = fmt.Sprintf("stringdefault.StaticString(\"%v\")", t.rsSchemaTemplateBase["Default"])
+	case "integer":
+		attrType = "rsschema.Int64Attribute"
+		planModifierType = "planmodifier.Int64"
+		planModifierPkg = "int64planmodifier"
+		defaultVal = fmt.Sprintf("int64default.StaticInt64(%v)", t.rsSchemaTemplateBase["Default"])
+	default:
+		log.Fatalf("Unknown simple type: %s", t.openapiType)
+		attrType = "error"
+	}
+
+	ret := map[string]any{
+		"Type":             attrType,
+		"PlanModifierType": planModifierType,
+		"PlanModifierPkg":  planModifierPkg,
+		"DefaultVal":       defaultVal,
+	}
+	maps.Copy(ret, t.rsSchemaTemplateBase)
+	return ret
+}
+
+func (t *restSimpleType) DS() RestPropertyType {
+	return NewRestSimpleType(t.property.DS(), t.openapiType, t.openapiFormat, t.rsSchemaTemplateBase)
 }

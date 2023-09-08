@@ -1,0 +1,9 @@
+rsschema.SingleNestedAttribute{
+    Attributes: resourceSchemaAttrs{{ .Type.NestedType.GoTypeName }}({{ RecurseCutOff .Parent }}),
+{{- if eq .Type.RSSchemaTemplateData.Mode "Computed_UseStateForUnknown" }}
+    Computed: true,
+    PlanModifiers: []planmodifier.Object{ objectplanmodifier.UseStateForUnknown() },
+{{- else }}
+    {{ .Type.RSSchemaTemplateData.Mode }}: true,
+{{- end }}
+}

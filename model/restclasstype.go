@@ -1,13 +1,15 @@
 package model
 
 type restClassType struct {
-	SuperClass RestType
-	Name       string
-	Properties []*RestProperty
+	suffix     string
+	superClass RestType
+	name       string
+	properties []*RestProperty
+	dsType     *restClassType
 }
 
 func (t *restClassType) Extends(typeName string) bool {
-	return t.Name == typeName || (t.SuperClass != nil && t.SuperClass.Extends(typeName))
+	return t.name == typeName || (t.superClass != nil && t.superClass.Extends(typeName))
 }
 
 func (t *restClassType) IsObject() bool {
@@ -15,34 +17,34 @@ func (t *restClassType) IsObject() bool {
 }
 
 func (t *restClassType) ObjectAttrTypesName() string {
-	return firstCharToLower(t.Name) + "AttrTypes"
+	return firstCharToLower(t.name) + "AttrTypes"
 }
 
 func (t *restClassType) DataStructName() string {
-	return firstCharToLower(t.Name) + "Data"
+	return firstCharToLower(t.name) + "Data"
 }
 
 func (t *restClassType) GoTypeName() string {
-	return firstCharToUpper(t.Name)
+	return firstCharToUpper(t.name)
 }
 
 func (t *restClassType) SDKTypeName() string {
-	return "keyhubmodel." + firstCharToUpper(t.Name) + "able"
+	return "keyhubmodel." + firstCharToUpper(t.name) + "able"
 }
 
 func (t *restClassType) SDKTypeConstructor() string {
-	return "keyhubmodel.New" + firstCharToUpper(t.Name) + "()"
+	return "keyhubmodel.New" + firstCharToUpper(t.name) + "()"
 }
 
 func (t *restClassType) AllProperties() []*RestProperty {
-	if t.SuperClass == nil {
-		ret := make([]*RestProperty, len(t.Properties))
-		copy(ret, t.Properties)
+	if t.superClass == nil {
+		ret := make([]*RestProperty, len(t.properties))
+		copy(ret, t.properties)
 		return ret
 	}
-	super := t.SuperClass.AllProperties()
+	super := t.superClass.AllProperties()
 	sub := make([]*RestProperty, 0)
-	for _, pt := range t.Properties {
+	for _, pt := range t.properties {
 		found := false
 		for _, ps := range super {
 			if pt.Name == ps.Name {
@@ -55,4 +57,29 @@ func (t *restClassType) AllProperties() []*RestProperty {
 		}
 	}
 	return append(super, sub...)
+}
+
+func (t *restClassType) Suffix() string {
+	return t.suffix
+}
+
+func (t *restClassType) DS() RestType {
+	if t.dsType != nil {
+		// break recursion
+		return t.dsType
+	}
+
+	t.dsType = &restClassType{
+		suffix: "DS",
+		name:   t.name,
+	}
+	if t.superClass != nil {
+		t.dsType.superClass = t.superClass.DS()
+	}
+	rsProperties := make([]*RestProperty, len(t.properties))
+	for i, prop := range t.properties {
+		rsProperties[i] = prop.DS()
+	}
+	t.dsType.properties = rsProperties
+	return t.dsType
 }

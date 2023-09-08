@@ -1,0 +1,9 @@
+{{- if eq .Type.RSSchemaTemplate "resource_schema_attr_array.go.tmpl" }}
+    {{- template "resource_schema_attr_array.go.tmpl" . }}
+{{- else if eq .Type.RSSchemaTemplate "resource_schema_attr_nestedobject.go.tmpl" }}
+    {{- template "resource_schema_attr_nestedobject.go.tmpl" . }}
+{{- else if eq .Type.RSSchemaTemplate "resource_schema_attr_simple.go.tmpl" }}
+    {{- template "resource_schema_attr_simple.go.tmpl" . }}
+{{- else }}
+    {{ .Type.RSSchemaTemplate }}
+{{- end }}

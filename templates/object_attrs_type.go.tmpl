@@ -1,4 +1,4 @@
-func objectAttrsType{{ .GoTypeName }}(recurse bool) map[string]attr.Type {
+func objectAttrsType{{ .Suffix }}{{ .GoTypeName }}(recurse bool) map[string]attr.Type {
     objectAttrs := make(map[string]attr.Type)
 {{- with AdditionalObjectsProperty . }}
     if recurse {

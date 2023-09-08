@@ -1,4 +1,4 @@
-func fillDataStructFromTFObject{{ .GoTypeName }}(data *{{ .DataStructName }}, obj types.Object) {
+func fillDataStructFromTFObject{{ .Suffix }}{{ .GoTypeName }}(data *{{ .DataStructName }}{{ .Suffix }}, obj types.Object) {
 {{- range .AllProperties }}
     data.{{ .GoName }} = obj.Attributes()["{{ .TFName }}"].({{ .Type.TFValueType }})
 {{- end }}

@@ -1,12 +1,20 @@
 package model
 
+import (
+	"fmt"
+
+	"golang.org/x/exp/maps"
+)
+
 type restFindByUUIDObjectType struct {
-	nestedType RestType
+	nestedType           RestPropertyType
+	rsSchemaTemplateBase map[string]any
 }
 
-func NewFindByUUIDObjectType(nestedType RestType) RestPropertyType {
+func NewFindByUUIDObjectType(nestedType RestPropertyType, rsSchemaTemplateBase map[string]any) RestPropertyType {
 	return &restFindByUUIDObjectType{
-		nestedType: nestedType,
+		nestedType:           nestedType,
+		rsSchemaTemplateBase: rsSchemaTemplateBase,
 	}
 }
 
@@ -31,7 +39,7 @@ func (t *restFindByUUIDObjectType) Complex() bool {
 }
 
 func (t *restFindByUUIDObjectType) NestedType() RestType {
-	return nil
+	return t.nestedType.NestedType()
 }
 
 func (t *restFindByUUIDObjectType) ToTFAttrWithDiag() bool {
@@ -51,23 +59,42 @@ func (t *restFindByUUIDObjectType) TKHToTF(value string, listItem bool) string {
 }
 
 func (t *restFindByUUIDObjectType) TFToTKH(value string, listItem bool) string {
-	return "find" + t.nestedType.GoTypeName() + "ByUUID(ctx, " + value + ".(basetypes.StringValue).ValueStringPointer())"
+	return "find" + t.nestedType.NestedType().GoTypeName() + "ByUUID(ctx, " + value + ".(basetypes.StringValue).ValueStringPointer())"
 }
 
 func (t *restFindByUUIDObjectType) SDKTypeName(listItem bool) string {
-	return t.nestedType.SDKTypeName()
+	return t.nestedType.NestedType().SDKTypeName()
 }
 
 func (t *restFindByUUIDObjectType) SDKTypeConstructor() string {
-	return t.nestedType.SDKTypeConstructor()
+	return t.nestedType.NestedType().SDKTypeConstructor()
 }
 
 func (t *restFindByUUIDObjectType) DSSchemaTemplate() string {
 	return "data_source_schema_attr_simple.go.tmpl"
 }
 
-func (t *restFindByUUIDObjectType) DSSchemaTemplateData() map[string]interface{} {
-	return map[string]interface{}{
+func (t *restFindByUUIDObjectType) DSSchemaTemplateData() map[string]any {
+	return map[string]any{
 		"Type": "dsschema.StringAttribute",
 	}
+}
+
+func (t *restFindByUUIDObjectType) RSSchemaTemplate() string {
+	return "resource_schema_attr_simple.go.tmpl"
+}
+
+func (t *restFindByUUIDObjectType) RSSchemaTemplateData() map[string]any {
+	ret := map[string]any{
+		"Type":             "rsschema.StringAttribute",
+		"PlanModifierType": "planmodifier.String",
+		"PlanModifierPkg":  "stringplanmodifier",
+		"DefaultVal":       fmt.Sprintf("stringdefault.StaticString(\"%v\")", t.rsSchemaTemplateBase["Default"]),
+	}
+	maps.Copy(ret, t.rsSchemaTemplateBase)
+	return ret
+}
+
+func (t *restFindByUUIDObjectType) DS() RestPropertyType {
+	return t.nestedType.DS()
 }

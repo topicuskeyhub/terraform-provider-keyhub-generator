@@ -1,0 +1,13 @@
+{{- if .Type.Complex -}}
+rsschema.ListNestedAttribute{
+    NestedObject: rsschema.NestedAttributeObject{
+        Attributes: resourceSchemaAttrs{{ .Type.NestedType.GoTypeName }}({{ RecurseCutOff .Parent }}),
+    },
+    {{ .Type.RSSchemaTemplateData.Mode }}: true,
+}
+{{- else -}}
+rsschema.ListAttribute{
+    ElementType: {{ .Type.RSSchemaTemplateData.ElementType }},
+    {{ .Type.RSSchemaTemplateData.Mode }}: true,
+}
+{{- end }}

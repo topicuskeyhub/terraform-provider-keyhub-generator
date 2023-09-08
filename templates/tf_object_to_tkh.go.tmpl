@@ -9,7 +9,7 @@
     tkh.{{ .TKHSetter }}({{ .TFToTKH }})
 {{- end }}
 {{- end }}
-func tfObjectToTKH{{ .GoTypeName }}(ctx context.Context, recurse bool, objVal types.Object) ({{ .SDKTypeName }}, diag.Diagnostics) {
+func tfObjectToTKH{{ .Suffix }}{{ .GoTypeName }}(ctx context.Context, recurse bool, objVal types.Object) ({{ .SDKTypeName }}, diag.Diagnostics) {
     var diags diag.Diagnostics
     if objVal.IsNull() {
         return nil, diags
