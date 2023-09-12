@@ -26,6 +26,10 @@ func (t *restEnumType) DataStructName() string {
 	return ""
 }
 
+func (t *restEnumType) APITypeName() string {
+	return t.name
+}
+
 func (t *restEnumType) GoTypeName() string {
 	log.Fatalf("Enum type %s has no attributes", t.name)
 	return ""

@@ -5,6 +5,7 @@ type RestType interface {
 	IsObject() bool
 	ObjectAttrTypesName() string
 	DataStructName() string
+	APITypeName() string
 	GoTypeName() string
 	SDKTypeName() string
 	SDKTypeConstructor() string

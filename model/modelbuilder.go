@@ -43,6 +43,23 @@ func getOrBuildTypeModel(types map[string]RestType, name string, schema *openapi
 			superClass: superType,
 			name:       name,
 		}
+		if isWritableWithUnwritableSuperClass(ret, ownType) {
+			retUUIDType := &restFindByUUIDClassType{
+				superClass: superType,
+				name:       name,
+				nestedType: ret,
+			}
+			retUUIDType.uuidProperty = &RestProperty{
+				Parent:   retUUIDType,
+				Name:     name,
+				Required: true,
+				Type:     NewFindBaseByUUIDObjectType(retUUIDType),
+			}
+			types[name] = retUUIDType
+			ret.properties = buildProperties(ret, name, ownType, types)
+			return retUUIDType
+		}
+
 		types[name] = ret
 		ret.properties = buildProperties(ret, name, ownType, types)
 		return ret
@@ -54,6 +71,24 @@ func findOwnTypeSchema(schema *openapi3.SchemaRef) *openapi3.SchemaRef {
 		return schema.Value.AllOf[1]
 	}
 	return schema
+}
+
+func isWritableWithUnwritableSuperClass(restType *restClassType, schema *openapi3.SchemaRef) bool {
+	writescopeObj, ok := schema.Value.Extensions["x-tkh-writescope"]
+	log.Printf("Type %s has extensions %v", restType.name, schema.Value.Extensions)
+	if !ok {
+		return false
+	}
+	writescope := writescopeObj.(map[string]any)
+	ownScope, ok := writescope[restType.name]
+	if !ok {
+		return false
+	}
+	superScope, ok := writescope[restType.superClass.APITypeName()]
+	if !ok {
+		return false
+	}
+	return ownScope.(bool) && !superScope.(bool)
 }
 
 func buildProperties(parent RestType, baseTypeName string, schema *openapi3.SchemaRef, types map[string]RestType) []*RestProperty {

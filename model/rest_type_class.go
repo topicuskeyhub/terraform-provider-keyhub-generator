@@ -24,6 +24,10 @@ func (t *restClassType) DataStructName() string {
 	return firstCharToLower(t.name) + "Data"
 }
 
+func (t *restClassType) APITypeName() string {
+	return t.name
+}
+
 func (t *restClassType) GoTypeName() string {
 	return firstCharToUpper(t.name)
 }
