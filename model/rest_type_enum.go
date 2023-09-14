@@ -30,6 +30,10 @@ func (t *restEnumType) APITypeName() string {
 	return t.name
 }
 
+func (t *restEnumType) APIDiscriminator() string {
+	return ""
+}
+
 func (t *restEnumType) GoTypeName() string {
 	log.Fatalf("Enum type %s has no attributes", t.name)
 	return ""

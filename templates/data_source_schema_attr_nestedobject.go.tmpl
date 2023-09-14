@@ -1,4 +1,7 @@
 dsschema.SingleNestedAttribute{
     Attributes: dataSourceSchemaAttrs{{ .Type.NestedType.GoTypeName }}({{ RecurseCutOff .Parent }}),
     Computed: true,
+{{- if .Deprecated }}
+    DeprecationMessage: "This property will be removed in a future version.",
+{{- end }}
 }

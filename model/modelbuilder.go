@@ -38,10 +38,15 @@ func getOrBuildTypeModel(types map[string]RestType, name string, schema *openapi
 		}
 		return ret
 	} else {
+		discriminator := ""
+		if discriminatorVal, ok := ownType.Value.Extensions["x-tkh-discriminator"]; ok {
+			discriminator = discriminatorVal.(string)
+		}
 		ret := &restClassType{
-			suffix:     "RS",
-			superClass: superType,
-			name:       name,
+			suffix:        "RS",
+			superClass:    superType,
+			discriminator: discriminator,
+			name:          name,
 		}
 		if isWritableWithUnwritableSuperClass(ret, ownType) {
 			retUUIDType := &restFindByUUIDClassType{
@@ -51,7 +56,7 @@ func getOrBuildTypeModel(types map[string]RestType, name string, schema *openapi
 			}
 			retUUIDType.uuidProperty = &RestProperty{
 				Parent:   retUUIDType,
-				Name:     name,
+				Name:     "uuid",
 				Required: true,
 				Type:     NewFindBaseByUUIDObjectType(retUUIDType),
 			}
@@ -75,7 +80,6 @@ func findOwnTypeSchema(schema *openapi3.SchemaRef) *openapi3.SchemaRef {
 
 func isWritableWithUnwritableSuperClass(restType *restClassType, schema *openapi3.SchemaRef) bool {
 	writescopeObj, ok := schema.Value.Extensions["x-tkh-writescope"]
-	log.Printf("Type %s has extensions %v", restType.name, schema.Value.Extensions)
 	if !ok {
 		return false
 	}
@@ -98,6 +102,9 @@ func buildProperties(parent RestType, baseTypeName string, schema *openapi3.Sche
 		if name == "$type" {
 			continue
 		}
+		if name == "additionalObjects" && baseTypeName == "authInternalAccount" {
+			continue
+		}
 		rsSchemaTemplateBase := buildRSSchemaTemplateBase(schema, name)
 		if name == "type" {
 			if baseTypeName == "RestLink" || baseTypeName == "authPermission" {
@@ -110,9 +117,11 @@ func buildProperties(parent RestType, baseTypeName string, schema *openapi3.Sche
 		}
 
 		restProperty := &RestProperty{
-			Parent:   parent,
-			Name:     name,
-			Required: slices.Contains(required, name),
+			Parent:     parent,
+			Name:       name,
+			Required:   slices.Contains(required, name),
+			Deprecated: is(property, deprecated),
+			WriteOnly:  is(property, writeOnly),
 		}
 		restProperty.Type = buildType(baseTypeName, name, property, types, restProperty, rsSchemaTemplateBase)
 		ret = append(ret, restProperty)
@@ -141,14 +150,14 @@ func buildType(baseTypeName string, propertyName string, ref *openapi3.SchemaRef
 	if schema.Type == "boolean" || schema.Type == "integer" || schema.Type == "string" {
 		return NewRestSimpleType(restProperty, schema.Type, schema.Format, rsSchemaTemplateBase)
 	}
-	if isObject(ref) {
+	if is(ref, object) {
 		nestedTypeName := refToName(ref.Ref)
 		if nestedTypeName == "" {
 			nestedTypeName = baseTypeName + "_" + propertyName
 		}
 		nested := getOrBuildTypeModel(types, nestedTypeName, ref)
 		ret := NewNestedObjectType(restProperty, nested, rsSchemaTemplateBase)
-		if ref.Ref != "" && hasUUID(ref) && nested.Extends("Linkable") {
+		if ref.Ref != "" && is(ref, withUUID) && nested.Extends("Linkable") {
 			if strings.HasSuffix(nestedTypeName, "Primer") {
 				ret = NewFindByUUIDObjectType(ret, rsSchemaTemplateBase)
 			}
@@ -160,28 +169,33 @@ func buildType(baseTypeName string, propertyName string, ref *openapi3.SchemaRef
 	return nil
 }
 
-func hasUUID(ref *openapi3.SchemaRef) bool {
-	if _, ok := ref.Value.Properties["uuid"]; ok {
+func is(ref *openapi3.SchemaRef, check func(*openapi3.Schema) bool) bool {
+	if check(ref.Value) {
 		return true
 	}
 	for _, part := range ref.Value.AllOf {
-		if hasUUID(part) {
+		if check(part.Value) {
 			return true
 		}
 	}
 	return false
 }
 
-func isObject(ref *openapi3.SchemaRef) bool {
-	if ref.Value.Type == "object" {
-		return true
-	}
-	for _, part := range ref.Value.AllOf {
-		if isObject(part) {
-			return true
-		}
-	}
-	return false
+func withUUID(schema *openapi3.Schema) bool {
+	_, ok := schema.Properties["uuid"]
+	return ok
+}
+
+func object(schema *openapi3.Schema) bool {
+	return schema.Type == "object"
+}
+
+func deprecated(schema *openapi3.Schema) bool {
+	return schema.Deprecated
+}
+
+func writeOnly(schema *openapi3.Schema) bool {
+	return schema.WriteOnly
 }
 
 func refToName(ref string) string {

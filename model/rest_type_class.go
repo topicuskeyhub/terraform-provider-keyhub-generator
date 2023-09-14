@@ -1,11 +1,12 @@
 package model
 
 type restClassType struct {
-	suffix     string
-	superClass RestType
-	name       string
-	properties []*RestProperty
-	dsType     *restClassType
+	suffix        string
+	superClass    RestType
+	name          string
+	discriminator string
+	properties    []*RestProperty
+	dsType        *restClassType
 }
 
 func (t *restClassType) Extends(typeName string) bool {
@@ -26,6 +27,10 @@ func (t *restClassType) DataStructName() string {
 
 func (t *restClassType) APITypeName() string {
 	return t.name
+}
+
+func (t *restClassType) APIDiscriminator() string {
+	return t.discriminator
 }
 
 func (t *restClassType) GoTypeName() string {
@@ -80,9 +85,11 @@ func (t *restClassType) DS() RestType {
 	if t.superClass != nil {
 		t.dsType.superClass = t.superClass.DS()
 	}
-	rsProperties := make([]*RestProperty, len(t.properties))
-	for i, prop := range t.properties {
-		rsProperties[i] = prop.DS()
+	rsProperties := make([]*RestProperty, 0)
+	for _, prop := range t.properties {
+		if !prop.WriteOnly {
+			rsProperties = append(rsProperties, prop.DS())
+		}
 	}
 	t.dsType.properties = rsProperties
 	return t.dsType

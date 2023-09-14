@@ -1,17 +1,21 @@
 package model
 
+import (
+	"fmt"
+)
+
 type restFindBaseByUUIDObjectType struct {
-	baseType RestType
+	baseType *restFindByUUIDClassType
 }
 
-func NewFindBaseByUUIDObjectType(baseType RestType) RestPropertyType {
+func NewFindBaseByUUIDObjectType(baseType *restFindByUUIDClassType) RestPropertyType {
 	return &restFindBaseByUUIDObjectType{
 		baseType: baseType,
 	}
 }
 
 func (t *restFindBaseByUUIDObjectType) PropertyNameSuffix() string {
-	return "Uuid"
+	return ""
 }
 
 func (t *restFindBaseByUUIDObjectType) TFName() string {
@@ -42,6 +46,11 @@ func (t *restFindBaseByUUIDObjectType) ToTKHAttrWithDiag() bool {
 	return true
 }
 
+func (t *restFindBaseByUUIDObjectType) ToTKHCustomCode() string {
+	typeName := t.baseType.superClass.GoTypeName()
+	return fmt.Sprintf("if val != nil {\ndtype := tkh.GetTypeEscaped()\ntkh.%s = *(val.(*keyhubmodel.%s))\ntkh.SetTypeEscaped(dtype)\n}", typeName, typeName)
+}
+
 func (t *restFindBaseByUUIDObjectType) TFAttrNeeded() bool {
 	return false
 }
@@ -51,7 +60,7 @@ func (t *restFindBaseByUUIDObjectType) TKHToTF(value string, listItem bool) stri
 }
 
 func (t *restFindBaseByUUIDObjectType) TFToTKH(value string, listItem bool) string {
-	return "find" + t.baseType.GoTypeName() + "ByUUID(ctx, " + value + ".(basetypes.StringValue).ValueStringPointer())"
+	return "find" + t.baseType.superClass.GoTypeName() + "ByUUID(ctx, " + value + ".(basetypes.StringValue).ValueStringPointer())"
 }
 
 func (t *restFindBaseByUUIDObjectType) SDKTypeName(listItem bool) string {

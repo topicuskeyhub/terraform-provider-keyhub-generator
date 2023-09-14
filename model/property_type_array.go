@@ -46,6 +46,10 @@ func (t *restArrayType) ToTKHAttrWithDiag() bool {
 	return true
 }
 
+func (t *restArrayType) ToTKHCustomCode() string {
+	return ""
+}
+
 func (t *restArrayType) TFAttrNeeded() bool {
 	return true
 }

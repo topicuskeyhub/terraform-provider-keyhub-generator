@@ -4,10 +4,16 @@ dsschema.ListNestedAttribute{
         Attributes: dataSourceSchemaAttrs{{ .Type.NestedType.GoTypeName }}({{ RecurseCutOff .Parent }}),
     },
     Computed: true,
+{{- if .Deprecated }}
+    DeprecationMessage: "This property will be removed in a future version.",
+{{- end }}
 }
 {{- else -}}
 dsschema.ListAttribute{
     ElementType: {{ .Type.DSSchemaTemplateData.ElementType }},
     Computed: true,
+{{- if .Deprecated }}
+    DeprecationMessage: "This property will be removed in a future version.",
+{{- end }}
 }
 {{- end }}

@@ -49,6 +49,10 @@ func (t *restNestedObjectType) ToTKHAttrWithDiag() bool {
 	return true
 }
 
+func (t *restNestedObjectType) ToTKHCustomCode() string {
+	return ""
+}
+
 func (t *restNestedObjectType) TFAttrNeeded() bool {
 	return false
 }

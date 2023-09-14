@@ -4,10 +4,16 @@ rsschema.ListNestedAttribute{
         Attributes: resourceSchemaAttrs{{ .Type.NestedType.GoTypeName }}({{ RecurseCutOff .Parent }}),
     },
     {{ .Type.RSSchemaTemplateData.Mode }}: true,
+{{- if .Deprecated }}
+    DeprecationMessage: "This property will be removed in a future version.",
+{{- end }}
 }
 {{- else -}}
 rsschema.ListAttribute{
     ElementType: {{ .Type.RSSchemaTemplateData.ElementType }},
     {{ .Type.RSSchemaTemplateData.Mode }}: true,
+{{- if .Deprecated }}
+    DeprecationMessage: "This property will be removed in a future version.",
+{{- end }}
 }
 {{- end }}

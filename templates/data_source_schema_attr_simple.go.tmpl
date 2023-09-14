@@ -5,4 +5,7 @@
 {{- else }}
     Computed: true,
 {{- end }}
+{{- if .Deprecated }}
+    DeprecationMessage: "This property will be removed in a future version.",
+{{- end }}
 }

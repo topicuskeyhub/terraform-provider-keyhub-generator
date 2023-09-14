@@ -3,7 +3,16 @@
     {
         val, d := {{ .TFToTKH }}
         diags.Append(d...)
+{{- if .Type.ToTKHCustomCode }}
+        {{ .Type.ToTKHCustomCode }}
+{{- else }}
         tkh.{{ .TKHSetter }}(val)
+{{- end }}
+{{- if .IsDTypeRequired }}
+        if val != nil {
+            val.SetAdditionalData(map[string]any{"$type": "{{ .Type.NestedType.APIDiscriminator }}"})
+        }
+{{- end }}
     }
 {{- else }}
     tkh.{{ .TKHSetter }}({{ .TFToTKH }})

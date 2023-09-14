@@ -6,6 +6,7 @@ type RestType interface {
 	ObjectAttrTypesName() string
 	DataStructName() string
 	APITypeName() string
+	APIDiscriminator() string
 	GoTypeName() string
 	SDKTypeName() string
 	SDKTypeConstructor() string

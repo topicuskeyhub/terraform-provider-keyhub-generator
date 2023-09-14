@@ -50,6 +50,10 @@ func (t *restFindByUUIDObjectType) ToTKHAttrWithDiag() bool {
 	return true
 }
 
+func (t *restFindByUUIDObjectType) ToTKHCustomCode() string {
+	return ""
+}
+
 func (t *restFindByUUIDObjectType) TFAttrNeeded() bool {
 	return false
 }

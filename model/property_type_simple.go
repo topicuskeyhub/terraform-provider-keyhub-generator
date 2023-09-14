@@ -86,6 +86,10 @@ func (t *restSimpleType) ToTKHAttrWithDiag() bool {
 		(t.openapiFormat == "date-time" || t.openapiFormat == "uuid" || t.openapiFormat == "date")
 }
 
+func (t *restSimpleType) ToTKHCustomCode() string {
+	return ""
+}
+
 func (t *restSimpleType) TFAttrNeeded() bool {
 	return false
 }

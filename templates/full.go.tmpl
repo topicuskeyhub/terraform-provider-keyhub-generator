@@ -149,7 +149,7 @@ func tfToTime(val basetypes.StringValue) (time.Time, diag.Diagnostics) {
 }
 
 func tfToTimePointer(val basetypes.StringValue) (*time.Time, diag.Diagnostics) {
-	if val.IsNull() {
+	if val.IsNull() || val.IsUnknown() {
 		return nil, diag.Diagnostics{}
 	}
 	parsed, diags := tfToTime(val)
@@ -164,7 +164,7 @@ func withUuidToTF(val interface{ GetUuid() *string }) attr.Value {
 }
 
 func parsePointer[T any](val basetypes.StringValue, parser func(string) (T, error)) (*T, diag.Diagnostics) {
-	if val.IsNull() {
+	if val.IsNull() || val.IsUnknown() {
 		return nil, diag.Diagnostics{}
 	}
 	parsed, diags := parse(val, parser)
@@ -172,7 +172,7 @@ func parsePointer[T any](val basetypes.StringValue, parser func(string) (T, erro
 }
 
 func parsePointer2[T any](val basetypes.StringValue, parser func(string) (*T, error)) (*T, diag.Diagnostics) {
-	if val.IsNull() {
+	if val.IsNull() || val.IsUnknown() {
 		return nil, diag.Diagnostics{}
 	}
 	parsed, diags := parse(val, parser)
@@ -189,7 +189,7 @@ func parse[T any](val basetypes.StringValue, parser func(string) (T, error)) (T,
 }
 
 func parseCastPointer[T any, Z any](val basetypes.StringValue, parser func(string) (Z, error), caster func(Z) T) (*T, diag.Diagnostics) {
-	if val.IsNull() {
+	if val.IsNull() || val.IsUnknown() {
 		return nil, diag.Diagnostics{}
 	}
 	parsed, diags := parseCast(val, parser, caster)
@@ -312,6 +312,14 @@ func findClientClientApplicationPrimerByUUID(ctx context.Context, uuid *string) 
 }
 
 func findAuthAccountPrimerByUUID(ctx context.Context, uuid *string) (keyhubmodel.AuthAccountPrimerable, diag.Diagnostics) {
+	account, diag := findAuthAccountByUUID(ctx, uuid)
+	if account == nil {
+		return account, diag
+	}
+	return &account.(*keyhubmodel.AuthAccount).AuthAccountPrimer, diag
+}
+
+func findAuthAccountByUUID(ctx context.Context, uuid *string) (keyhubmodel.AuthAccountable, diag.Diagnostics) {
 	if uuid == nil {
 		return nil, diag.Diagnostics{}
 	}

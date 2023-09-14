@@ -1,9 +1,5 @@
 package model
 
-import (
-	"log"
-)
-
 type restFindByUUIDClassType struct {
 	superClass   RestType
 	name         string
@@ -31,6 +27,10 @@ func (t *restFindByUUIDClassType) APITypeName() string {
 	return t.nestedType.APITypeName()
 }
 
+func (t *restFindByUUIDClassType) APIDiscriminator() string {
+	return t.nestedType.APIDiscriminator()
+}
+
 func (t *restFindByUUIDClassType) GoTypeName() string {
 	return t.nestedType.GoTypeName()
 }
@@ -44,7 +44,6 @@ func (t *restFindByUUIDClassType) SDKTypeConstructor() string {
 }
 
 func (t *restFindByUUIDClassType) AllProperties() []*RestProperty {
-	log.Printf("Type %s -> %s", t.name, t.uuidProperty.GoName())
 	ret := make([]*RestProperty, 0)
 	ret = append(ret, t.uuidProperty)
 	ret = append(ret, t.nestedType.properties...)

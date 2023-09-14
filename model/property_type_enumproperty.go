@@ -50,6 +50,10 @@ func (t *restEnumPropertyType) ToTKHAttrWithDiag() bool {
 	return true
 }
 
+func (t *restEnumPropertyType) ToTKHCustomCode() string {
+	return ""
+}
+
 func (t *restEnumPropertyType) TFAttrNeeded() bool {
 	return false
 }
@@ -62,7 +66,7 @@ func (t *restEnumPropertyType) TKHToTF(value string, listItem bool) string {
 }
 
 func (t *restEnumPropertyType) TFToTKH(value string, listItem bool) string {
-	caster := "func(val any) " + t.SDKTypeName(listItem) + " { return val.(" + t.SDKTypeName(listItem) + ") }"
+	caster := "func(val any) " + t.SDKTypeName(listItem) + " { return *val.(*" + t.SDKTypeName(listItem) + ") }"
 	if listItem {
 		return "parseCast(" + value + ".(basetypes.StringValue), " + t.SDKTypeConstructor() + ", " + caster + ")"
 	}

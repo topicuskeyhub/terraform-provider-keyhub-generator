@@ -11,6 +11,8 @@ type RestProperty struct {
 	Name       string
 	Type       RestPropertyType
 	Required   bool
+	WriteOnly  bool
+	Deprecated bool
 	dsProperty *RestProperty
 }
 
@@ -21,6 +23,7 @@ type RestPropertyType interface {
 	TFAttrType() string
 	ToTFAttrWithDiag() bool
 	ToTKHAttrWithDiag() bool
+	ToTKHCustomCode() string
 	TFAttrNeeded() bool
 	Complex() bool
 	NestedType() RestType
@@ -87,12 +90,20 @@ func (p *RestProperty) DS() *RestProperty {
 	}
 
 	p.dsProperty = &RestProperty{
-		Parent:   p.Parent,
-		Name:     p.Name,
-		Required: p.Required,
+		Parent:     p.Parent,
+		Name:       p.Name,
+		Required:   p.Required,
+		WriteOnly:  p.WriteOnly,
+		Deprecated: p.Deprecated,
 	}
 	p.dsProperty.Type = p.Type.DS()
 	return p.dsProperty
+}
+
+func (p *RestProperty) IsDTypeRequired() bool {
+	return strings.HasSuffix(p.Parent.GoTypeName(), "_additionalObjects") &&
+		p.Type.NestedType() != nil && p.Type.NestedType().APIDiscriminator() != "" &&
+		!p.Type.NestedType().Extends("Linkable") && !p.Type.NestedType().Extends("NonLinkable")
 }
 
 func firstCharToLower(input string) string {
