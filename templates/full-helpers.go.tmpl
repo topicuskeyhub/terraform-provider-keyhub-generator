@@ -9,20 +9,9 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
-	dsschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	rsschema "github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	"github.com/google/uuid"
-	"github.com/microsoft/kiota-abstractions-go/serialization"
 	keyhub "github.com/topicuskeyhub/sdk-go"
 	keyhubaccount "github.com/topicuskeyhub/sdk-go/account"
 	keyhubcertificate "github.com/topicuskeyhub/sdk-go/certificate"
@@ -37,52 +26,10 @@ import (
 	keyhubvaultrecord "github.com/topicuskeyhub/sdk-go/vaultrecord"
 )
 
-{{- range $name, $type := . }}
-{{- if $type.IsObject }}
-{{ template "data_struct.go.tmpl" $type }}
-{{ template "data_struct.go.tmpl" $type.DS }}
-{{- end }}
-{{- end }}
-
-{{- range $name, $type := . }}
-{{- if $type.IsObject }}
-{{ template "object_attrs_type.go.tmpl" $type }}
-{{ template "object_attrs_type.go.tmpl" $type.DS }}
-{{- end }}
-{{- end }}
-
-{{- range $name, $type := . }}
-{{- if $type.IsObject }}
-{{ template "tkh_to_tf_object.go.tmpl" $type }}
-{{ template "tkh_to_tf_object.go.tmpl" $type.DS }}
-{{- end }}
-{{- end }}
-
-{{- range $name, $type := . }}
-{{- if $type.IsObject }}
-{{ template "tf_object_to_tkh.go.tmpl" $type }}
-{{ template "tf_object_to_tkh.go.tmpl" $type.DS }}
-{{- end }}
-{{- end }}
-
-{{- range $name, $type := . }}
-{{- if $type.IsObject }}
-{{ template "tf_object_to_data_struct.go.tmpl" $type }}
-{{ template "tf_object_to_data_struct.go.tmpl" $type.DS }}
-{{- end }}
-{{- end }}
-
-{{- range $name, $type := . }}
-{{- if $type.IsObject }}
-{{ template "data_source_schema_attrs.go.tmpl" $type.DS }}
-{{- end }}
-{{- end }}
-
-{{- range $name, $type := . }}
-{{- if $type.IsObject }}
-{{ template "resource_schema_attrs.go.tmpl" $type }}
-{{- end }}
-{{- end }}
+type contextKey int
+const (
+    keyHubClientKey contextKey = iota
+)
 
 func sliceToTF[T any](elemType attr.Type, vals []T, toValue func(T, *diag.Diagnostics) attr.Value) (attr.Value, diag.Diagnostics) {
 	var diags diag.Diagnostics
@@ -224,7 +171,7 @@ func findGroupGroupPrimerByUUID(ctx context.Context, uuid *string) (keyhubmodel.
 	if uuid == nil {
 		return nil, diag.Diagnostics{}
 	}
-	client := ctx.Value("keyhub_client").(*keyhub.KeyHubClient)
+	client := ctx.Value(keyHubClientKey).(*keyhub.KeyHubClient)
 	wrapper, err := client.Group().Get(ctx, &keyhubgroup.GroupRequestBuilderGetRequestConfiguration{
 		QueryParameters: &keyhubgroup.GroupRequestBuilderGetQueryParameters{
 			Uuid: []string{*uuid},
@@ -237,7 +184,7 @@ func findDirectoryAccountDirectoryPrimerByUUID(ctx context.Context, uuid *string
 	if uuid == nil {
 		return nil, diag.Diagnostics{}
 	}
-	client := ctx.Value("keyhub_client").(*keyhub.KeyHubClient)
+	client := ctx.Value(keyHubClientKey).(*keyhub.KeyHubClient)
 	wrapper, err := client.Directory().Get(ctx, &keyhubdirectory.DirectoryRequestBuilderGetRequestConfiguration{
 		QueryParameters: &keyhubdirectory.DirectoryRequestBuilderGetQueryParameters{
 			Uuid: []string{*uuid},
@@ -250,7 +197,7 @@ func findOrganizationOrganizationalUnitPrimerByUUID(ctx context.Context, uuid *s
 	if uuid == nil {
 		return nil, diag.Diagnostics{}
 	}
-	client := ctx.Value("keyhub_client").(*keyhub.KeyHubClient)
+	client := ctx.Value(keyHubClientKey).(*keyhub.KeyHubClient)
 	wrapper, err := client.Organizationalunit().Get(ctx, &keyhuborganizationalunit.OrganizationalunitRequestBuilderGetRequestConfiguration{
 		QueryParameters: &keyhuborganizationalunit.OrganizationalunitRequestBuilderGetQueryParameters{
 			Uuid: []string{*uuid},
@@ -263,7 +210,7 @@ func findCertificateCertificatePrimerByUUID(ctx context.Context, uuid *string) (
 	if uuid == nil {
 		return nil, diag.Diagnostics{}
 	}
-	client := ctx.Value("keyhub_client").(*keyhub.KeyHubClient)
+	client := ctx.Value(keyHubClientKey).(*keyhub.KeyHubClient)
 	wrapper, err := client.Certificate().Get(ctx, &keyhubcertificate.CertificateRequestBuilderGetRequestConfiguration{
 		QueryParameters: &keyhubcertificate.CertificateRequestBuilderGetQueryParameters{
 			Uuid: []string{*uuid},
@@ -276,7 +223,7 @@ func findProvisioningProvisionedSystemPrimerByUUID(ctx context.Context, uuid *st
 	if uuid == nil {
 		return nil, diag.Diagnostics{}
 	}
-	client := ctx.Value("keyhub_client").(*keyhub.KeyHubClient)
+	client := ctx.Value(keyHubClientKey).(*keyhub.KeyHubClient)
 	wrapper, err := client.System().Get(ctx, &keyhubsystem.SystemRequestBuilderGetRequestConfiguration{
 		QueryParameters: &keyhubsystem.SystemRequestBuilderGetQueryParameters{
 			Uuid: []string{*uuid},
@@ -289,7 +236,7 @@ func findGroupGroupClassificationPrimerByUUID(ctx context.Context, uuid *string)
 	if uuid == nil {
 		return nil, diag.Diagnostics{}
 	}
-	client := ctx.Value("keyhub_client").(*keyhub.KeyHubClient)
+	client := ctx.Value(keyHubClientKey).(*keyhub.KeyHubClient)
 	wrapper, err := client.Groupclassification().Get(ctx, &keyhubgroupclassification.GroupclassificationRequestBuilderGetRequestConfiguration{
 		QueryParameters: &keyhubgroupclassification.GroupclassificationRequestBuilderGetQueryParameters{
 			Uuid: []string{*uuid},
@@ -302,7 +249,7 @@ func findClientClientApplicationPrimerByUUID(ctx context.Context, uuid *string) 
 	if uuid == nil {
 		return nil, diag.Diagnostics{}
 	}
-	client := ctx.Value("keyhub_client").(*keyhub.KeyHubClient)
+	client := ctx.Value(keyHubClientKey).(*keyhub.KeyHubClient)
 	wrapper, err := client.Client().Get(ctx, &keyhubclient.ClientRequestBuilderGetRequestConfiguration{
 		QueryParameters: &keyhubclient.ClientRequestBuilderGetQueryParameters{
 			Uuid: []string{*uuid},
@@ -323,7 +270,7 @@ func findAuthAccountByUUID(ctx context.Context, uuid *string) (keyhubmodel.AuthA
 	if uuid == nil {
 		return nil, diag.Diagnostics{}
 	}
-	client := ctx.Value("keyhub_client").(*keyhub.KeyHubClient)
+	client := ctx.Value(keyHubClientKey).(*keyhub.KeyHubClient)
 	wrapper, err := client.Account().Get(ctx, &keyhubaccount.AccountRequestBuilderGetRequestConfiguration{
 		QueryParameters: &keyhubaccount.AccountRequestBuilderGetQueryParameters{
 			Uuid: []string{*uuid},
@@ -336,7 +283,7 @@ func findServiceaccountServiceAccountPrimerByUUID(ctx context.Context, uuid *str
 	if uuid == nil {
 		return nil, diag.Diagnostics{}
 	}
-	client := ctx.Value("keyhub_client").(*keyhub.KeyHubClient)
+	client := ctx.Value(keyHubClientKey).(*keyhub.KeyHubClient)
 	wrapper, err := client.Serviceaccount().Get(ctx, &keyhubserviceaccount.ServiceaccountRequestBuilderGetRequestConfiguration{
 		QueryParameters: &keyhubserviceaccount.ServiceaccountRequestBuilderGetQueryParameters{
 			Uuid: []string{*uuid},
@@ -349,7 +296,7 @@ func findVaultVaultRecordPrimerByUUID(ctx context.Context, uuid *string) (keyhub
 	if uuid == nil {
 		return nil, diag.Diagnostics{}
 	}
-	client := ctx.Value("keyhub_client").(*keyhub.KeyHubClient)
+	client := ctx.Value(keyHubClientKey).(*keyhub.KeyHubClient)
 	wrapper, err := client.Vaultrecord().Get(ctx, &keyhubvaultrecord.VaultrecordRequestBuilderGetRequestConfiguration{
 		QueryParameters: &keyhubvaultrecord.VaultrecordRequestBuilderGetQueryParameters{
 			Uuid: []string{*uuid},
