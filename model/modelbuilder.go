@@ -4,6 +4,8 @@ import (
 	"log"
 	"sort"
 	"strings"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"golang.org/x/exp/slices"
@@ -255,4 +257,14 @@ func buildRSSchemaTemplateBase(ref *openapi3.SchemaRef, propertyName string) map
 	return map[string]any{
 		"Mode": "Optional",
 	}
+}
+
+func FirstCharToLower(input string) string {
+	r, i := utf8.DecodeRuneInString(input)
+	return string(unicode.ToLower(r)) + input[i:]
+}
+
+func FirstCharToUpper(input string) string {
+	r, i := utf8.DecodeRuneInString(input)
+	return string(unicode.ToUpper(r)) + input[i:]
 }

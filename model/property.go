@@ -3,7 +3,6 @@ package model
 import (
 	"strings"
 	"unicode"
-	"unicode/utf8"
 )
 
 type RestProperty struct {
@@ -43,17 +42,33 @@ func (p *RestProperty) internalName() string {
 }
 
 func (p *RestProperty) GoName() string {
-	ret := firstCharToUpper(p.internalName())
+	ret := FirstCharToUpper(p.internalName())
 	ret = strings.ReplaceAll(ret, "Uuid", "UUID")
+	ret = strings.ReplaceAll(ret, "Uid", "UID")
 	ret = strings.ReplaceAll(ret, "Id", "ID")
+	ret = strings.ReplaceAll(ret, "Rdn", "RDN")
+	ret = strings.ReplaceAll(ret, "Dn", "DN")
 	ret = strings.ReplaceAll(ret, "Url", "URL")
+	ret = strings.ReplaceAll(ret, "Uri", "URI")
 	ret = strings.ReplaceAll(ret, "Tls", "TLS")
 	return ret
 }
 
 func (p *RestProperty) TFName() string {
+	name := p.internalName()
+	name = strings.ReplaceAll(name, "UUID", "Uuid")
+	name = strings.ReplaceAll(name, "UID", "Uid")
+	name = strings.ReplaceAll(name, "ID", "Id")
+	name = strings.ReplaceAll(name, "RDN", "Rdn")
+	name = strings.ReplaceAll(name, "DN", "Dn")
+	name = strings.ReplaceAll(name, "URL", "Url")
+	name = strings.ReplaceAll(name, "URI", "Uri")
+	name = strings.ReplaceAll(name, "TLS", "Tls")
+	// modify one way only
+	name = strings.ReplaceAll(name, "2FA", "2fa")
+	name = strings.ReplaceAll(name, "FA", "Fa")
 	ret := make([]rune, 0)
-	for _, r := range p.internalName() {
+	for _, r := range name {
 		if unicode.IsUpper(r) {
 			ret = append(ret, '_', unicode.ToLower(r))
 		} else {
@@ -72,11 +87,11 @@ func (p *RestProperty) TFAttrType() string {
 }
 
 func (p *RestProperty) TKHToTF() string {
-	return p.Type.TKHToTF("tkh.Get"+firstCharToUpper(p.Name)+"()", false)
+	return p.Type.TKHToTF("tkh.Get"+FirstCharToUpper(p.Name)+"()", false)
 }
 
 func (p *RestProperty) TKHSetter() string {
-	return "Set" + firstCharToUpper(p.Name)
+	return "Set" + FirstCharToUpper(p.Name)
 }
 
 func (p *RestProperty) TFToTKH() string {
@@ -104,14 +119,4 @@ func (p *RestProperty) IsDTypeRequired() bool {
 	return strings.HasSuffix(p.Parent.GoTypeName(), "_additionalObjects") &&
 		p.Type.NestedType() != nil && p.Type.NestedType().APIDiscriminator() != "" &&
 		!p.Type.NestedType().Extends("Linkable") && !p.Type.NestedType().Extends("NonLinkable")
-}
-
-func firstCharToLower(input string) string {
-	r, i := utf8.DecodeRuneInString(input)
-	return string(unicode.ToLower(r)) + input[i:]
-}
-
-func firstCharToUpper(input string) string {
-	r, i := utf8.DecodeRuneInString(input)
-	return string(unicode.ToUpper(r)) + input[i:]
 }

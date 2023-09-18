@@ -30,7 +30,9 @@ func tfObjectToTKH{{ .Suffix }}{{ .GoTypeName }}(ctx context.Context, recurse bo
     tkh := {{ .SDKTypeConstructor }}
 {{- if .AllProperties }}
 {{- range AllDirectProperties . }}
+{{- if ne .TFToTKH "" }}
 {{- template "tkhpropconvert" . }}
+{{- end }}
 {{- end }}
 {{- with AdditionalObjectsProperty . }}
     if recurse {

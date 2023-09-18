@@ -1,0 +1,13 @@
+dsschema.ListAttribute{
+    ElementType: types.StringType,
+    Optional: true,
+    Validators: []validator.List{
+        listvalidator.ValueStringsAre(
+            stringvalidator.OneOf(
+{{- range .Type.DSSchemaTemplateData.Names }}
+                "{{ . }}",
+{{- end }}
+            ),
+        ),
+    },
+}

@@ -40,11 +40,11 @@ func (t *restEnumType) GoTypeName() string {
 }
 
 func (t *restEnumType) SDKTypeName() string {
-	return "keyhubmodel." + firstCharToUpper(t.name)
+	return "keyhubmodel." + FirstCharToUpper(t.name)
 }
 
 func (t *restEnumType) SDKTypeConstructor() string {
-	return "keyhubmodel.Parse" + firstCharToUpper(t.name)
+	return "keyhubmodel.Parse" + FirstCharToUpper(t.name)
 }
 
 func (t *restEnumType) AllProperties() []*RestProperty {

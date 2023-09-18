@@ -18,11 +18,11 @@ func (t *restClassType) IsObject() bool {
 }
 
 func (t *restClassType) ObjectAttrTypesName() string {
-	return firstCharToLower(t.name) + "AttrTypes"
+	return FirstCharToLower(t.name) + "AttrTypes"
 }
 
 func (t *restClassType) DataStructName() string {
-	return firstCharToLower(t.name) + "Data"
+	return FirstCharToLower(t.name) + "Data"
 }
 
 func (t *restClassType) APITypeName() string {
@@ -34,15 +34,15 @@ func (t *restClassType) APIDiscriminator() string {
 }
 
 func (t *restClassType) GoTypeName() string {
-	return firstCharToUpper(t.name)
+	return FirstCharToUpper(t.name)
 }
 
 func (t *restClassType) SDKTypeName() string {
-	return "keyhubmodel." + firstCharToUpper(t.name) + "able"
+	return "keyhubmodel." + FirstCharToUpper(t.name) + "able"
 }
 
 func (t *restClassType) SDKTypeConstructor() string {
-	return "keyhubmodel.New" + firstCharToUpper(t.name) + "()"
+	return "keyhubmodel.New" + FirstCharToUpper(t.name) + "()"
 }
 
 func (t *restClassType) AllProperties() []*RestProperty {
@@ -86,6 +86,23 @@ func (t *restClassType) DS() RestType {
 		t.dsType.superClass = t.superClass.DS()
 	}
 	rsProperties := make([]*RestProperty, 0)
+	additionalObjectsProp := AdditionalObjectsProperty(t)
+	if additionalObjectsProp != nil {
+		names := make([]string, 0)
+		for _, prop := range additionalObjectsProp.Type.NestedType().AllProperties() {
+			if !prop.WriteOnly {
+				names = append(names, prop.Name)
+			}
+		}
+		rsProperties = append(rsProperties, &RestProperty{
+			Parent:     t.dsType,
+			Name:       "additional",
+			Required:   false,
+			WriteOnly:  false,
+			Deprecated: false,
+			Type:       NewAdditionalType(names),
+		})
+	}
 	for _, prop := range t.properties {
 		if !prop.WriteOnly {
 			rsProperties = append(rsProperties, prop.DS())
