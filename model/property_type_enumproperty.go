@@ -73,6 +73,18 @@ func (t *restEnumPropertyType) TFToTKH(value string, listItem bool) string {
 	return "parseCastPointer(" + value + ".(basetypes.StringValue), " + t.SDKTypeConstructor() + ", " + caster + ")"
 }
 
+func (t *restEnumPropertyType) TKHToTFGuard() string {
+	return ""
+}
+
+func (t *restEnumPropertyType) TFToTKHGuard() string {
+	return ""
+}
+
+func (t *restEnumPropertyType) TKHGetter(propertyName string) string {
+	return "tkh.Get" + FirstCharToUpper(propertyName) + "()"
+}
+
 func (t *restEnumPropertyType) SDKTypeName(listItem bool) string {
 	return t.enumType.SDKTypeName()
 }

@@ -186,6 +186,18 @@ func (t *restSimpleType) TFToTKH(value string, listItem bool) string {
 	}
 }
 
+func (t *restSimpleType) TKHToTFGuard() string {
+	return ""
+}
+
+func (t *restSimpleType) TFToTKHGuard() string {
+	return ""
+}
+
+func (t *restSimpleType) TKHGetter(propertyName string) string {
+	return "tkh.Get" + FirstCharToUpper(propertyName) + "()"
+}
+
 func (t *restSimpleType) SDKTypeName(listItem bool) string {
 	var ret string
 	switch t.openapiType {

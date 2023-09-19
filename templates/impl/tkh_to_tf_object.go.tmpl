@@ -1,6 +1,6 @@
 {{- define "tfpropconvert" }}
 {{- if .Type.ToTFAttrWithDiag }}
-    {
+    {{ .Type.TKHToTFGuard }}{
 {{- if .Type.TFAttrNeeded }}
         elemType := attrs["{{ .TFName }}"].(types.ListType).ElemType
 {{- end }}

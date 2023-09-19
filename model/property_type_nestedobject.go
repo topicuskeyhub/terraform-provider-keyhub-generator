@@ -67,6 +67,18 @@ func (t *restNestedObjectType) TFToTKH(value string, listItem bool) string {
 		"(ctx, " + RecurseCutOff(t.property.Parent) + ", " + value + ".(basetypes.ObjectValue))"
 }
 
+func (t *restNestedObjectType) TKHToTFGuard() string {
+	return ""
+}
+
+func (t *restNestedObjectType) TFToTKHGuard() string {
+	return ""
+}
+
+func (t *restNestedObjectType) TKHGetter(propertyName string) string {
+	return "tkh.Get" + FirstCharToUpper(propertyName) + "()"
+}
+
 func (t *restNestedObjectType) SDKTypeName(listItem bool) string {
 	return t.nestedType.SDKTypeName()
 }

@@ -58,6 +58,18 @@ func (t *restAdditionalType) TFToTKH(value string, listItem bool) string {
 	return ""
 }
 
+func (t *restAdditionalType) TKHToTFGuard() string {
+	return ""
+}
+
+func (t *restAdditionalType) TFToTKHGuard() string {
+	return ""
+}
+
+func (t *restAdditionalType) TKHGetter(propertyName string) string {
+	return ""
+}
+
 func (t *restAdditionalType) SDKTypeName(listItem bool) string {
 	return "NONE"
 }

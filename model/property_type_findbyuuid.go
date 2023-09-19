@@ -66,6 +66,18 @@ func (t *restFindByUUIDObjectType) TFToTKH(value string, listItem bool) string {
 	return "find" + t.nestedType.NestedType().GoTypeName() + "ByUUID(ctx, " + value + ".(basetypes.StringValue).ValueStringPointer())"
 }
 
+func (t *restFindByUUIDObjectType) TKHToTFGuard() string {
+	return ""
+}
+
+func (t *restFindByUUIDObjectType) TFToTKHGuard() string {
+	return ""
+}
+
+func (t *restFindByUUIDObjectType) TKHGetter(propertyName string) string {
+	return "tkh.Get" + FirstCharToUpper(propertyName) + "()"
+}
+
 func (t *restFindByUUIDObjectType) SDKTypeName(listItem bool) string {
 	return t.nestedType.NestedType().SDKTypeName()
 }

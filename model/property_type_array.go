@@ -84,6 +84,18 @@ func (t *restArrayType) TFToTKH(value string, listItem bool) string {
 		"        })"
 }
 
+func (t *restArrayType) TKHGetter(propertyName string) string {
+	return "tkh.Get" + FirstCharToUpper(propertyName) + "()"
+}
+
+func (t *restArrayType) TKHToTFGuard() string {
+	return ""
+}
+
+func (t *restArrayType) TFToTKHGuard() string {
+	return ""
+}
+
 func (t *restArrayType) SDKTypeName(listItem bool) string {
 	return "[]" + t.itemType.SDKTypeName(true)
 }

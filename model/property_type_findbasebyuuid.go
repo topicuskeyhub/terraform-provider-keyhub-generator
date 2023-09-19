@@ -47,8 +47,12 @@ func (t *restFindBaseByUUIDObjectType) ToTKHAttrWithDiag() bool {
 }
 
 func (t *restFindBaseByUUIDObjectType) ToTKHCustomCode() string {
-	typeName := t.baseType.superClass.GoTypeName()
-	return fmt.Sprintf("if val != nil {\ndtype := tkh.GetTypeEscaped()\ntkh.%s = *(val.(*keyhubmodel.%s))\ntkh.SetTypeEscaped(dtype)\n}", typeName, typeName)
+	typename := t.baseType.GoTypeName()
+	superTypename := t.baseType.superClass.GoTypeName()
+	return fmt.Sprintf("if val != nil {\n"+
+		"dtype := tkh.GetTypeEscaped()\n"+
+		"(*tkh.(*keyhubmodel.%s)).%s = *(val.(*keyhubmodel.%s))\n"+
+		"tkh.SetTypeEscaped(dtype)\n}", typename, superTypename, superTypename)
 }
 
 func (t *restFindBaseByUUIDObjectType) TFAttrNeeded() bool {
@@ -61,6 +65,18 @@ func (t *restFindBaseByUUIDObjectType) TKHToTF(value string, listItem bool) stri
 
 func (t *restFindBaseByUUIDObjectType) TFToTKH(value string, listItem bool) string {
 	return "find" + t.baseType.superClass.GoTypeName() + "ByUUID(ctx, " + value + ".(basetypes.StringValue).ValueStringPointer())"
+}
+
+func (t *restFindBaseByUUIDObjectType) TKHGetter(propertyName string) string {
+	return "tkh.Get" + FirstCharToUpper(propertyName) + "()"
+}
+
+func (t *restFindBaseByUUIDObjectType) TKHToTFGuard() string {
+	return ""
+}
+
+func (t *restFindBaseByUUIDObjectType) TFToTKHGuard() string {
+	return ""
 }
 
 func (t *restFindBaseByUUIDObjectType) SDKTypeName(listItem bool) string {

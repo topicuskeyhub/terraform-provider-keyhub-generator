@@ -1,6 +1,6 @@
 {{- define "tkhpropconvert" }}
 {{- if .Type.ToTKHAttrWithDiag }}
-    {
+    {{ .Type.TFToTKHGuard }}{
         val, d := {{ .TFToTKH }}
         diags.Append(d...)
 {{- if .Type.ToTKHCustomCode }}
@@ -27,7 +27,8 @@ func tfObjectToTKH{{ .Suffix }}{{ .GoTypeName }}(ctx context.Context, recurse bo
 {{- if .AllProperties }}
     objAttrs := objVal.Attributes()
 {{- end }}
-    tkh := {{ .SDKTypeConstructor }}
+    var tkh {{ .SDKTypeName }}
+    tkh = {{ .SDKTypeConstructor }}
 {{- if .AllProperties }}
 {{- range AllDirectProperties . }}
 {{- if ne .TFToTKH "" }}

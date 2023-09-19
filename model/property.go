@@ -28,6 +28,9 @@ type RestPropertyType interface {
 	NestedType() RestType
 	TKHToTF(value string, listItem bool) string
 	TFToTKH(value string, listItem bool) string
+	TKHToTFGuard() string
+	TFToTKHGuard() string
+	TKHGetter(propertyName string) string
 	SDKTypeName(listItem bool) string
 	SDKTypeConstructor() string
 	DSSchemaTemplate() string
@@ -43,6 +46,9 @@ func (p *RestProperty) internalName() string {
 
 func (p *RestProperty) GoName() string {
 	ret := FirstCharToUpper(p.internalName())
+	ret = strings.ReplaceAll(ret, "Oidc", "OIDC")
+	ret = strings.ReplaceAll(ret, "Oauth2", "OAuth2")
+	ret = strings.ReplaceAll(ret, "Ldap", "LDAP")
 	ret = strings.ReplaceAll(ret, "Uuid", "UUID")
 	ret = strings.ReplaceAll(ret, "Uid", "UID")
 	ret = strings.ReplaceAll(ret, "Id", "ID")
@@ -56,6 +62,9 @@ func (p *RestProperty) GoName() string {
 
 func (p *RestProperty) TFName() string {
 	name := p.internalName()
+	name = strings.ReplaceAll(name, "OIDC", "Oidc")
+	name = strings.ReplaceAll(name, "OAuth2", "Oauth2")
+	name = strings.ReplaceAll(name, "LDAP", "Ldap")
 	name = strings.ReplaceAll(name, "UUID", "Uuid")
 	name = strings.ReplaceAll(name, "UID", "Uid")
 	name = strings.ReplaceAll(name, "ID", "Id")
@@ -87,7 +96,7 @@ func (p *RestProperty) TFAttrType() string {
 }
 
 func (p *RestProperty) TKHToTF() string {
-	return p.Type.TKHToTF("tkh.Get"+FirstCharToUpper(p.Name)+"()", false)
+	return p.Type.TKHToTF(p.Type.TKHGetter(p.Name), false)
 }
 
 func (p *RestProperty) TKHSetter() string {

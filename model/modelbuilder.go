@@ -11,7 +11,12 @@ import (
 	"golang.org/x/exp/slices"
 )
 
+var allSchemas openapi3.Schemas
+var writableSubclassCounts map[string]int
+
 func BuildModel(openapi *openapi3.T) map[string]RestType {
+	allSchemas = openapi.Components.Schemas
+	collectWritableSubclassCounts()
 	ret := make(map[string]RestType, 100)
 	for name, schema := range openapi.Components.Schemas {
 		if name == "RequestRange" {
@@ -22,14 +27,76 @@ func BuildModel(openapi *openapi3.T) map[string]RestType {
 	return ret
 }
 
+func collectWritableSubclassCounts() {
+	writableSubclassCounts = make(map[string]int)
+	for _, schema := range allSchemas {
+		ownSchema := findOwnTypeSchema(schema)
+		writescopeObj, ok := ownSchema.Value.Extensions["x-tkh-writescope"]
+		if !ok {
+			continue
+		}
+
+		writescope := writescopeObj.(map[string]any)
+		for name, val := range writescope {
+			if val.(bool) {
+				writableSubclassCounts[name] = writableSubclassCounts[name] + 1
+			}
+		}
+	}
+	for name, val := range writableSubclassCounts {
+		if val == 1 || countSubclasses(name) < 2 {
+			delete(writableSubclassCounts, name)
+		}
+	}
+	for name := range writableSubclassCounts {
+		if findPolymorphicBaseType(name) != nil {
+			delete(writableSubclassCounts, name)
+		}
+	}
+}
+
+func findPolymorphicBaseType(name string) *string {
+	checkName := name
+	for {
+		checkType, ok := allSchemas[checkName]
+		if !ok {
+			return nil
+		}
+		if checkType.Value.AllOf == nil || len(checkType.Value.AllOf) < 2 {
+			return nil
+		}
+		checkName = refToName(checkType.Value.AllOf[0].Ref)
+		if _, ok = writableSubclassCounts[checkName]; ok {
+			return &checkName
+		}
+	}
+}
+
+func countSubclasses(typeName string) int {
+	ret := 0
+	for _, schema := range allSchemas {
+		if schema.Value.AllOf != nil && len(schema.Value.AllOf) > 1 {
+			superType := schema.Value.AllOf[0]
+			if refToName(superType.Ref) == typeName {
+				ret++
+			}
+		}
+	}
+	return ret
+}
+
 func getOrBuildTypeModel(types map[string]RestType, name string, schema *openapi3.SchemaRef) RestType {
 	if ret, ok := types[name]; ok {
 		return ret
 	}
 
 	var superType RestType
+	polymorphicBaseType := findPolymorphicBaseType(name)
 	if schema != nil && schema.Value.AllOf != nil {
 		superType = getOrBuildTypeModel(types, refToName(schema.Value.AllOf[0].Ref), schema.Value.AllOf[0])
+	}
+	if polymorphicBaseType != nil {
+		superType = nil
 	}
 
 	ownType := findOwnTypeSchema(schema)
@@ -44,31 +111,43 @@ func getOrBuildTypeModel(types map[string]RestType, name string, schema *openapi
 		if discriminatorVal, ok := ownType.Value.Extensions["x-tkh-discriminator"]; ok {
 			discriminator = discriminatorVal.(string)
 		}
-		ret := &restClassType{
+		classType := &restClassType{
 			suffix:        "RS",
 			superClass:    superType,
 			discriminator: discriminator,
 			name:          name,
 		}
-		if isWritableWithUnwritableSuperClass(ret, ownType) {
-			retUUIDType := &restFindByUUIDClassType{
+		var ret RestType
+		if isWritableWithUnwritableSuperClass(classType, ownType) {
+			uuidType := &restFindByUUIDClassType{
 				superClass: superType,
 				name:       name,
-				nestedType: ret,
+				nestedType: classType,
 			}
-			retUUIDType.uuidProperty = &RestProperty{
-				Parent:   retUUIDType,
+			uuidType.uuidProperty = &RestProperty{
+				Parent:   uuidType,
 				Name:     "uuid",
 				Required: true,
-				Type:     NewFindBaseByUUIDObjectType(retUUIDType),
+				Type:     NewFindBaseByUUIDObjectType(uuidType),
 			}
-			types[name] = retUUIDType
-			ret.properties = buildProperties(ret, name, ownType, types)
-			return retUUIDType
+			ret = uuidType
+		} else if _, ok := writableSubclassCounts[name]; ok {
+			polymorphicBase := &restPolymorphicBaseClassType{
+				nestedType: classType,
+				subtypes:   make([]RestType, 0),
+			}
+			ret = polymorphicBase
+		} else {
+			ret = classType
 		}
 
 		types[name] = ret
-		ret.properties = buildProperties(ret, name, ownType, types)
+		classType.properties = buildProperties(classType, name, ownType, types)
+
+		if polymorphicBaseType != nil {
+			polyType := types[*polymorphicBaseType].(*restPolymorphicBaseClassType)
+			polyType.subtypes = append(polyType.subtypes, classType)
+		}
 		return ret
 	}
 }
@@ -81,6 +160,9 @@ func findOwnTypeSchema(schema *openapi3.SchemaRef) *openapi3.SchemaRef {
 }
 
 func isWritableWithUnwritableSuperClass(restType *restClassType, schema *openapi3.SchemaRef) bool {
+	if restType.superClass == nil {
+		return false
+	}
 	writescopeObj, ok := schema.Value.Extensions["x-tkh-writescope"]
 	if !ok {
 		return false
@@ -97,7 +179,7 @@ func isWritableWithUnwritableSuperClass(restType *restClassType, schema *openapi
 	return ownScope.(bool) && !superScope.(bool)
 }
 
-func buildProperties(parent RestType, baseTypeName string, schema *openapi3.SchemaRef, types map[string]RestType) []*RestProperty {
+func buildProperties(parent *restClassType, baseTypeName string, schema *openapi3.SchemaRef, types map[string]RestType) []*RestProperty {
 	required := schema.Value.Required
 	ret := make([]*RestProperty, 0)
 	for name, property := range schema.Value.Properties {
