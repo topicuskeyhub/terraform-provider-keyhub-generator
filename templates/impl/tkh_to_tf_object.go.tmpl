@@ -1,9 +1,10 @@
 {{- define "tfpropconvert" }}
 {{- if .Type.ToTFAttrWithDiag }}
-    {{ .Type.TKHToTFGuard }}{
+    {
 {{- if .Type.TFAttrNeeded }}
         elemType := attrs["{{ .TFName }}"].(types.ListType).ElemType
 {{- end }}
+        {{ .Type.TKHToTFGuard -}}
         val, d := {{ .TKHToTF }}
         diags.Append(d...)
         obj["{{ .TFName }}"] = val

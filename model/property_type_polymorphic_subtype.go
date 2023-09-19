@@ -72,7 +72,7 @@ func (t *restPolymorphicSubtype) TFToTKH(value string, listItem bool) string {
 }
 
 func (t *restPolymorphicSubtype) TKHToTFGuard() string {
-	return "if _, ok := " + t.TKHGetter("") + "; ok "
+	return "tkhCast, _ := tkh.(" + t.nestedType.SDKTypeName() + ")\n"
 }
 
 func (t *restPolymorphicSubtype) TFToTKHGuard() string {
@@ -80,7 +80,7 @@ func (t *restPolymorphicSubtype) TFToTKHGuard() string {
 }
 
 func (t *restPolymorphicSubtype) TKHGetter(propertyName string) string {
-	return "tkh.(" + t.nestedType.SDKTypeName() + ")"
+	return "tkhCast"
 }
 
 func (t *restPolymorphicSubtype) ToTKHCustomCode() string {
