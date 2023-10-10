@@ -2,6 +2,7 @@ package model
 
 import (
 	"log"
+	"regexp"
 	"sort"
 	"strings"
 	"unicode"
@@ -17,12 +18,29 @@ var writableSubclassCounts map[string]int
 func BuildModel(openapi *openapi3.T) map[string]RestType {
 	allSchemas = openapi.Components.Schemas
 	collectWritableSubclassCounts()
+	subresources := collectSubResources(openapi)
 	ret := make(map[string]RestType, 100)
-	for name, schema := range openapi.Components.Schemas {
+	for name, schema := range allSchemas {
 		if name == "RequestRange" {
 			continue
 		}
-		getOrBuildTypeModel(ret, name, schema)
+		getOrBuildTypeModel(ret, name, schema, nil)
+	}
+	for name, parents := range subresources {
+		for _, parent := range parents {
+			var nestedName string
+			prefix := FirstCharToLower(StripLowercasePrefix(parent))
+			if len(parents) == 1 {
+				nestedName = "nested" + FirstCharToUpper(name)
+			} else {
+				nestedName = prefix + FirstCharToUpper(name)
+			}
+			getOrBuildTypeModel(ret, nestedName, allSchemas[name], &parentResourceInfo{
+				typeName:     nestedName,
+				prefix:       prefix,
+				originalName: name,
+			})
+		}
 	}
 	return ret
 }
@@ -85,15 +103,49 @@ func countSubclasses(typeName string) int {
 	return ret
 }
 
-func getOrBuildTypeModel(types map[string]RestType, name string, schema *openapi3.SchemaRef) RestType {
+func collectSubResources(openapi *openapi3.T) map[string][]string {
+	getpaths := make(map[string]string)
+	stripId := regexp.MustCompile(`\{[^{]*\}`)
+	for str, path := range openapi.Paths {
+		if strings.HasSuffix(str, "}") {
+			for _, schema := range path.Get.Responses["200"].Value.Content {
+				getpaths[stripId.ReplaceAllString(str, "#")] = refToName(schema.Schema.Ref)
+				break
+			}
+		}
+	}
+
+	subresources := make(map[string][]string)
+	for path, typeName := range getpaths {
+		if strings.Count(path, "#") == 2 {
+			parentResource := path[0:(strings.Index(path, "#") + 1)]
+			subresources[typeName] = append(subresources[typeName], getpaths[parentResource])
+		}
+	}
+	return subresources
+}
+
+type parentResourceInfo struct {
+	typeName     string
+	originalName string
+	prefix       string
+}
+
+func getOrBuildTypeModel(types map[string]RestType, name string, schema *openapi3.SchemaRef,
+	parentResourceInfo *parentResourceInfo) RestType {
 	if ret, ok := types[name]; ok {
 		return ret
 	}
 
+	originalName := name
+	if parentResourceInfo != nil {
+		originalName = parentResourceInfo.originalName
+	}
 	var superType RestType
-	polymorphicBaseType := findPolymorphicBaseType(name)
+	polymorphicBaseType := findPolymorphicBaseType(originalName)
 	if schema != nil && schema.Value.AllOf != nil {
-		superType = getOrBuildTypeModel(types, refToName(schema.Value.AllOf[0].Ref), schema.Value.AllOf[0])
+		superTypeName := refToName(schema.Value.AllOf[0].Ref)
+		superType = getOrBuildTypeModel(types, superTypeName, schema.Value.AllOf[0], nil)
 	}
 	if polymorphicBaseType != nil {
 		superType = nil
@@ -103,7 +155,7 @@ func getOrBuildTypeModel(types map[string]RestType, name string, schema *openapi
 	if ownType.Value.Type == "string" && len(ownType.Value.Enum) > 0 {
 		ret := &restEnumType{
 			suffix: "RS",
-			name:   name,
+			name:   originalName,
 		}
 		return ret
 	} else {
@@ -115,13 +167,13 @@ func getOrBuildTypeModel(types map[string]RestType, name string, schema *openapi
 			suffix:        "RS",
 			superClass:    superType,
 			discriminator: discriminator,
-			name:          name,
+			name:          originalName,
 		}
 		var ret RestType
 		if isWritableWithUnwritableSuperClass(classType, ownType) {
 			uuidType := &restFindByUUIDClassType{
 				superClass: superType,
-				name:       name,
+				name:       originalName,
 				nestedType: classType,
 			}
 			uuidType.uuidProperty = &RestProperty{
@@ -131,7 +183,7 @@ func getOrBuildTypeModel(types map[string]RestType, name string, schema *openapi
 				Type:     NewFindBaseByUUIDObjectType(uuidType),
 			}
 			ret = uuidType
-		} else if _, ok := writableSubclassCounts[name]; ok {
+		} else if _, ok := writableSubclassCounts[originalName]; ok {
 			polymorphicBase := &restPolymorphicBaseClassType{
 				nestedType: classType,
 				subtypes:   make([]RestType, 0),
@@ -141,8 +193,16 @@ func getOrBuildTypeModel(types map[string]RestType, name string, schema *openapi
 			ret = classType
 		}
 
+		if parentResourceInfo != nil {
+			ret = &restSubresourceClassType{
+				name:       name,
+				prefix:     parentResourceInfo.prefix,
+				nestedType: ret,
+			}
+		}
+
 		types[name] = ret
-		classType.properties = buildProperties(classType, name, ownType, types)
+		classType.properties = buildProperties(classType, originalName, ownType, types)
 
 		if polymorphicBaseType != nil {
 			polyType := types[*polymorphicBaseType].(*restPolymorphicBaseClassType)
@@ -189,7 +249,7 @@ func buildProperties(parent *restClassType, baseTypeName string, schema *openapi
 		if name == "additionalObjects" && baseTypeName == "authInternalAccount" {
 			continue
 		}
-		rsSchemaTemplateBase := buildRSSchemaTemplateBase(schema, name)
+		rsSchemaTemplateBase := buildRSSchemaTemplateBase(schema, baseTypeName, name)
 		if name == "type" {
 			if baseTypeName == "RestLink" || baseTypeName == "authPermission" {
 				name = "typeEscaped"
@@ -228,7 +288,8 @@ func buildType(baseTypeName string, propertyName string, ref *openapi3.SchemaRef
 		return NewRestArrayType(buildType(baseTypeName, propertyName, schema.Items, types, restProperty, rsSchemaTemplateBase), rsSchemaTemplateBase)
 	}
 	if ref.Ref != "" && schema.Type == "string" && len(schema.Enum) > 0 {
-		enum := getOrBuildTypeModel(types, refToName(ref.Ref), ref)
+		enumName := refToName(ref.Ref)
+		enum := getOrBuildTypeModel(types, enumName, ref, nil)
 		return NewEnumPropertyType(enum, rsSchemaTemplateBase)
 	}
 	if schema.Type == "boolean" || schema.Type == "integer" || schema.Type == "string" {
@@ -239,7 +300,7 @@ func buildType(baseTypeName string, propertyName string, ref *openapi3.SchemaRef
 		if nestedTypeName == "" {
 			nestedTypeName = baseTypeName + "_" + propertyName
 		}
-		nested := getOrBuildTypeModel(types, nestedTypeName, ref)
+		nested := getOrBuildTypeModel(types, nestedTypeName, ref, nil)
 		ret := NewNestedObjectType(restProperty, nested, rsSchemaTemplateBase)
 		if ref.Ref != "" && is(ref, withUUID) && nested.Extends("Linkable") {
 			if strings.HasSuffix(nestedTypeName, "Primer") {
@@ -305,7 +366,7 @@ Optional or required field that has a default value
 Required
 Required field that does not have a default value
 */
-func buildRSSchemaTemplateBase(ref *openapi3.SchemaRef, propertyName string) map[string]any {
+func buildRSSchemaTemplateBase(ref *openapi3.SchemaRef, typeName string, propertyName string) map[string]any {
 	required := slices.Contains(ref.Value.Required, propertyName)
 	property := ref.Value.Properties[propertyName]
 	if property.Value.AllOf != nil && len(property.Value.AllOf) > 0 {
@@ -315,6 +376,10 @@ func buildRSSchemaTemplateBase(ref *openapi3.SchemaRef, propertyName string) map
 	readOnly := property.Value.ReadOnly
 	immutable := property.Value.Extensions["x-tkh-immutable"] != nil && property.Value.Extensions["x-tkh-immutable"].(bool)
 	createOnly := property.Value.Extensions["x-tkh-create-only"] != nil && property.Value.Extensions["x-tkh-create-only"].(bool)
+
+	if typeName == "Linkable" && (propertyName == "links" || propertyName == "permissions") {
+		immutable = true
+	}
 	if immutable {
 		return map[string]any{
 			"Mode": "Computed_UseStateForUnknown",
@@ -349,4 +414,15 @@ func FirstCharToLower(input string) string {
 func FirstCharToUpper(input string) string {
 	r, i := utf8.DecodeRuneInString(input)
 	return string(unicode.ToUpper(r)) + input[i:]
+}
+
+func StripLowercasePrefix(name string) string {
+	firstUpper := 0
+	for i, c := range name {
+		if unicode.IsUpper(c) {
+			firstUpper = i
+			break
+		}
+	}
+	return name[firstUpper:]
 }

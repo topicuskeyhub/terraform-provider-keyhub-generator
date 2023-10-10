@@ -3,7 +3,12 @@ rsschema.ListNestedAttribute{
     NestedObject: rsschema.NestedAttributeObject{
         Attributes: resourceSchemaAttrs{{ .Type.NestedType.GoTypeName }}({{ RecurseCutOff .Parent }}),
     },
+{{- if eq .Type.RSSchemaTemplateData.Mode "Computed_UseStateForUnknown" }}
+    Computed: true,
+	PlanModifiers: []planmodifier.List{listplanmodifier.UseStateForUnknown()},
+{{- else }}
     {{ .Type.RSSchemaTemplateData.Mode }}: true,
+{{- end }}
 {{- if .Deprecated }}
     DeprecationMessage: "This property will be removed in a future version.",
 {{- end }}

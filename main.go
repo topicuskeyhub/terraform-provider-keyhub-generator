@@ -25,10 +25,10 @@ var tmpls embed.FS
 func merge(template string, suffix string, t *template.Template, model any) {
 	file := template + suffix
 	f, err := os.Create("internal/provider/" + file + ".go")
-	log.Printf(" ... writing %s", f.Name())
 	if err != nil {
 		log.Fatalf("cannot create %s: %s", file, err)
 	}
+	log.Printf(" ... writing %s", f.Name())
 
 	var buf bytes.Buffer
 	err = t.ExecuteTemplate(&buf, template+".go.tmpl", model)

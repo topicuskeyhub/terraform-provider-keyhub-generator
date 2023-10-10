@@ -1,9 +1,5 @@
 package model
 
-import (
-	"unicode"
-)
-
 type restPolymorphicBaseClassType struct {
 	nestedType RestType
 	subtypes   []RestType
@@ -52,7 +48,7 @@ func (t *restPolymorphicBaseClassType) AllProperties() []*RestProperty {
 	for _, subtype := range t.subtypes {
 		prop := &RestProperty{
 			Parent:     t.nestedType,
-			Name:       FirstCharToLower(stripLowercasePrefix(subtype.APITypeName())),
+			Name:       FirstCharToLower(StripLowercasePrefix(subtype.APITypeName())),
 			Required:   false,
 			WriteOnly:  false,
 			Deprecated: false,
@@ -81,15 +77,4 @@ func (t *restPolymorphicBaseClassType) DS() RestType {
 		t.dsType.subtypes = append(t.dsType.subtypes, subtype.DS())
 	}
 	return t.dsType
-}
-
-func stripLowercasePrefix(name string) string {
-	firstUpper := 0
-	for i, c := range name {
-		if unicode.IsUpper(c) {
-			firstUpper = i
-			break
-		}
-	}
-	return name[firstUpper:]
 }

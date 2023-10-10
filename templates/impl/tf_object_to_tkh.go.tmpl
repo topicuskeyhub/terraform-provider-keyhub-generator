@@ -20,7 +20,7 @@
 {{- end }}
 func tfObjectToTKH{{ .Suffix }}{{ .GoTypeName }}(ctx context.Context, recurse bool, objVal types.Object) ({{ .SDKTypeName }}, diag.Diagnostics) {
     var diags diag.Diagnostics
-    if objVal.IsNull() {
+    if objVal.IsNull() || objVal.IsUnknown() {
         return nil, diags
     }
 

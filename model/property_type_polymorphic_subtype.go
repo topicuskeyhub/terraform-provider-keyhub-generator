@@ -86,7 +86,7 @@ func (t *restPolymorphicSubtype) TKHGetter(propertyName string) string {
 func (t *restPolymorphicSubtype) ToTKHCustomCode() string {
 	typename := t.nestedType.GoTypeName()
 	superTypename := t.superType.GoTypeName()
-	return fmt.Sprintf("dtype := tkh.GetTypeEscaped()\n"+
+	return fmt.Sprintf("dtype := val.GetTypeEscaped()\n"+
 		"(*val.(*keyhubmodel.%s)).%s = *tkh.(*keyhubmodel.%s)\n"+
 		"val.SetTypeEscaped(dtype)\n"+
 		"tkh = val", typename, superTypename, superTypename)

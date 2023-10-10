@@ -51,7 +51,7 @@ func (t *restAdditionalType) TFAttrNeeded() bool {
 }
 
 func (t *restAdditionalType) TKHToTF(value string, listItem bool) string {
-	return ""
+	return "types.ListNull(types.StringType)"
 }
 
 func (t *restAdditionalType) TFToTKH(value string, listItem bool) string {
