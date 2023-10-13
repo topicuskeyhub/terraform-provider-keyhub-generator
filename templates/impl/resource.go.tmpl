@@ -86,7 +86,7 @@ func (r *{{ .Name }}Resource) Create(ctx context.Context, req resource.CreateReq
 	newWrapper := keyhubmodels.New{{ .BaseNameUp }}LinkableWrapper()
 	newWrapper.SetItems([]keyhubmodels.{{ .BaseNameUp }}able{newTkh})
 {{- if .ParentResourceType }}
-	tkhParent, diags := find{{ .ParentResourceType }}ByUUID(ctx, data.{{ .ResourceBaseUp }}UUID.ValueStringPointer())
+	tkhParent, diags := find{{ .ParentResourceType }}ByUUID(ctx, data.{{ .ParentResourceNamePrefixUp }}UUID.ValueStringPointer())
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -96,8 +96,8 @@ func (r *{{ .Name }}Resource) Create(ctx context.Context, req resource.CreateReq
 {{- else }}
 	wrapper, err := r.client.{{ .ResourceBaseUp }}().Post(
 {{- end }}
-		ctx, newWrapper, &keyhubreq.{{ .GetPostRequestTypePrefix }}RequestBuilderPostRequestConfiguration{
-			QueryParameters: &keyhubreq.{{ .GetPostRequestTypePrefix }}RequestBuilderPostQueryParameters{
+		ctx, newWrapper, &keyhubreq.{{ .CollectionRequestTypePrefix }}RequestBuilderPostRequestConfiguration{
+			QueryParameters: &keyhubreq.{{ .CollectionRequestTypePrefix }}RequestBuilderPostQueryParameters{
 				Additional: collectAdditional(data.AdditionalObjects),
 			},
 		})
@@ -114,7 +114,7 @@ func (r *{{ .Name }}Resource) Create(ctx context.Context, req resource.CreateReq
 	}
 
 {{- if .ParentResourceType }}
-	tf = setAttributeValue(ctx, tf, "{{ .ResourceBase }}_uuid", types.StringValue(data.{{ .ResourceBaseUp }}UUID.ValueString()))
+	tf = setAttributeValue(ctx, tf, "{{ .ParentResourceNamePrefixUnderscore }}_uuid", types.StringValue(data.{{ .ParentResourceNamePrefixUp }}UUID.ValueString()))
 {{- end }}
 	fillDataStructFromTFObjectRS{{ .FullNameUp }}(&data, tf)
 
@@ -134,7 +134,7 @@ func (r *{{ .Name }}Resource) Read(ctx context.Context, req resource.ReadRequest
 	ctx = context.WithValue(ctx, keyHubClientKey, r.client)
 	tflog.Info(ctx, "Reading {{ .NameUnderscore }} from Topicus KeyHub")
 {{- if .ParentResourceType }}
-	tkhParent, diags := find{{ .ParentResourceType }}ByUUID(ctx, data.{{ .ResourceBaseUp }}UUID.ValueStringPointer())
+	tkhParent, diags := find{{ .ParentResourceType }}ByUUID(ctx, data.{{ .ParentResourceNamePrefixUp }}UUID.ValueStringPointer())
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -144,8 +144,8 @@ func (r *{{ .Name }}Resource) Read(ctx context.Context, req resource.ReadRequest
 {{- else }}
 	tkh, err := r.client.{{ .ResourceBaseUp }}().By{{ .ResourceBaseUp }}idInt64(getSelfLink(data.Links).ID.ValueInt64()).Get(
 {{- end }}
-		ctx, &keyhubreq.{{ .PutRequestTypePrefix }}RequestBuilderGetRequestConfiguration{
-			QueryParameters: &keyhubreq.{{ .PutRequestTypePrefix }}RequestBuilderGetQueryParameters{
+		ctx, &keyhubreq.{{ .ItemRequestTypePrefix }}RequestBuilderGetRequestConfiguration{
+			QueryParameters: &keyhubreq.{{ .ItemRequestTypePrefix }}RequestBuilderGetQueryParameters{
 				Additional: collectAdditional(data.AdditionalObjects),
 			},
 		})
@@ -161,7 +161,7 @@ func (r *{{ .Name }}Resource) Read(ctx context.Context, req resource.ReadRequest
 	}
 
 {{- if .ParentResourceType }}
-	tf = setAttributeValue(ctx, tf, "{{ .ResourceBase }}_uuid", types.StringValue(data.{{ .ResourceBaseUp }}UUID.ValueString()))
+	tf = setAttributeValue(ctx, tf, "{{ .ParentResourceNamePrefixUnderscore }}_uuid", types.StringValue(data.{{ .ParentResourceNamePrefixUp }}UUID.ValueString()))
 {{- end }}
 	fillDataStructFromTFObjectRS{{ .FullNameUp }}(&data, tf)
 
@@ -191,7 +191,7 @@ func (r *{{ .Name }}Resource) Update(ctx context.Context, req resource.UpdateReq
 
 	tflog.Info(ctx, "Updating Topicus KeyHub {{ .NameUnderscore }}")
 {{- if .ParentResourceType }}
-	tkhParent, diags := find{{ .ParentResourceType }}ByUUID(ctx, data.{{ .ResourceBaseUp }}UUID.ValueStringPointer())
+	tkhParent, diags := find{{ .ParentResourceType }}ByUUID(ctx, data.{{ .ParentResourceNamePrefixUp }}UUID.ValueStringPointer())
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -201,8 +201,8 @@ func (r *{{ .Name }}Resource) Update(ctx context.Context, req resource.UpdateReq
 {{- else }}
 	tkh, err := r.client.{{ .ResourceBaseUp }}().By{{ .ResourceBaseUp }}idInt64(getSelfLink(data.Links).ID.ValueInt64()).Put(
 {{- end }}
-		ctx, newTkh, &keyhubreq.{{ .PutRequestTypePrefix }}RequestBuilderPutRequestConfiguration{
-			QueryParameters: &keyhubreq.{{ .PutRequestTypePrefix }}RequestBuilderPutQueryParameters{
+		ctx, newTkh, &keyhubreq.{{ .ItemRequestTypePrefix }}RequestBuilderPutRequestConfiguration{
+			QueryParameters: &keyhubreq.{{ .ItemRequestTypePrefix }}RequestBuilderPutQueryParameters{
 				Additional: collectAdditional(data.AdditionalObjects),
 			},
 		})
@@ -218,7 +218,7 @@ func (r *{{ .Name }}Resource) Update(ctx context.Context, req resource.UpdateReq
 	}
 
 {{- if .ParentResourceType }}
-	tf = setAttributeValue(ctx, tf, "{{ .ResourceBase }}_uuid", types.StringValue(data.{{ .ResourceBaseUp }}UUID.ValueString()))
+	tf = setAttributeValue(ctx, tf, "{{ .ParentResourceNamePrefixUnderscore }}_uuid", types.StringValue(data.{{ .ParentResourceNamePrefixUp }}UUID.ValueString()))
 {{- end }}
 	fillDataStructFromTFObjectRS{{ .FullNameUp }}(&data, tf)
 
