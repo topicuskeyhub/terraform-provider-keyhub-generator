@@ -3,6 +3,9 @@
     Computed: true,
     Optional: true,
     Default: {{ .Type.RSSchemaTemplateData.DefaultVal }},
+{{- else if eq .Type.RSSchemaTemplateData.Mode "Optional_Computed" }}
+    Computed: true,
+    Optional: true,
 {{- else if eq .Type.RSSchemaTemplateData.Mode "Computed_UseStateForUnknown" }}
     Computed: true,
     PlanModifiers: []{{ .Type.RSSchemaTemplateData.PlanModifierType }}{ {{ .Type.RSSchemaTemplateData.PlanModifierPkg }}.UseStateForUnknown() },

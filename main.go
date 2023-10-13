@@ -22,6 +22,82 @@ var mode = flag.String("mode", "", "'model', 'data' or 'resource'")
 //go:embed templates/*
 var tmpls embed.FS
 
+type resourceTemplateParameters struct {
+	UpdateSupported          bool
+	DeleteSupported          bool
+	ResourceBase             string
+	ResourceBaseUp           string
+	Name                     string
+	NameUp                   string
+	NameUnderscore           string
+	FullName                 string
+	FullNameUp               string
+	BaseName                 string
+	BaseNameUp               string
+	GetPostRequestTypePrefix string
+	PutRequestTypePrefix     string
+	SubResourceReqMethod     string
+	SubResourceBaseUp        string
+	ParentResourceType       string
+}
+
+var resourceTemplateConfigs = map[string]resourceTemplateParameters{
+	"group_vaultrecord": {
+		UpdateSupported:          true,
+		DeleteSupported:          true,
+		ResourceBase:             "group",
+		ResourceBaseUp:           "Group",
+		Name:                     "groupVaultrecord",
+		NameUp:                   "GroupVaultrecord",
+		NameUnderscore:           "group_vaultrecord",
+		FullName:                 "groupVaultVaultRecord",
+		FullNameUp:               "GroupVaultVaultRecord",
+		BaseName:                 "vaultVaultRecord",
+		BaseNameUp:               "VaultVaultRecord",
+		GetPostRequestTypePrefix: "ItemVaultRecord",
+		PutRequestTypePrefix:     "ItemVaultRecordWithRecordItem",
+		SubResourceReqMethod:     ".Vault().Record()",
+		SubResourceBaseUp:        "Record",
+		ParentResourceType:       "GroupGroupPrimer",
+	},
+	"group": {
+		UpdateSupported:          false,
+		DeleteSupported:          false,
+		ResourceBase:             "group",
+		ResourceBaseUp:           "Group",
+		Name:                     "group",
+		NameUp:                   "Group",
+		NameUnderscore:           "group",
+		FullName:                 "groupGroup",
+		FullNameUp:               "GroupGroup",
+		BaseName:                 "groupGroup",
+		BaseNameUp:               "GroupGroup",
+		GetPostRequestTypePrefix: "Group",
+		PutRequestTypePrefix:     "WithGroupItem",
+		SubResourceReqMethod:     "",
+		SubResourceBaseUp:        "",
+		ParentResourceType:       "",
+	},
+	"grouponsystem": {
+		UpdateSupported:          false,
+		DeleteSupported:          false,
+		ResourceBase:             "system",
+		ResourceBaseUp:           "System",
+		Name:                     "grouponsystem",
+		NameUp:                   "Grouponsystem",
+		NameUnderscore:           "grouponsystem",
+		FullName:                 "nestedProvisioningGroupOnSystem",
+		FullNameUp:               "NestedProvisioningGroupOnSystem",
+		BaseName:                 "provisioningGroupOnSystem",
+		BaseNameUp:               "ProvisioningGroupOnSystem",
+		GetPostRequestTypePrefix: "ItemGroup",
+		PutRequestTypePrefix:     "ItemGroupWithGroupItem",
+		SubResourceReqMethod:     ".Group()",
+		SubResourceBaseUp:        "Group",
+		ParentResourceType:       "ProvisioningProvisionedSystemPrimer",
+	},
+}
+
 func merge(template string, suffix string, t *template.Template, model any) {
 	file := template + suffix
 	f, err := os.Create("internal/provider/" + file + ".go")
@@ -50,13 +126,13 @@ func main() {
 	log.Println("Generating Topicus KeyHub Terraform Provider source...")
 	ctx := context.Background()
 
-	if *mode == "impl" {
+	if *mode == "model" {
 		functions := template.FuncMap{
 			"RecurseCutOff":             apimodel.RecurseCutOff,
 			"AdditionalObjectsProperty": apimodel.AdditionalObjectsProperty,
 			"AllDirectProperties":       apimodel.AllDirectProperties,
 		}
-		t, err := template.New("provider").Funcs(functions).ParseFS(tmpls, "templates/impl/*")
+		t, err := template.New("provider").Funcs(functions).ParseFS(tmpls, "templates/model/*")
 		if err != nil {
 			log.Fatalf("Template parsing failed: %s", err)
 		}
@@ -85,7 +161,7 @@ func main() {
 		merge("full-tkh-to-tf-ds", "", t, model)
 		merge("full-tkh-to-tf-rs", "", t, model)
 	} else if *mode == "data" {
-		t, err := template.New("provider").ParseFS(tmpls, "templates/data/*")
+		t, err := template.New("provider").ParseFS(tmpls, "templates/impl/*")
 		if err != nil {
 			log.Fatalf("Template parsing failed: %s", err)
 		}
@@ -97,5 +173,11 @@ func main() {
 			"ResourceBase":   *resource,
 			"ResourceBaseUp": apimodel.FirstCharToUpper(*resource),
 		})
+	} else if *mode == "resource" {
+		t, err := template.New("provider").ParseFS(tmpls, "templates/impl/*")
+		if err != nil {
+			log.Fatalf("Template parsing failed: %s", err)
+		}
+		merge("resource", "-"+*resource, t, resourceTemplateConfigs[*resource])
 	}
 }

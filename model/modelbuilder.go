@@ -376,10 +376,8 @@ func buildRSSchemaTemplateBase(ref *openapi3.SchemaRef, typeName string, propert
 	readOnly := property.Value.ReadOnly
 	immutable := property.Value.Extensions["x-tkh-immutable"] != nil && property.Value.Extensions["x-tkh-immutable"].(bool)
 	createOnly := property.Value.Extensions["x-tkh-create-only"] != nil && property.Value.Extensions["x-tkh-create-only"].(bool)
+	backendDefault := property.Value.Extensions["x-tkh-backend-determines-default"] != nil && property.Value.Extensions["x-tkh-backend-determines-default"].(bool)
 
-	if typeName == "Linkable" && (propertyName == "links" || propertyName == "permissions") {
-		immutable = true
-	}
 	if immutable {
 		return map[string]any{
 			"Mode": "Computed_UseStateForUnknown",
@@ -399,6 +397,11 @@ func buildRSSchemaTemplateBase(ref *openapi3.SchemaRef, typeName string, propert
 	if required {
 		return map[string]any{
 			"Mode": "Required",
+		}
+	}
+	if backendDefault {
+		return map[string]any{
+			"Mode": "Optional_Computed",
 		}
 	}
 	return map[string]any{

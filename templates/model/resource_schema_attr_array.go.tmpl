@@ -3,9 +3,16 @@ rsschema.ListNestedAttribute{
     NestedObject: rsschema.NestedAttributeObject{
         Attributes: resourceSchemaAttrs{{ .Type.NestedType.GoTypeName }}({{ RecurseCutOff .Parent }}),
     },
+{{- else -}}
+rsschema.ListAttribute{
+    ElementType: {{ .Type.RSSchemaTemplateData.ElementType }},
+{{- end }}
 {{- if eq .Type.RSSchemaTemplateData.Mode "Computed_UseStateForUnknown" }}
     Computed: true,
 	PlanModifiers: []planmodifier.List{listplanmodifier.UseStateForUnknown()},
+{{- else if eq .Type.RSSchemaTemplateData.Mode "Optional_Computed" }}
+    Optional: true,
+    Computed: true,
 {{- else }}
     {{ .Type.RSSchemaTemplateData.Mode }}: true,
 {{- end }}
@@ -13,12 +20,3 @@ rsschema.ListNestedAttribute{
     DeprecationMessage: "This property will be removed in a future version.",
 {{- end }}
 }
-{{- else -}}
-rsschema.ListAttribute{
-    ElementType: {{ .Type.RSSchemaTemplateData.ElementType }},
-    {{ .Type.RSSchemaTemplateData.Mode }}: true,
-{{- if .Deprecated }}
-    DeprecationMessage: "This property will be removed in a future version.",
-{{- end }}
-}
-{{- end }}

@@ -3,6 +3,9 @@ rsschema.SingleNestedAttribute{
 {{- if eq .Type.RSSchemaTemplateData.Mode "Computed_UseStateForUnknown" }}
     Computed: true,
     PlanModifiers: []planmodifier.Object{ objectplanmodifier.UseStateForUnknown() },
+{{- else if eq .Type.RSSchemaTemplateData.Mode "Optional_Computed" }}
+    Optional: true,
+    Computed: true,
 {{- else }}
     {{ .Type.RSSchemaTemplateData.Mode }}: true,
 {{- end }}
