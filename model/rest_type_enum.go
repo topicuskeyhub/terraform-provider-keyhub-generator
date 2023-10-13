@@ -5,7 +5,7 @@ import "log"
 type restEnumType struct {
 	suffix string
 	name   string
-	values []string
+	values []any
 }
 
 func (t *restEnumType) Extends(typeName string) bool {

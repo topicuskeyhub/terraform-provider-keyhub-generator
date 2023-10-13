@@ -156,6 +156,7 @@ func getOrBuildTypeModel(types map[string]RestType, name string, schema *openapi
 		ret := &restEnumType{
 			suffix: "RS",
 			name:   originalName,
+			values: ownType.Value.Enum,
 		}
 		return ret
 	} else {
@@ -293,7 +294,7 @@ func buildType(baseTypeName string, propertyName string, ref *openapi3.SchemaRef
 		return NewEnumPropertyType(enum, rsSchemaTemplateBase)
 	}
 	if schema.Type == "boolean" || schema.Type == "integer" || schema.Type == "string" {
-		return NewRestSimpleType(restProperty, schema.Type, schema.Format, rsSchemaTemplateBase)
+		return NewRestSimpleType(restProperty, schema, rsSchemaTemplateBase)
 	}
 	if is(ref, object) {
 		nestedTypeName := refToName(ref.Ref)

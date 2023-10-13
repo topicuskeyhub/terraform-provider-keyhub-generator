@@ -33,6 +33,14 @@ func (t *restNestedObjectType) TFValueType() string {
 	return "basetypes.ObjectValue"
 }
 
+func (t *restNestedObjectType) TFValidatorType() string {
+	return ""
+}
+
+func (t *restNestedObjectType) TFValidators() []string {
+	return nil
+}
+
 func (t *restNestedObjectType) Complex() bool {
 	return true
 }

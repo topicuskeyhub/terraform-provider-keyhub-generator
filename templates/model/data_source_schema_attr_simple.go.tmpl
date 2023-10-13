@@ -2,6 +2,7 @@
 {{- if .Type.DSSchemaTemplateData.Required }}
     Required: recurse,
     Computed: !recurse,
+{{- template "common_schema_attr_validators.go.tmpl" . }}
 {{- else }}
     Computed: true,
 {{- end }}

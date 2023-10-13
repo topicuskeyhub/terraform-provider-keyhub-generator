@@ -20,6 +20,8 @@ type RestPropertyType interface {
 	TFName() string
 	TFValueType() string
 	TFAttrType() string
+	TFValidatorType() string
+	TFValidators() []string
 	ToTFAttrWithDiag() bool
 	ToTKHAttrWithDiag() bool
 	ToTKHCustomCode() string

@@ -30,6 +30,14 @@ func (t *restArrayType) TFValueType() string {
 	return "basetypes.ListValue"
 }
 
+func (t *restArrayType) TFValidatorType() string {
+	return ""
+}
+
+func (t *restArrayType) TFValidators() []string {
+	return nil
+}
+
 func (t *restArrayType) Complex() bool {
 	return t.itemType.Complex()
 }

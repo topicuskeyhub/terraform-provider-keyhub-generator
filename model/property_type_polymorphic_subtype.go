@@ -41,6 +41,14 @@ func (t *restPolymorphicSubtype) TFValueType() string {
 	return "basetypes.ObjectValue"
 }
 
+func (t *restPolymorphicSubtype) TFValidatorType() string {
+	return ""
+}
+
+func (t *restPolymorphicSubtype) TFValidators() []string {
+	return nil
+}
+
 func (t *restPolymorphicSubtype) Complex() bool {
 	return true
 }

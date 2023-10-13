@@ -1,5 +1,9 @@
 package model
 
+import (
+	"strings"
+)
+
 type restAdditionalType struct {
 	names []string
 }
@@ -24,6 +28,22 @@ func (t *restAdditionalType) TFAttrType() string {
 
 func (t *restAdditionalType) TFValueType() string {
 	return "basetypes.ListValue"
+}
+
+func (t *restAdditionalType) TFValidatorType() string {
+	return "validator.List"
+}
+
+func (t *restAdditionalType) TFValidators() []string {
+	var sb strings.Builder
+	sb.WriteString("listvalidator.ValueStringsAre(stringvalidator.OneOf(\n")
+	for _, name := range t.names {
+		sb.WriteString(`"`)
+		sb.WriteString(name)
+		sb.WriteString(`",`)
+	}
+	sb.WriteString("\n)),")
+	return []string{sb.String()}
 }
 
 func (t *restAdditionalType) Complex() bool {

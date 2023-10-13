@@ -23,6 +23,14 @@ func (t *restFindParentByUUIDObjectType) TFValueType() string {
 	return "basetypes.StringValue"
 }
 
+func (t *restFindParentByUUIDObjectType) TFValidatorType() string {
+	return "validator.String"
+}
+
+func (t *restFindParentByUUIDObjectType) TFValidators() []string {
+	return []string{`stringvalidator.RegexMatches(regexp.MustCompile("^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$"), "The value must be a valid UUID"),`}
+}
+
 func (t *restFindParentByUUIDObjectType) Complex() bool {
 	return false
 }

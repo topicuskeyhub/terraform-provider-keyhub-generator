@@ -1,0 +1,7 @@
+{{- if .Type.TFValidators }}
+    Validators: []{{ .Type.TFValidatorType }}{
+{{- range .Type.TFValidators }}
+        {{ . }}
+{{- end }}
+    },
+{{- end }}

@@ -2,18 +2,19 @@ package model
 
 import (
 	"fmt"
+	"strings"
 
 	"golang.org/x/exp/maps"
 )
 
 type restEnumPropertyType struct {
-	enumType             RestType
+	enumType             *restEnumType
 	rsSchemaTemplateBase map[string]any
 }
 
 func NewEnumPropertyType(enumType RestType, rsSchemaTemplateBase map[string]any) RestPropertyType {
 	return &restEnumPropertyType{
-		enumType:             enumType,
+		enumType:             enumType.(*restEnumType),
 		rsSchemaTemplateBase: rsSchemaTemplateBase,
 	}
 }
@@ -32,6 +33,22 @@ func (t *restEnumPropertyType) TFAttrType() string {
 
 func (t *restEnumPropertyType) TFValueType() string {
 	return "basetypes.StringValue"
+}
+
+func (t *restEnumPropertyType) TFValidatorType() string {
+	return "validator.String"
+}
+
+func (t *restEnumPropertyType) TFValidators() []string {
+	var sb strings.Builder
+	sb.WriteString("stringvalidator.OneOf(\n")
+	for _, name := range t.enumType.values {
+		sb.WriteString(`"`)
+		sb.WriteString(fmt.Sprint(name))
+		sb.WriteString(`",`)
+	}
+	sb.WriteString("\n),")
+	return []string{sb.String()}
 }
 
 func (t *restEnumPropertyType) Complex() bool {
