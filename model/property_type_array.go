@@ -1,6 +1,10 @@
 package model
 
-import "golang.org/x/exp/maps"
+import (
+	"strings"
+
+	"golang.org/x/exp/maps"
+)
 
 type restArrayType struct {
 	itemType             RestPropertyType
@@ -31,11 +35,26 @@ func (t *restArrayType) TFValueType() string {
 }
 
 func (t *restArrayType) TFValidatorType() string {
-	return ""
+	return "validator.List"
 }
 
 func (t *restArrayType) TFValidators() []string {
-	return nil
+	if len(t.itemType.TFValidators()) == 0 {
+		return nil
+	}
+	typename := t.itemType.TFValidatorType()
+	typename = typename[strings.LastIndex(typename, ".")+1:]
+
+	var sb strings.Builder
+	sb.WriteString("listvalidator.Value")
+	sb.WriteString(typename)
+	sb.WriteString("sAre(\n")
+	for _, validator := range t.itemType.TFValidators() {
+		sb.WriteString(validator)
+		sb.WriteString("\n")
+	}
+	sb.WriteString("),")
+	return []string{sb.String()}
 }
 
 func (t *restArrayType) Complex() bool {

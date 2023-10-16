@@ -16,7 +16,9 @@ rsschema.ListAttribute{
 {{- template "common_schema_attr_validators.go.tmpl" . }}
 {{- else }}
     {{ .Type.RSSchemaTemplateData.Mode }}: true,
+{{- if ne .Type.RSSchemaTemplateData.Mode "Computed" }}
 {{- template "common_schema_attr_validators.go.tmpl" . }}
+{{- end }}
 {{- end }}
 {{- if .Deprecated }}
     DeprecationMessage: "This property will be removed in a future version.",

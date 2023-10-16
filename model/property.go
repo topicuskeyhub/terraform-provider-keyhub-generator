@@ -42,6 +42,19 @@ type RestPropertyType interface {
 	DS() RestPropertyType
 }
 
+var aliasses = map[string]string{
+	"auditAuditRecord.auditAuditRecordType":                                       "type",
+	"certificateCertificatePrimer.certificateCertificatePrimerType":               "type",
+	"clientClientApplicationPrimer.clientClientApplicationPrimerType":             "type",
+	"directoryAccountDirectoryPrimer.directoryAccountDirectoryPrimerType":         "type",
+	"directoryAccountDirectorySummary.directoryAccountDirectorySummaryType":       "type",
+	"provisioningGroupOnSystemPrimer.provisioningGroupOnSystemPrimerType":         "type",
+	"provisioningProvisionedSystemPrimer.provisioningProvisionedSystemPrimerType": "type",
+	"markItemMarker.markItemMarkerType":                                           "type",
+	"vaultVaultRecordShare.vaultVaultRecordShareType":                             "type",
+	"webhookWebhookPush.webhookWebhookPushType":                                   "type",
+}
+
 func (p *RestProperty) internalName() string {
 	return p.Name + p.Type.PropertyNameSuffix()
 }
@@ -64,6 +77,9 @@ func (p *RestProperty) GoName() string {
 
 func (p *RestProperty) TFName() string {
 	name := p.internalName()
+	if alias, ok := aliasses[p.Parent.APITypeName()+"."+name]; ok {
+		name = alias
+	}
 	name = strings.ReplaceAll(name, "OIDC", "Oidc")
 	name = strings.ReplaceAll(name, "OAuth2", "Oauth2")
 	name = strings.ReplaceAll(name, "LDAP", "Ldap")
