@@ -23,6 +23,10 @@ func (t *restEnumPropertyType) PropertyNameSuffix() string {
 	return ""
 }
 
+func (t *restEnumPropertyType) FlattenMode() string {
+	return "None"
+}
+
 func (t *restEnumPropertyType) TFName() string {
 	return "types.String"
 }

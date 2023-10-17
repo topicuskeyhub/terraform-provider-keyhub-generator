@@ -22,6 +22,10 @@ func (t *restFindByUUIDObjectType) PropertyNameSuffix() string {
 	return "Uuid"
 }
 
+func (t *restFindByUUIDObjectType) FlattenMode() string {
+	return "None"
+}
+
 func (t *restFindByUUIDObjectType) TFName() string {
 	return "types.String"
 }

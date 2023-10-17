@@ -2,11 +2,11 @@ func dataSourceSchemaAttrs{{ .GoTypeName }}(recurse bool) map[string]dsschema.At
     schemaAttrs := make(map[string]dsschema.Attribute)
 {{- with AdditionalObjectsProperty . }}
     if recurse {
-        schemaAttrs["{{ .TFName }}"] = {{- template "data_source_schema_attr.go.tmpl" . }}
+        {{ template "data_source_schema_attr.go.tmpl" . }}
     }
 {{- end }}
 {{- range AllDirectProperties . }}
-    schemaAttrs["{{ .TFName }}"] = {{- template "data_source_schema_attr.go.tmpl" . }}
+    {{ template "data_source_schema_attr.go.tmpl" . }}
 {{- end }}
     return schemaAttrs
 }

@@ -1,7 +1,18 @@
-dsschema.SingleNestedAttribute{
-    Attributes: dataSourceSchemaAttrs{{ .Type.NestedType.GoTypeName }}({{ RecurseCutOff .Parent }}),
-    Computed: true,
-{{- if .Deprecated }}
-    DeprecationMessage: "This property will be removed in a future version.",
+{
+{{- if eq .Type.FlattenMode "ItemsList" }}
+{{- if (index .Type.NestedType.AllProperties 0).Type.Complex }}
+    attr := dataSourceSchemaAttrs{{ .Type.NestedType.GoTypeName }}({{ RecurseCutOff .Parent }})["items"].(dsschema.ListNestedAttribute)
+{{- else }}
+    attr := dataSourceSchemaAttrs{{ .Type.NestedType.GoTypeName }}({{ RecurseCutOff .Parent }})["items"].(dsschema.ListAttribute)
 {{- end }}
+{{- else }}
+    attr := dsschema.SingleNestedAttribute{
+        Attributes: dataSourceSchemaAttrs{{ .Type.NestedType.GoTypeName }}({{ RecurseCutOff .Parent }}),
+    }
+{{- end }}
+    attr.Computed = true
+{{- if .Deprecated }}
+    attr.DeprecationMessage = "This property will be removed in a future version."
+{{- end }}
+    schemaAttrs["{{ .TFName }}"] = attr
 }

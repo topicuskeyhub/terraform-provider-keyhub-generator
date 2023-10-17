@@ -17,6 +17,7 @@ type RestProperty struct {
 
 type RestPropertyType interface {
 	PropertyNameSuffix() string
+	FlattenMode() string
 	TFName() string
 	TFValueType() string
 	TFAttrType() string

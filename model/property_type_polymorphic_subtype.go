@@ -28,6 +28,10 @@ func (t *restPolymorphicSubtype) PropertyNameSuffix() string {
 	return ""
 }
 
+func (t *restPolymorphicSubtype) FlattenMode() string {
+	return "None"
+}
+
 func (t *restPolymorphicSubtype) TFName() string {
 	return "types.Object"
 }

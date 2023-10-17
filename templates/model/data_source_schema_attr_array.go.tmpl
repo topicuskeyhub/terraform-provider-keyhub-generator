@@ -1,5 +1,5 @@
 {{- if .Type.Complex -}}
-dsschema.ListNestedAttribute{
+schemaAttrs["{{ .TFName }}"] = dsschema.ListNestedAttribute{
     NestedObject: dsschema.NestedAttributeObject{
         Attributes: dataSourceSchemaAttrs{{ .Type.NestedType.GoTypeName }}({{ RecurseCutOff .Parent }}),
     },
@@ -9,7 +9,7 @@ dsschema.ListNestedAttribute{
 {{- end }}
 }
 {{- else -}}
-dsschema.ListAttribute{
+schemaAttrs["{{ .TFName }}"] = dsschema.ListAttribute{
     ElementType: {{ .Type.DSSchemaTemplateData.ElementType }},
     Computed: true,
 {{- if .Deprecated }}

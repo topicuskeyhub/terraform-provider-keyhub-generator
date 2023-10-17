@@ -18,6 +18,10 @@ func (t *restFindBaseByUUIDObjectType) PropertyNameSuffix() string {
 	return ""
 }
 
+func (t *restFindBaseByUUIDObjectType) FlattenMode() string {
+	return "None"
+}
+
 func (t *restFindBaseByUUIDObjectType) TFName() string {
 	return "types.String"
 }

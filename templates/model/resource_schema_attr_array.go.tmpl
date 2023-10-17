@@ -1,10 +1,10 @@
 {{- if .Type.Complex -}}
-rsschema.ListNestedAttribute{
+schemaAttrs["{{ .TFName }}"] = rsschema.ListNestedAttribute{
     NestedObject: rsschema.NestedAttributeObject{
         Attributes: resourceSchemaAttrs{{ .Type.NestedType.GoTypeName }}({{ RecurseCutOff .Parent }}),
     },
 {{- else -}}
-rsschema.ListAttribute{
+schemaAttrs["{{ .TFName }}"] = rsschema.ListAttribute{
     ElementType: {{ .Type.RSSchemaTemplateData.ElementType }},
 {{- end }}
 {{- if eq .Type.RSSchemaTemplateData.Mode "Computed_UseStateForUnknown" }}

@@ -1,4 +1,4 @@
-{{ .Type.DSSchemaTemplateData.Type }}{
+schemaAttrs["{{ .TFName }}"] = {{ .Type.DSSchemaTemplateData.Type }}{
 {{- if .Type.DSSchemaTemplateData.Required }}
     Required: recurse,
     Computed: !recurse,

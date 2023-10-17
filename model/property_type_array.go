@@ -22,6 +22,10 @@ func (t *restArrayType) PropertyNameSuffix() string {
 	return ""
 }
 
+func (t *restArrayType) FlattenMode() string {
+	return "None"
+}
+
 func (t *restArrayType) TFName() string {
 	return "types.List"
 }

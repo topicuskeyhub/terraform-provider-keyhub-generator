@@ -1,4 +1,4 @@
-{{ .Type.RSSchemaTemplateData.Type }}{
+schemaAttrs["{{ .TFName }}"] = {{ .Type.RSSchemaTemplateData.Type }}{
 {{- if eq .Type.RSSchemaTemplateData.Mode "Optional_Default" }}
     Computed: true,
     Optional: true,

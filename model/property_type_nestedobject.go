@@ -1,6 +1,10 @@
 package model
 
-import "golang.org/x/exp/maps"
+import (
+	"strings"
+
+	"golang.org/x/exp/maps"
+)
 
 type restNestedObjectType struct {
 	property             *RestProperty
@@ -20,16 +24,35 @@ func (t *restNestedObjectType) PropertyNameSuffix() string {
 	return ""
 }
 
+func (t *restNestedObjectType) FlattenMode() string {
+	if strings.HasSuffix(t.nestedType.APITypeName(), "LinkableWrapper") {
+		nestedProps := t.nestedType.AllProperties()
+		if len(nestedProps) == 1 && nestedProps[0].TFName() == "items" {
+			return "ItemsList"
+		}
+	}
+	return "None"
+}
+
 func (t *restNestedObjectType) TFName() string {
+	if t.FlattenMode() == "ItemsList" {
+		return "types.List"
+	}
 	return "types.Object"
 }
 
 func (t *restNestedObjectType) TFAttrType() string {
-	return "types.ObjectType{AttrTypes: objectAttrsType" +
-		t.nestedType.Suffix() + t.nestedType.GoTypeName() + "(" + RecurseCutOff(t.property.Parent) + ")}"
+	nestedAttrType := "objectAttrsType" + t.nestedType.Suffix() + t.nestedType.GoTypeName() + "(" + RecurseCutOff(t.property.Parent) + ")"
+	if t.FlattenMode() == "ItemsList" {
+		return nestedAttrType + `["items"]`
+	}
+	return "types.ObjectType{AttrTypes: " + nestedAttrType + "}"
 }
 
 func (t *restNestedObjectType) TFValueType() string {
+	if t.FlattenMode() == "ItemsList" {
+		return "basetypes.ListValue"
+	}
 	return "basetypes.ObjectValue"
 }
 
@@ -71,8 +94,15 @@ func (t *restNestedObjectType) TKHToTF(value string, listItem bool) string {
 }
 
 func (t *restNestedObjectType) TFToTKH(value string, listItem bool) string {
+	var tfVal string
+	if t.FlattenMode() == "ItemsList" {
+		tfVal = `toItemsList(ctx, objAttrs["` + t.property.TFName() + `"])`
+	} else {
+		tfVal = value + ".(basetypes.ObjectValue)"
+	}
+
 	return "tfObjectToTKH" + t.nestedType.Suffix() + t.nestedType.GoTypeName() +
-		"(ctx, " + RecurseCutOff(t.property.Parent) + ", " + value + ".(basetypes.ObjectValue))"
+		"(ctx, " + RecurseCutOff(t.property.Parent) + ", " + tfVal + ")"
 }
 
 func (t *restNestedObjectType) TKHToTFGuard() string {
