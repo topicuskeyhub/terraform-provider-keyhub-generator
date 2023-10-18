@@ -141,8 +141,8 @@ var resourceTemplateConfigs = map[string]resourceTemplateParameters{
 		SubResourceReqMethod:               ".Group()",
 		SubResourceBaseUp:                  "Group",
 		ParentResourceType:                 "ProvisioningProvisionedSystemPrimer",
-		ParentResourceNamePrefixUp:         "System",
-		ParentResourceNamePrefixUnderscore: "system",
+		ParentResourceNamePrefixUp:         "ProvisionedSystem",
+		ParentResourceNamePrefixUnderscore: "provisioned_system",
 	},
 	"serviceaccount": {
 		UpdateSupported:                    true,

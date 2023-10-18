@@ -244,10 +244,7 @@ func buildProperties(parent *restClassType, baseTypeName string, schema *openapi
 	required := schema.Value.Required
 	ret := make([]*RestProperty, 0)
 	for name, property := range schema.Value.Properties {
-		if name == "$type" {
-			continue
-		}
-		if name == "additionalObjects" && baseTypeName == "authInternalAccount" {
+		if skipProperty(baseTypeName, name) {
 			continue
 		}
 		rsSchemaTemplateBase := buildRSSchemaTemplateBase(schema, baseTypeName, name)
@@ -275,6 +272,19 @@ func buildProperties(parent *restClassType, baseTypeName string, schema *openapi
 		return ret[i].Name < ret[j].Name
 	})
 	return ret
+}
+
+func skipProperty(baseTypeName string, propertyName string) bool {
+	if propertyName == "$type" {
+		return true
+	}
+	if propertyName == "additionalObjects" && baseTypeName == "authInternalAccount" {
+		return true
+	}
+	if propertyName == "system" && baseTypeName == "provisioningGroupOnSystem" {
+		return true
+	}
+	return false
 }
 
 func buildType(baseTypeName string, propertyName string, ref *openapi3.SchemaRef, types map[string]RestType, restProperty *RestProperty, rsSchemaTemplateBase map[string]any) RestPropertyType {
@@ -379,7 +389,7 @@ func buildRSSchemaTemplateBase(ref *openapi3.SchemaRef, typeName string, propert
 	createOnly := property.Value.Extensions["x-tkh-create-only"] != nil && property.Value.Extensions["x-tkh-create-only"].(bool)
 	backendDefault := property.Value.Extensions["x-tkh-backend-determines-default"] != nil && property.Value.Extensions["x-tkh-backend-determines-default"].(bool)
 
-	if immutable {
+	if immutable && !createOnly {
 		return map[string]any{
 			"Mode": "Computed_UseStateForUnknown",
 		}
