@@ -1,5 +1,11 @@
 func fillDataStructFromTFObject{{ .Suffix }}{{ .GoTypeName }}(data *{{ .DataStructName }}{{ .Suffix }}, obj types.Object) {
 {{- range .AllProperties }}
+{{- if eq .Type.FlattenMode "AdditionalObjects" }}
+{{- range .Type.NestedType.AllProperties }}
     data.{{ .GoName }} = obj.Attributes()["{{ .TFName }}"].({{ .Type.TFValueType }})
+{{- end }}
+{{- else }}
+    data.{{ .GoName }} = obj.Attributes()["{{ .TFName }}"].({{ .Type.TFValueType }})
+{{- end }}
 {{- end }}
 }

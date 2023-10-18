@@ -2,6 +2,12 @@ var {{ .ObjectAttrTypesName }}{{ .Suffix }} = objectAttrsType{{ .Suffix }}{{ .Go
 var {{ .ObjectAttrTypesName }}{{ .Suffix }}Recurse = objectAttrsType{{ .Suffix }}{{ .GoTypeName }}(true)
 type {{ .DataStructName }}{{ .Suffix }} struct {
 {{- range .AllProperties }}
+{{- if eq .Type.FlattenMode "AdditionalObjects" }}
+{{- range .Type.NestedType.AllProperties }}
+	{{ .GoName }} {{ .TFType }} `tfsdk:"{{ .TFName }}" tkhao:"{{ .Name }}"`
+{{- end }}
+{{- else }}
 	{{ .GoName }} {{ .TFType }} `tfsdk:"{{ .TFName }}"`
+{{- end }}
 {{- end }}
 }

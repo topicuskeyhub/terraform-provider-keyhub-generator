@@ -9,6 +9,8 @@
         diags.Append(d...)
         {{- if eq .Type.FlattenMode "ItemsList" }}
         obj["{{ .TFName }}"] = getItemsAttr(val, attrs["{{ .TFName }}"])
+        {{- else if eq .Type.FlattenMode "AdditionalObjects" }}
+        maps.Copy(obj, val.Attributes())
         {{- else }}
         obj["{{ .TFName }}"] = val
         {{- end }}

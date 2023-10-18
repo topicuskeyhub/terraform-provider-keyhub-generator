@@ -30,7 +30,7 @@ func (t *restFindByUUIDObjectType) TFName() string {
 	return "types.String"
 }
 
-func (t *restFindByUUIDObjectType) TFAttrType() string {
+func (t *restFindByUUIDObjectType) TFAttrType(inAdditionalObjects bool) string {
 	return "types.StringType"
 }
 

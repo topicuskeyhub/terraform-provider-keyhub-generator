@@ -25,6 +25,9 @@ func (t *restNestedObjectType) PropertyNameSuffix() string {
 }
 
 func (t *restNestedObjectType) FlattenMode() string {
+	if t.property.TFName() == "additional_objects" {
+		return "AdditionalObjects"
+	}
 	if strings.HasSuffix(t.nestedType.APITypeName(), "LinkableWrapper") {
 		nestedProps := t.nestedType.AllProperties()
 		if len(nestedProps) == 1 && nestedProps[0].TFName() == "items" {
@@ -41,8 +44,14 @@ func (t *restNestedObjectType) TFName() string {
 	return "types.Object"
 }
 
-func (t *restNestedObjectType) TFAttrType() string {
-	nestedAttrType := "objectAttrsType" + t.nestedType.Suffix() + t.nestedType.GoTypeName() + "(" + RecurseCutOff(t.property.Parent) + ")"
+func (t *restNestedObjectType) TFAttrType(inAdditionalObjects bool) string {
+	var recurseCutOff string
+	if inAdditionalObjects {
+		recurseCutOff = "false"
+	} else {
+		recurseCutOff = RecurseCutOff(t.property.Parent)
+	}
+	nestedAttrType := "objectAttrsType" + t.nestedType.Suffix() + t.nestedType.GoTypeName() + "(" + recurseCutOff + ")"
 	if t.FlattenMode() == "ItemsList" {
 		return nestedAttrType + `["items"]`
 	}
@@ -95,7 +104,9 @@ func (t *restNestedObjectType) TKHToTF(value string, listItem bool) string {
 
 func (t *restNestedObjectType) TFToTKH(value string, listItem bool) string {
 	var tfVal string
-	if t.FlattenMode() == "ItemsList" {
+	if t.FlattenMode() == "AdditionalObjects" {
+		tfVal = "objVal"
+	} else if t.FlattenMode() == "ItemsList" {
 		tfVal = `toItemsList(ctx, objAttrs["` + t.property.TFName() + `"])`
 	} else {
 		tfVal = value + ".(basetypes.ObjectValue)"

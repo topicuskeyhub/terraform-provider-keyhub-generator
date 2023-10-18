@@ -1,3 +1,6 @@
+{{- if eq .Type.FlattenMode "AdditionalObjects" -}}
+    maps.Copy(schemaAttrs, resourceSchemaAttrs{{ .Type.NestedType.GoTypeName }}({{ RecurseCutOff .Parent }}))
+{{- else -}}
 {
 {{- if eq .Type.FlattenMode "ItemsList" }}
 {{- if (index .Type.NestedType.AllProperties 0).Type.Complex }}
@@ -24,3 +27,4 @@
 {{- end }}
     schemaAttrs["{{ .TFName }}"] = attr
 }
+{{- end }}

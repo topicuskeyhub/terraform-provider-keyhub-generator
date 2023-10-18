@@ -31,7 +31,7 @@ func (t *restEnumPropertyType) TFName() string {
 	return "types.String"
 }
 
-func (t *restEnumPropertyType) TFAttrType() string {
+func (t *restEnumPropertyType) TFAttrType(inAdditionalObjects bool) string {
 	return "types.StringType"
 }
 

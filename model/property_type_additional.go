@@ -26,7 +26,7 @@ func (t *restAdditionalType) TFName() string {
 	return "types.List"
 }
 
-func (t *restAdditionalType) TFAttrType() string {
+func (t *restAdditionalType) TFAttrType(inAdditionalObjects bool) string {
 	return "types.ListType{ElemType: types.StringType}"
 }
 

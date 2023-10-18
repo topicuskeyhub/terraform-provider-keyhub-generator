@@ -30,8 +30,8 @@ func (t *restArrayType) TFName() string {
 	return "types.List"
 }
 
-func (t *restArrayType) TFAttrType() string {
-	return "types.ListType{ElemType: " + t.itemType.TFAttrType() + "}"
+func (t *restArrayType) TFAttrType(inAdditionalObjects bool) string {
+	return "types.ListType{ElemType: " + t.itemType.TFAttrType(inAdditionalObjects) + "}"
 }
 
 func (t *restArrayType) TFValueType() string {
@@ -141,7 +141,7 @@ func (t *restArrayType) DSSchemaTemplate() string {
 
 func (t *restArrayType) DSSchemaTemplateData() map[string]any {
 	return map[string]any{
-		"ElementType": t.itemType.TFAttrType(),
+		"ElementType": t.itemType.TFAttrType(false),
 	}
 }
 
@@ -151,7 +151,7 @@ func (t *restArrayType) RSSchemaTemplate() string {
 
 func (t *restArrayType) RSSchemaTemplateData() map[string]any {
 	ret := map[string]any{
-		"ElementType": t.itemType.TFAttrType(),
+		"ElementType": t.itemType.TFAttrType(false),
 	}
 	maps.Copy(ret, t.rsSchemaTemplateBase)
 	return ret

@@ -46,7 +46,7 @@ func (t *restSimpleType) TFName() string {
 	}
 }
 
-func (t *restSimpleType) TFAttrType() string {
+func (t *restSimpleType) TFAttrType(inAdditionalObjects bool) string {
 	switch t.openapiType {
 	case "boolean":
 		return "types.BoolType"

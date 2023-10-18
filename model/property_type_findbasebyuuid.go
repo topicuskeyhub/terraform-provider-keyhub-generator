@@ -26,7 +26,7 @@ func (t *restFindBaseByUUIDObjectType) TFName() string {
 	return "types.String"
 }
 
-func (t *restFindBaseByUUIDObjectType) TFAttrType() string {
+func (t *restFindBaseByUUIDObjectType) TFAttrType(inAdditionalObjects bool) string {
 	return "types.StringType"
 }
 

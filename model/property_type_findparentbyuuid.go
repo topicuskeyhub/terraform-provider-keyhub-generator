@@ -19,7 +19,7 @@ func (t *restFindParentByUUIDObjectType) TFName() string {
 	return "types.String"
 }
 
-func (t *restFindParentByUUIDObjectType) TFAttrType() string {
+func (t *restFindParentByUUIDObjectType) TFAttrType(inAdditionalObjects bool) string {
 	return "types.StringType"
 }
 

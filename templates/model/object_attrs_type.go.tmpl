@@ -2,11 +2,13 @@ func objectAttrsType{{ .Suffix }}{{ .GoTypeName }}(recurse bool) map[string]attr
     objectAttrs := make(map[string]attr.Type)
 {{- with AdditionalObjectsProperty . }}
     if recurse {
-        objectAttrs["{{ .TFName }}"] = {{ .TFAttrType }}
+{{- range .Type.NestedType.AllProperties }}
+        objectAttrs["{{ .TFName }}"] = {{ .TFAttrType true }}
+{{- end }}
     }
 {{- end }}
 {{- range AllDirectProperties . }}
-    objectAttrs["{{ .TFName }}"] = {{ .TFAttrType }}
+    objectAttrs["{{ .TFName }}"] = {{ .TFAttrType false }}
 {{- end }}
     return objectAttrs
 }

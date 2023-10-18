@@ -20,7 +20,7 @@ type RestPropertyType interface {
 	FlattenMode() string
 	TFName() string
 	TFValueType() string
-	TFAttrType() string
+	TFAttrType(inAdditionalObjects bool) string
 	TFValidatorType() string
 	TFValidators() []string
 	ToTFAttrWithDiag() bool
@@ -110,8 +110,8 @@ func (p *RestProperty) TFType() string {
 	return p.Type.TFName()
 }
 
-func (p *RestProperty) TFAttrType() string {
-	return p.Type.TFAttrType()
+func (p *RestProperty) TFAttrType(inAdditionalObjects bool) string {
+	return p.Type.TFAttrType(inAdditionalObjects)
 }
 
 func (p *RestProperty) TKHToTF() string {

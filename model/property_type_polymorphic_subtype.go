@@ -36,9 +36,15 @@ func (t *restPolymorphicSubtype) TFName() string {
 	return "types.Object"
 }
 
-func (t *restPolymorphicSubtype) TFAttrType() string {
+func (t *restPolymorphicSubtype) TFAttrType(inAdditionalObjects bool) string {
+	var recurseCutOff string
+	if inAdditionalObjects {
+		recurseCutOff = "false"
+	} else {
+		recurseCutOff = RecurseCutOff(t.property.Parent)
+	}
 	return "types.ObjectType{AttrTypes: objectAttrsType" +
-		t.nestedType.Suffix() + t.nestedType.GoTypeName() + "(" + RecurseCutOff(t.property.Parent) + ")}"
+		t.nestedType.Suffix() + t.nestedType.GoTypeName() + "(" + recurseCutOff + ")}"
 }
 
 func (t *restPolymorphicSubtype) TFValueType() string {

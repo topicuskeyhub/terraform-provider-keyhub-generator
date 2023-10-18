@@ -98,7 +98,7 @@ func (r *{{ .Name }}Resource) Create(ctx context.Context, req resource.CreateReq
 {{- end }}
 		ctx, newWrapper, &keyhubreq.{{ .CollectionRequestTypePrefix }}RequestBuilderPostRequestConfiguration{
 			QueryParameters: &keyhubreq.{{ .CollectionRequestTypePrefix }}RequestBuilderPostQueryParameters{
-				Additional: collectAdditional(data.AdditionalObjects),
+				Additional: collectAdditional(data),
 			},
 		})
 	tkh, diags := findFirst[keyhubmodels.{{ .BaseNameUp }}able](ctx, wrapper, "{{ .NameUnderscore }}", nil, err)
@@ -146,7 +146,7 @@ func (r *{{ .Name }}Resource) Read(ctx context.Context, req resource.ReadRequest
 {{- end }}
 		ctx, &keyhubreq.{{ .ItemRequestTypePrefix }}RequestBuilderGetRequestConfiguration{
 			QueryParameters: &keyhubreq.{{ .ItemRequestTypePrefix }}RequestBuilderGetQueryParameters{
-				Additional: collectAdditional(data.AdditionalObjects),
+				Additional: collectAdditional(data),
 			},
 		})
 
@@ -203,7 +203,7 @@ func (r *{{ .Name }}Resource) Update(ctx context.Context, req resource.UpdateReq
 {{- end }}
 		ctx, newTkh, &keyhubreq.{{ .ItemRequestTypePrefix }}RequestBuilderPutRequestConfiguration{
 			QueryParameters: &keyhubreq.{{ .ItemRequestTypePrefix }}RequestBuilderPutQueryParameters{
-				Additional: collectAdditional(data.AdditionalObjects),
+				Additional: collectAdditional(data),
 			},
 		})
 
