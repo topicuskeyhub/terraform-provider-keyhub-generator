@@ -1,5 +1,7 @@
 {{- if eq .Type.RSSchemaTemplate "resource_schema_attr_array.go.tmpl" }}
     {{- template "resource_schema_attr_array.go.tmpl" . }}
+{{- else if eq .Type.DSSchemaTemplate "data_source_schema_attr_map.go.tmpl" }}
+    {{- template "resource_schema_attr_map.go.tmpl" . }}
 {{- else if eq .Type.RSSchemaTemplate "resource_schema_attr_nestedobject.go.tmpl" }}
     {{- template "resource_schema_attr_nestedobject.go.tmpl" . }}
 {{- else if eq .Type.RSSchemaTemplate "resource_schema_attr_simple.go.tmpl" }}

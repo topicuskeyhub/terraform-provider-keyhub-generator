@@ -1,0 +1,7 @@
+schemaAttrs["{{ .TFName }}"] = dsschema.MapAttribute{
+    ElementType: {{ .Type.DSSchemaTemplateData.ElementType }},
+    Computed: true,
+{{- if .Deprecated }}
+    DeprecationMessage: "This property will be removed in a future version.",
+{{- end }}
+}

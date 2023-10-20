@@ -2,7 +2,7 @@
 {{- if .Type.ToTFAttrWithDiag }}
     {
 {{- if .Type.TFAttrNeeded }}
-        elemType := attrs["{{ .TFName }}"].(types.ListType).ElemType
+        elemType := attrs["{{ .TFName }}"].({{ .Type.TFName }}Type).ElemType
 {{- end }}
         {{ .Type.TKHToTFGuard -}}
         val, d := {{ .TKHToTF }}

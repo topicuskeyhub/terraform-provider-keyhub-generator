@@ -291,6 +291,10 @@ func buildType(baseTypeName string, propertyName string, ref *openapi3.SchemaRef
 	}
 	if schema.Type == "array" {
 		return NewRestArrayType(buildType(baseTypeName, propertyName, schema.Items, types, restProperty, rsSchemaTemplateBase), rsSchemaTemplateBase)
+	} else if schema.AdditionalProperties.Schema != nil {
+		return NewRestMapType(baseTypeName+"_"+propertyName,
+			buildType(baseTypeName, propertyName, schema.AdditionalProperties.Schema, types, restProperty, rsSchemaTemplateBase),
+			rsSchemaTemplateBase)
 	}
 	if ref.Ref != "" && schema.Type == "string" && len(schema.Enum) > 0 {
 		enumName := refToName(ref.Ref)
@@ -324,7 +328,7 @@ func is(ref *openapi3.SchemaRef, check func(*openapi3.Schema) bool) bool {
 		return true
 	}
 	for _, part := range ref.Value.AllOf {
-		if check(part.Value) {
+		if is(part, check) {
 			return true
 		}
 	}
