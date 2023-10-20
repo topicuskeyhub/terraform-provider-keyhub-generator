@@ -1,21 +1,23 @@
 package model
 
 type restClassType struct {
-	reachable     bool
-	suffix        string
-	superClass    RestType
-	name          string
-	discriminator string
-	properties    []*RestProperty
-	dsType        *restClassType
+	reachable      bool
+	suffix         string
+	superClass     RestType
+	realSuperClass RestType
+	name           string
+	discriminator  string
+	properties     []*RestProperty
+	dsType         *restClassType
 }
 
-func NewRestClassType(superClass RestType, name string, discriminator string) *restClassType {
+func NewRestClassType(realSuperClass RestType, superClass RestType, name string, discriminator string) *restClassType {
 	return &restClassType{
-		suffix:        "RS",
-		superClass:    superClass,
-		name:          name,
-		discriminator: discriminator,
+		suffix:         "RS",
+		realSuperClass: realSuperClass,
+		superClass:     superClass,
+		name:           name,
+		discriminator:  discriminator,
 	}
 }
 
@@ -37,7 +39,7 @@ func (t *restClassType) MarkReachable() {
 }
 
 func (t *restClassType) Extends(typeName string) bool {
-	return t.name == typeName || (t.superClass != nil && t.superClass.Extends(typeName))
+	return t.name == typeName || (t.realSuperClass != nil && t.realSuperClass.Extends(typeName))
 }
 
 func (t *restClassType) IsObject() bool {
@@ -95,6 +97,18 @@ func (t *restClassType) AllProperties() []*RestProperty {
 	return append(super, sub...)
 }
 
+func (t *restClassType) HasDirectUUIDProperty() bool {
+	for _, prop := range t.properties {
+		if prop.Name == "uuid" {
+			return true
+		}
+	}
+	if t.realSuperClass != nil {
+		return t.realSuperClass.HasDirectUUIDProperty()
+	}
+	return false
+}
+
 func (t *restClassType) Suffix() string {
 	return t.suffix
 }
@@ -108,6 +122,9 @@ func (t *restClassType) DS() RestType {
 	t.dsType = &restClassType{
 		suffix: "DS",
 		name:   t.name,
+	}
+	if t.realSuperClass != nil {
+		t.dsType.realSuperClass = t.realSuperClass.DS()
 	}
 	if t.superClass != nil {
 		t.dsType.superClass = t.superClass.DS()

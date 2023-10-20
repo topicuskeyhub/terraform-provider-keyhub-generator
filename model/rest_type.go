@@ -13,6 +13,7 @@ type RestType interface {
 	SDKTypeName() string
 	SDKTypeConstructor() string
 	AllProperties() []*RestProperty
+	HasDirectUUIDProperty() bool
 	Suffix() string
 	DS() RestType
 }

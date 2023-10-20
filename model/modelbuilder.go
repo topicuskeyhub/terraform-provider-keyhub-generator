@@ -164,13 +164,14 @@ func getOrBuildTypeModel(types map[string]RestType, name string, schema *openapi
 		originalName = parentResourceInfo.originalName
 	}
 	var superType RestType
+	var realSuperType RestType
 	polymorphicBaseType := findPolymorphicBaseType(originalName)
 	if schema != nil && schema.Value.AllOf != nil {
 		superTypeName := refToName(schema.Value.AllOf[0].Ref)
-		superType = getOrBuildTypeModel(types, superTypeName, schema.Value.AllOf[0], nil)
+		realSuperType = getOrBuildTypeModel(types, superTypeName, schema.Value.AllOf[0], nil)
 	}
-	if polymorphicBaseType != nil {
-		superType = nil
+	if polymorphicBaseType == nil {
+		superType = realSuperType
 	}
 
 	ownType := findOwnTypeSchema(schema)
@@ -181,7 +182,7 @@ func getOrBuildTypeModel(types map[string]RestType, name string, schema *openapi
 		if discriminatorVal, ok := ownType.Value.Extensions["x-tkh-discriminator"]; ok {
 			discriminator = discriminatorVal.(string)
 		}
-		classType := NewRestClassType(superType, originalName, discriminator)
+		classType := NewRestClassType(realSuperType, superType, originalName, discriminator)
 
 		var ret RestType
 		if isWritableWithUnwritableSuperClass(classType, ownType) {
@@ -259,7 +260,7 @@ func buildProperties(parent *restClassType, baseTypeName string, schema *openapi
 			Deprecated: is(property, deprecated),
 			WriteOnly:  is(property, writeOnly),
 		}
-		restProperty.Type = buildType(baseTypeName, name, property, types, restProperty, rsSchemaTemplateBase)
+		restProperty.Type = buildType(parent, baseTypeName, name, property, types, restProperty, rsSchemaTemplateBase)
 		ret = append(ret, restProperty)
 	}
 	sort.Slice(ret, func(i, j int) bool {
@@ -281,7 +282,7 @@ func skipProperty(baseTypeName string, propertyName string) bool {
 	return false
 }
 
-func buildType(baseTypeName string, propertyName string, ref *openapi3.SchemaRef, types map[string]RestType, restProperty *RestProperty, rsSchemaTemplateBase map[string]any) RestPropertyType {
+func buildType(parentType *restClassType, baseTypeName string, propertyName string, ref *openapi3.SchemaRef, types map[string]RestType, restProperty *RestProperty, rsSchemaTemplateBase map[string]any) RestPropertyType {
 	schema := ref.Value
 	if len(schema.AllOf) > 0 {
 		if ref.Ref == "" {
@@ -290,10 +291,10 @@ func buildType(baseTypeName string, propertyName string, ref *openapi3.SchemaRef
 		schema = schema.AllOf[0].Value
 	}
 	if schema.Type == "array" {
-		return NewRestArrayType(buildType(baseTypeName, propertyName, schema.Items, types, restProperty, rsSchemaTemplateBase), rsSchemaTemplateBase)
+		return NewRestArrayType(buildType(parentType, baseTypeName, propertyName, schema.Items, types, restProperty, rsSchemaTemplateBase), rsSchemaTemplateBase)
 	} else if schema.AdditionalProperties.Schema != nil {
 		return NewRestMapType(baseTypeName+"_"+propertyName,
-			buildType(baseTypeName, propertyName, schema.AdditionalProperties.Schema, types, restProperty, rsSchemaTemplateBase),
+			buildType(parentType, baseTypeName, propertyName, schema.AdditionalProperties.Schema, types, restProperty, rsSchemaTemplateBase),
 			rsSchemaTemplateBase)
 	}
 	if ref.Ref != "" && schema.Type == "string" && len(schema.Enum) > 0 {
@@ -311,8 +312,8 @@ func buildType(baseTypeName string, propertyName string, ref *openapi3.SchemaRef
 		}
 		nested := getOrBuildTypeModel(types, nestedTypeName, ref, nil)
 		ret := NewNestedObjectType(restProperty, nested, rsSchemaTemplateBase)
-		if ref.Ref != "" && is(ref, withUUID) && nested.Extends("Linkable") {
-			if strings.HasSuffix(nestedTypeName, "Primer") {
+		if ref.Ref != "" && is(ref, withUUID) {
+			if useFindByUUID(parentType, nested) {
 				ret = NewFindByUUIDObjectType(ret, rsSchemaTemplateBase)
 			}
 		}
@@ -321,6 +322,11 @@ func buildType(baseTypeName string, propertyName string, ref *openapi3.SchemaRef
 
 	log.Fatalf("Cannot construct a type for (%v+)", ref)
 	return nil
+}
+
+func useFindByUUID(parentType *restClassType, nested RestType) bool {
+	return (parentType.Extends("Linkable") || strings.HasSuffix(parentType.name, "_additionalObjects")) &&
+		nested.Extends("Linkable") && nested.HasDirectUUIDProperty()
 }
 
 func is(ref *openapi3.SchemaRef, check func(*openapi3.Schema) bool) bool {

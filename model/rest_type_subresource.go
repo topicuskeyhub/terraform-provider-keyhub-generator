@@ -79,6 +79,10 @@ func (t *restSubresourceClassType) AllProperties() []*RestProperty {
 	return ret
 }
 
+func (t *restSubresourceClassType) HasDirectUUIDProperty() bool {
+	return t.nestedType.HasDirectUUIDProperty()
+}
+
 func (t *restSubresourceClassType) Suffix() string {
 	return t.nestedType.Suffix()
 }

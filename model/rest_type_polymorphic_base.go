@@ -88,6 +88,10 @@ func (t *restPolymorphicBaseClassType) AllProperties() []*RestProperty {
 	return ret
 }
 
+func (t *restPolymorphicBaseClassType) HasDirectUUIDProperty() bool {
+	return t.nestedType.HasDirectUUIDProperty()
+}
+
 func (t *restPolymorphicBaseClassType) Suffix() string {
 	return t.nestedType.Suffix()
 }

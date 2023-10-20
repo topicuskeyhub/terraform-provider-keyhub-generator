@@ -80,6 +80,10 @@ func (t *restFindByUUIDClassType) AllProperties() []*RestProperty {
 	return ret
 }
 
+func (t *restFindByUUIDClassType) HasDirectUUIDProperty() bool {
+	return false
+}
+
 func (t *restFindByUUIDClassType) Suffix() string {
 	return "RS"
 }

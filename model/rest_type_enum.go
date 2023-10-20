@@ -69,6 +69,10 @@ func (t *restEnumType) AllProperties() []*RestProperty {
 	return nil
 }
 
+func (t *restEnumType) HasDirectUUIDProperty() bool {
+	return false
+}
+
 func (t *restEnumType) Suffix() string {
 	return t.suffix
 }
