@@ -14,8 +14,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 )
 
-{{- range $name, $type := . }}
-{{- if $type.IsObject }}
-{{ template "data_source_schema_attrs.go.tmpl" $type.DS }}
+{{- range . }}
+{{- if and .IsObject .DS.Reachable }}
+{{ template "data_source_schema_attrs.go.tmpl" .DS }}
 {{- end }}
 {{- end }}

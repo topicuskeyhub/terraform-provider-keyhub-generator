@@ -16,6 +16,7 @@ type RestProperty struct {
 }
 
 type RestPropertyType interface {
+	MarkReachable()
 	PropertyNameSuffix() string
 	FlattenMode() string
 	TFName() string

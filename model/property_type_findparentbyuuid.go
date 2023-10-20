@@ -7,6 +7,9 @@ func NewFindParentByUUIDObjectType() RestPropertyType {
 	return &restFindParentByUUIDObjectType{}
 }
 
+func (t *restFindParentByUUIDObjectType) MarkReachable() {
+}
+
 func (t *restFindParentByUUIDObjectType) PropertyNameSuffix() string {
 	return ""
 }

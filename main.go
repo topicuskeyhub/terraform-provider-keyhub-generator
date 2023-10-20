@@ -13,6 +13,8 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 	keyhubsdk "github.com/topicuskeyhub/sdk-go"
 	apimodel "github.com/topicuskeyhub/terraform-provider-keyhub-generator/model"
+	"golang.org/x/exp/maps"
+	"golang.org/x/exp/slices"
 )
 
 var resource = flag.String("resource", "", "Generate a data source or resource for the given SDK resource, ie. client")
@@ -189,6 +191,19 @@ func merge(template string, suffix string, t *template.Template, model any) {
 	f.Close()
 }
 
+func sortedTypes(model map[string]apimodel.RestType) []apimodel.RestType {
+	typeNames := maps.Keys(model)
+	slices.Sort(typeNames)
+
+	ret := make([]apimodel.RestType, len(model))
+	i := 0
+	for _, typeName := range typeNames {
+		ret[i] = model[typeName]
+		i++
+	}
+	return ret
+}
+
 func main() {
 	flag.Parse()
 	log.Println("Generating Topicus KeyHub Terraform Provider source...")
@@ -215,19 +230,20 @@ func main() {
 			log.Fatalf("Validation of openapi file failed: %s", err)
 		}
 		model := apimodel.BuildModel(doc)
-		merge("full-data-struct-ds", "", t, model)
-		merge("full-data-struct-rs", "", t, model)
-		merge("full-helpers", "", t, model)
-		merge("full-object-attrs-ds", "", t, model)
-		merge("full-object-attrs-rs", "", t, model)
-		merge("full-schema-ds", "", t, model)
-		merge("full-schema-rs", "", t, model)
-		merge("full-tf-to-data-struct-ds", "", t, model)
-		merge("full-tf-to-data-struct-rs", "", t, model)
-		merge("full-tf-to-tkh-ds", "", t, model)
-		merge("full-tf-to-tkh-rs", "", t, model)
-		merge("full-tkh-to-tf-ds", "", t, model)
-		merge("full-tkh-to-tf-rs", "", t, model)
+		types := sortedTypes(model)
+		merge("full-data-struct-ds", "", t, types)
+		merge("full-data-struct-rs", "", t, types)
+		merge("full-object-attrs-ds", "", t, types)
+		merge("full-object-attrs-rs", "", t, types)
+		merge("full-schema-ds", "", t, types)
+		merge("full-schema-rs", "", t, types)
+		merge("full-tf-to-data-struct-ds", "", t, types)
+		merge("full-tf-to-data-struct-rs", "", t, types)
+		merge("full-tf-to-tkh-ds", "", t, types)
+		merge("full-tf-to-tkh-rs", "", t, types)
+		merge("full-tkh-to-tf-ds", "", t, types)
+		merge("full-tkh-to-tf-rs", "", t, types)
+		merge("full-helpers", "", t, nil)
 	} else if *mode == "data" {
 		t, err := template.New("provider").ParseFS(tmpls, "templates/impl/*")
 		if err != nil {

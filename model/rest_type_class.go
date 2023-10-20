@@ -1,12 +1,39 @@
 package model
 
 type restClassType struct {
+	reachable     bool
 	suffix        string
 	superClass    RestType
 	name          string
 	discriminator string
 	properties    []*RestProperty
 	dsType        *restClassType
+}
+
+func NewRestClassType(superClass RestType, name string, discriminator string) *restClassType {
+	return &restClassType{
+		suffix:        "RS",
+		superClass:    superClass,
+		name:          name,
+		discriminator: discriminator,
+	}
+}
+
+func (t *restClassType) Reachable() bool {
+	return t.reachable
+}
+
+func (t *restClassType) MarkReachable() {
+	if t.reachable {
+		return
+	}
+	t.reachable = true
+	if t.superClass != nil {
+		t.superClass.MarkReachable()
+	}
+	for _, prop := range t.properties {
+		prop.Type.MarkReachable()
+	}
 }
 
 func (t *restClassType) Extends(typeName string) bool {

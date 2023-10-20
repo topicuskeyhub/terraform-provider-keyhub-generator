@@ -24,6 +24,11 @@ func NewPolymorphicSubtype(property *RestProperty, superType RestType, nestedTyp
 	}
 }
 
+func (t *restPolymorphicSubtype) MarkReachable() {
+	t.superType.MarkReachable()
+	t.nestedType.MarkReachable()
+}
+
 func (t *restPolymorphicSubtype) PropertyNameSuffix() string {
 	return ""
 }

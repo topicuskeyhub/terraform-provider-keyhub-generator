@@ -14,6 +14,9 @@ func NewAdditionalType(names []string) RestPropertyType {
 	}
 }
 
+func (t *restAdditionalType) MarkReachable() {
+}
+
 func (t *restAdditionalType) PropertyNameSuffix() string {
 	return ""
 }

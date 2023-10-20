@@ -1,9 +1,38 @@
 package model
 
+import "sort"
+
 type restPolymorphicBaseClassType struct {
+	reachable  bool
 	nestedType RestType
 	subtypes   []RestType
 	dsType     *restPolymorphicBaseClassType
+}
+
+func NewRestPolymorphicBaseClassType(nestedType RestType) RestType {
+	return &restPolymorphicBaseClassType{
+		nestedType: nestedType,
+		subtypes:   make([]RestType, 0),
+	}
+}
+
+func (t *restPolymorphicBaseClassType) Reachable() bool {
+	return t.reachable
+}
+
+func (t *restPolymorphicBaseClassType) MarkReachable() {
+	if t.reachable {
+		return
+	}
+	t.reachable = true
+	t.nestedType.MarkReachable()
+	sort.Slice(t.subtypes, func(i, j int) bool {
+		return t.subtypes[i].APITypeName() < t.subtypes[j].APITypeName()
+	})
+
+	for _, sub := range t.subtypes {
+		sub.MarkReachable()
+	}
 }
 
 func (t *restPolymorphicBaseClassType) Extends(typeName string) bool {

@@ -42,7 +42,29 @@ func BuildModel(openapi *openapi3.T) map[string]RestType {
 			})
 		}
 	}
+	markReachable(ret)
 	return ret
+}
+
+func markReachable(types map[string]RestType) {
+	types["authAccount"].DS().MarkReachable()
+	types["certificateCertificate"].DS().MarkReachable()
+	types["clientClientApplication"].DS().MarkReachable()
+	types["directoryAccountDirectory"].DS().MarkReachable()
+	types["groupGroup"].DS().MarkReachable()
+	types["groupGroupClassification"].DS().MarkReachable()
+	types["organizationOrganizationalUnit"].DS().MarkReachable()
+	types["serviceaccountServiceAccount"].DS().MarkReachable()
+	types["provisioningProvisionedSystem"].DS().MarkReachable()
+	types["vaultVaultRecord"].DS().MarkReachable()
+	types["webhookWebhook"].DS().MarkReachable()
+
+	types["clientClientApplication"].MarkReachable()
+	types["clientApplicationVaultVaultRecord"].MarkReachable()
+	types["groupVaultVaultRecord"].MarkReachable()
+	types["groupGroup"].MarkReachable()
+	types["nestedProvisioningGroupOnSystem"].MarkReachable()
+	types["serviceaccountServiceAccount"].MarkReachable()
 }
 
 func collectWritableSubclassCounts() {
@@ -153,53 +175,25 @@ func getOrBuildTypeModel(types map[string]RestType, name string, schema *openapi
 
 	ownType := findOwnTypeSchema(schema)
 	if ownType.Value.Type == "string" && len(ownType.Value.Enum) > 0 {
-		ret := &restEnumType{
-			suffix: "RS",
-			name:   originalName,
-			values: ownType.Value.Enum,
-		}
-		return ret
+		return NewRestEnumType(originalName, ownType.Value.Enum)
 	} else {
 		discriminator := ""
 		if discriminatorVal, ok := ownType.Value.Extensions["x-tkh-discriminator"]; ok {
 			discriminator = discriminatorVal.(string)
 		}
-		classType := &restClassType{
-			suffix:        "RS",
-			superClass:    superType,
-			discriminator: discriminator,
-			name:          originalName,
-		}
+		classType := NewRestClassType(superType, originalName, discriminator)
+
 		var ret RestType
 		if isWritableWithUnwritableSuperClass(classType, ownType) {
-			uuidType := &restFindByUUIDClassType{
-				superClass: superType,
-				name:       originalName,
-				nestedType: classType,
-			}
-			uuidType.uuidProperty = &RestProperty{
-				Parent:   uuidType,
-				Name:     "uuid",
-				Required: true,
-				Type:     NewFindBaseByUUIDObjectType(uuidType),
-			}
-			ret = uuidType
+			ret = NewRestFindByUUIDClassType(superType, originalName, classType)
 		} else if _, ok := writableSubclassCounts[originalName]; ok {
-			polymorphicBase := &restPolymorphicBaseClassType{
-				nestedType: classType,
-				subtypes:   make([]RestType, 0),
-			}
-			ret = polymorphicBase
+			ret = NewRestPolymorphicBaseClassType(classType)
 		} else {
 			ret = classType
 		}
 
 		if parentResourceInfo != nil {
-			ret = &restSubresourceClassType{
-				name:       name,
-				prefix:     parentResourceInfo.prefix,
-				nestedType: ret,
-			}
+			ret = NewRestSubresourceClassType(name, parentResourceInfo.prefix, ret)
 		}
 
 		types[name] = ret

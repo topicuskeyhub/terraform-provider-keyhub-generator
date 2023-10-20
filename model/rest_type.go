@@ -1,6 +1,8 @@
 package model
 
 type RestType interface {
+	Reachable() bool
+	MarkReachable()
 	Extends(typeName string) bool
 	IsObject() bool
 	ObjectAttrTypesName() string

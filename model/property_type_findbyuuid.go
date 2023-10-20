@@ -18,6 +18,10 @@ func NewFindByUUIDObjectType(nestedType RestPropertyType, rsSchemaTemplateBase m
 	}
 }
 
+func (t *restFindByUUIDObjectType) MarkReachable() {
+	t.nestedType.MarkReachable()
+}
+
 func (t *restFindByUUIDObjectType) PropertyNameSuffix() string {
 	return "Uuid"
 }

@@ -8,8 +8,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 )
 
-{{- range $name, $type := . }}
-{{- if $type.IsObject }}
-{{ template "tf_object_to_data_struct.go.tmpl" $type }}
+{{- range . }}
+{{- if and .IsObject .Reachable }}
+{{ template "tf_object_to_data_struct.go.tmpl" . }}
 {{- end }}
 {{- end }}

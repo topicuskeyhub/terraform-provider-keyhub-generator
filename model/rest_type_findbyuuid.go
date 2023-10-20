@@ -1,10 +1,40 @@
 package model
 
 type restFindByUUIDClassType struct {
+	reachable    bool
 	superClass   RestType
 	name         string
 	uuidProperty *RestProperty
 	nestedType   *restClassType
+}
+
+func NewRestFindByUUIDClassType(superClass RestType, name string, nestedType *restClassType) RestType {
+	uuidType := &restFindByUUIDClassType{
+		superClass: superClass,
+		name:       name,
+		nestedType: nestedType,
+	}
+	uuidType.uuidProperty = &RestProperty{
+		Parent:   uuidType,
+		Name:     "uuid",
+		Required: true,
+		Type:     NewFindBaseByUUIDObjectType(uuidType),
+	}
+	return uuidType
+}
+
+func (t *restFindByUUIDClassType) Reachable() bool {
+	return t.reachable
+}
+
+func (t *restFindByUUIDClassType) MarkReachable() {
+	if t.reachable {
+		return
+	}
+	t.reachable = true
+	t.superClass.MarkReachable()
+	t.uuidProperty.Type.MarkReachable()
+	t.nestedType.MarkReachable()
 }
 
 func (t *restFindByUUIDClassType) Extends(typeName string) bool {

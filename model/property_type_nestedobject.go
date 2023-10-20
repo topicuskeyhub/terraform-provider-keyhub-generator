@@ -20,6 +20,10 @@ func NewNestedObjectType(property *RestProperty, nestedType RestType, rsSchemaTe
 	}
 }
 
+func (t *restNestedObjectType) MarkReachable() {
+	t.nestedType.MarkReachable()
+}
+
 func (t *restNestedObjectType) PropertyNameSuffix() string {
 	return ""
 }

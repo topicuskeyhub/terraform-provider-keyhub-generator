@@ -12,8 +12,8 @@ import (
 	keyhubmodel "github.com/topicuskeyhub/sdk-go/models"
 )
 
-{{- range $name, $type := . }}
-{{- if $type.IsObject }}
-{{ template "tkh_to_tf_object.go.tmpl" $type }}
+{{- range . }}
+{{- if and .IsObject .Reachable }}
+{{ template "tkh_to_tf_object.go.tmpl" . }}
 {{- end }}
 {{- end }}

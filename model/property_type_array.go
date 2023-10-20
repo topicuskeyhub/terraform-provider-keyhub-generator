@@ -18,6 +18,10 @@ func NewRestArrayType(itemType RestPropertyType, rsSchemaTemplateBase map[string
 	}
 }
 
+func (t *restArrayType) MarkReachable() {
+	t.itemType.MarkReachable()
+}
+
 func (t *restArrayType) PropertyNameSuffix() string {
 	return ""
 }

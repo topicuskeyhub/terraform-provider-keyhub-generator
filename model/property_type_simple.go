@@ -24,6 +24,9 @@ func NewRestSimpleType(property *RestProperty, schema *openapi3.Schema, rsSchema
 	}
 }
 
+func (t *restSimpleType) MarkReachable() {
+}
+
 func (t *restSimpleType) PropertyNameSuffix() string {
 	return ""
 }
@@ -95,6 +98,9 @@ func (t *restSimpleType) TFValidators() []string {
 		maxLength := t.openapiSchema.MaxLength
 		if maxLength != nil {
 			validators = append(validators, fmt.Sprintf("stringvalidator.UTF8LengthBetween(%d, %d),", minLength, *maxLength))
+		}
+		if t.property.Name == "uuid" {
+			validators = append(validators, `stringvalidator.RegexMatches(regexp.MustCompile("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"), "The value must be a valid UUID"),`)
 		}
 	} else if t.openapiType == "integer" {
 		min := t.openapiSchema.Min

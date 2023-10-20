@@ -19,6 +19,10 @@ func NewEnumPropertyType(enumType RestType, rsSchemaTemplateBase map[string]any)
 	}
 }
 
+func (t *restEnumPropertyType) MarkReachable() {
+	t.enumType.MarkReachable()
+}
+
 func (t *restEnumPropertyType) PropertyNameSuffix() string {
 	return ""
 }

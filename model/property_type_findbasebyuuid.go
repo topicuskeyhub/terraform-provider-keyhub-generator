@@ -14,6 +14,10 @@ func NewFindBaseByUUIDObjectType(baseType *restFindByUUIDClassType) RestProperty
 	}
 }
 
+func (t *restFindBaseByUUIDObjectType) MarkReachable() {
+	t.baseType.MarkReachable()
+}
+
 func (t *restFindBaseByUUIDObjectType) PropertyNameSuffix() string {
 	return ""
 }

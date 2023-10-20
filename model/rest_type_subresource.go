@@ -1,10 +1,31 @@
 package model
 
 type restSubresourceClassType struct {
+	reachable  bool
 	name       string
 	prefix     string
 	nestedType RestType
 	dsType     *restSubresourceClassType
+}
+
+func NewRestSubresourceClassType(name string, prefix string, nestedType RestType) RestType {
+	return &restSubresourceClassType{
+		name:       name,
+		prefix:     prefix,
+		nestedType: nestedType,
+	}
+}
+
+func (t *restSubresourceClassType) Reachable() bool {
+	return t.reachable
+}
+
+func (t *restSubresourceClassType) MarkReachable() {
+	if t.reachable {
+		return
+	}
+	t.reachable = true
+	t.nestedType.MarkReachable()
 }
 
 func (t *restSubresourceClassType) Extends(typeName string) bool {

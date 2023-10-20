@@ -3,9 +3,26 @@ package model
 import "log"
 
 type restEnumType struct {
-	suffix string
-	name   string
-	values []any
+	reachable bool
+	suffix    string
+	name      string
+	values    []any
+}
+
+func NewRestEnumType(name string, values []any) RestType {
+	return &restEnumType{
+		suffix: "RS",
+		name:   name,
+		values: values,
+	}
+}
+
+func (t *restEnumType) Reachable() bool {
+	return t.reachable
+}
+
+func (t *restEnumType) MarkReachable() {
+	t.reachable = true
 }
 
 func (t *restEnumType) Extends(typeName string) bool {
