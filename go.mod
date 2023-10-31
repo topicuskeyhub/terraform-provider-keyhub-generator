@@ -4,7 +4,7 @@ go 1.20
 
 require (
 	github.com/getkin/kin-openapi v0.120.0
-	github.com/topicuskeyhub/sdk-go v0.29.1-0.20231020192028-022be2ba030f
+	github.com/topicuskeyhub/sdk-go v0.29.1-0.20231031163120-580c3f972b4d
 	golang.org/x/exp v0.0.0-20231006140011-7918f672742d
 )
 
@@ -13,16 +13,16 @@ require github.com/rogpeppe/go-internal v1.11.0 // indirect
 require (
 	github.com/cjlapao/common-go v0.0.39 // indirect
 	github.com/coreos/go-oidc v2.2.1+incompatible // indirect
-	github.com/go-logr/logr v1.2.4 // indirect
+	github.com/go-logr/logr v1.3.0 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-openapi/jsonpointer v0.20.0 // indirect
 	github.com/go-openapi/swag v0.22.4 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
-	github.com/google/uuid v1.3.1 // indirect
+	github.com/google/uuid v1.4.0 // indirect
 	github.com/invopop/yaml v0.2.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
-	github.com/microsoft/kiota-abstractions-go v1.3.0 // indirect
+	github.com/microsoft/kiota-abstractions-go v1.3.1 // indirect
 	github.com/microsoft/kiota-http-go v1.1.0 // indirect
 	github.com/microsoft/kiota-serialization-json-go v1.0.4 // indirect
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 // indirect
