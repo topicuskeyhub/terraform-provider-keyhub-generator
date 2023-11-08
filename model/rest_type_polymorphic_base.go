@@ -1,3 +1,6 @@
+// Copyright (c) Topicus Security B.V.
+// SPDX-License-Identifier: APSL-2.0
+
 package model
 
 import "sort"
