@@ -119,13 +119,15 @@ func (t *restAdditionalType) DSSchemaTemplateData() map[string]any {
 }
 
 func (t *restAdditionalType) RSSchemaTemplate() string {
-	return "NONE"
+	return "resource_schema_attr_additional.go.tmpl"
 }
 
 func (t *restAdditionalType) RSSchemaTemplateData() map[string]any {
-	return map[string]any{}
+	return map[string]any{
+		"Names": t.names,
+	}
 }
 
 func (t *restAdditionalType) DS() RestPropertyType {
-	return nil
+	return NewAdditionalType(t.names)
 }

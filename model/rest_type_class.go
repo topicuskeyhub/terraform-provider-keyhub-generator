@@ -133,23 +133,6 @@ func (t *restClassType) DS() RestType {
 		t.dsType.superClass = t.superClass.DS()
 	}
 	rsProperties := make([]*RestProperty, 0)
-	additionalObjectsProp := AdditionalObjectsProperty(t)
-	if additionalObjectsProp != nil {
-		names := make([]string, 0)
-		for _, prop := range additionalObjectsProp.Type.NestedType().AllProperties() {
-			if !prop.WriteOnly {
-				names = append(names, prop.Name)
-			}
-		}
-		rsProperties = append(rsProperties, &RestProperty{
-			Parent:     t.dsType,
-			Name:       "additional",
-			Required:   false,
-			WriteOnly:  false,
-			Deprecated: false,
-			Type:       NewAdditionalType(names),
-		})
-	}
 	for _, prop := range t.properties {
 		if !prop.WriteOnly {
 			rsProperties = append(rsProperties, prop.DS())

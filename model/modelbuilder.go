@@ -241,6 +241,7 @@ func isWritableWithUnwritableSuperClass(restType *restClassType, schema *openapi
 func buildProperties(parent *restClassType, baseTypeName string, schema *openapi3.SchemaRef, types map[string]RestType) []*RestProperty {
 	required := schema.Value.Required
 	ret := make([]*RestProperty, 0)
+	var additionalObjectsProp *RestProperty = nil
 	for name, property := range schema.Value.Properties {
 		if skipProperty(baseTypeName, name) {
 			continue
@@ -265,10 +266,32 @@ func buildProperties(parent *restClassType, baseTypeName string, schema *openapi
 		}
 		restProperty.Type = buildType(parent, baseTypeName, name, property, types, restProperty, rsSchemaTemplateBase)
 		ret = append(ret, restProperty)
+		if name == "additionalObjects" {
+			additionalObjectsProp = restProperty
+		}
 	}
 	sort.Slice(ret, func(i, j int) bool {
 		return ret[i].Name < ret[j].Name
 	})
+	if additionalObjectsProp != nil {
+		if additionalObjectsProp != nil {
+			names := make([]string, 0)
+			for _, prop := range additionalObjectsProp.Type.NestedType().AllProperties() {
+				if !prop.WriteOnly {
+					names = append(names, prop.Name)
+				}
+			}
+			additionalProp := &RestProperty{
+				Parent:     parent,
+				Name:       "additional",
+				Required:   false,
+				WriteOnly:  false,
+				Deprecated: false,
+				Type:       NewAdditionalType(names),
+			}
+			ret = append([]*RestProperty{additionalProp}, ret...)
+		}
+	}
 	return ret
 }
 
