@@ -104,7 +104,7 @@ func (r *{{ .Name }}Resource) Create(ctx context.Context, req resource.CreateReq
 				Additional: collectAdditional(data),
 			},
 		})
-	tkh, diags := findFirst[keyhubmodels.{{ .BaseNameUp }}able](ctx, wrapper, "{{ .NameUnderscore }}", nil, err)
+	tkh, diags := findFirst[keyhubmodels.{{ .BaseNameUp }}able](ctx, wrapper, "{{ .NameUnderscore }}", nil, false, err)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -139,9 +139,15 @@ func (r *{{ .Name }}Resource) Read(ctx context.Context, req resource.ReadRequest
 	ctx = context.WithValue(ctx, keyHubClientKey, r.providerData.Client)
 	tflog.Info(ctx, "Reading {{ .NameUnderscore }} from Topicus KeyHub")
 {{- if .ParentResourceType }}
-	tkhParent, diags := find{{ .ParentResourceType }}ByUUID(ctx, data.{{ .ParentResourceNamePrefixUp }}UUID.ValueStringPointer())
+	tkhParent, diags := find{{ .ParentResourceType }}ByUUIDOrNil(ctx, data.{{ .ParentResourceNamePrefixUp }}UUID.ValueStringPointer())
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if tkhParent == nil {
+		tflog.Info(ctx, "Parent {{ .ParentResourceNamePrefixUnderscore }} not found, marking resource as removed")
+		resp.State.RemoveResource(ctx)
 		return
 	}
 
@@ -155,7 +161,13 @@ func (r *{{ .Name }}Resource) Read(ctx context.Context, req resource.ReadRequest
 			},
 		})
 
-	if !isHttpStatusCodeOk(ctx, -1, err, &resp.Diagnostics) {
+	if !isHttpStatusCodeOk(ctx, 404, err, &resp.Diagnostics) {
+		return
+	}
+	// only 404 remains
+	if err != nil {
+		tflog.Info(ctx, "{{ .NameUnderscore }} not found, marking resource as removed")
+		resp.State.RemoveResource(ctx)
 		return
 	}
 

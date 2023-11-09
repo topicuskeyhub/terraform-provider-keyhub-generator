@@ -87,7 +87,7 @@ func (d *{{ .Name }}DataSource) Read(ctx context.Context, req datasource.ReadReq
 		},
 	})
 
-	tkh, diags := findFirst[keyhubmodels.{{ .FullNameUp }}able](ctx, wrapper, "{{ .Name }}", &uuid, err)
+	tkh, diags := findFirst[keyhubmodels.{{ .FullNameUp }}able](ctx, wrapper, "{{ .Name }}", &uuid, false, err)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
