@@ -35,10 +35,12 @@ func tfObjectToTKH{{ .Suffix }}{{ .GoTypeName }}(ctx context.Context, recurse bo
 {{- template "tkhpropconvert" . }}
 {{- end }}
 {{- end }}
-{{- with AdditionalObjectsProperty . }}
+{{- range AdditionalObjectsProperties . }}
+{{- if ne .TFToTKH "" }}
     if recurse {
 {{- template "tkhpropconvert" . }}
     }
+{{- end }}
 {{- end }}
 {{- end }}
     return tkh, diags

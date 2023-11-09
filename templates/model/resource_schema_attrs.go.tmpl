@@ -1,6 +1,6 @@
 func resourceSchemaAttrs{{ .GoTypeName }}(recurse bool) map[string]rsschema.Attribute {
     schemaAttrs := make(map[string]rsschema.Attribute)
-{{- with AdditionalObjectsProperty . }}
+{{- range AdditionalObjectsProperties . }}
     if recurse {
         {{ template "resource_schema_attr.go.tmpl" . }}
     }

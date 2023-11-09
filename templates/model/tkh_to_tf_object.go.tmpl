@@ -34,7 +34,7 @@ func tkhToTFObject{{ .Suffix }}{{ .GoTypeName }}(recurse bool, tkh {{ .SDKTypeNa
     }
 
     obj := make(map[string]attr.Value)
-{{- with AdditionalObjectsProperty . }}
+{{- range AdditionalObjectsProperties . }}
     if recurse {
 {{- template "tfpropconvert" . }}
     }

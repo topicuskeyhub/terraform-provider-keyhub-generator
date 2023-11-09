@@ -1,6 +1,6 @@
 func dataSourceSchemaAttrs{{ .GoTypeName }}(recurse bool) map[string]dsschema.Attribute {
     schemaAttrs := make(map[string]dsschema.Attribute)
-{{- with AdditionalObjectsProperty . }}
+{{- range AdditionalObjectsProperties . }}
     if recurse {
         {{ template "data_source_schema_attr.go.tmpl" . }}
     }

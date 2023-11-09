@@ -214,9 +214,9 @@ func main() {
 
 	if *mode == "model" {
 		functions := template.FuncMap{
-			"RecurseCutOff":             apimodel.RecurseCutOff,
-			"AdditionalObjectsProperty": apimodel.AdditionalObjectsProperty,
-			"AllDirectProperties":       apimodel.AllDirectProperties,
+			"RecurseCutOff":               apimodel.RecurseCutOff,
+			"AdditionalObjectsProperties": apimodel.AdditionalObjectsProperties,
+			"AllDirectProperties":         apimodel.AllDirectProperties,
 		}
 		t, err := template.New("provider").Funcs(functions).ParseFS(tmpls, "templates/model/*")
 		if err != nil {

@@ -22,25 +22,26 @@ type RestType interface {
 }
 
 func RecurseCutOff(restType RestType) string {
-	if AdditionalObjectsProperty(restType) != nil {
+	if len(AdditionalObjectsProperties(restType)) > 0 {
 		return "false"
 	}
 	return "recurse"
 }
 
-func AdditionalObjectsProperty(restType RestType) *RestProperty {
+func AdditionalObjectsProperties(restType RestType) []*RestProperty {
+	ret := make([]*RestProperty, 0)
 	for _, curProperty := range restType.AllProperties() {
-		if curProperty.Name == "additionalObjects" {
-			return curProperty
+		if curProperty.Name == "additionalObjects" || curProperty.Name == "additional" {
+			ret = append(ret, curProperty)
 		}
 	}
-	return nil
+	return ret
 }
 
 func AllDirectProperties(restType RestType) []*RestProperty {
 	ret := make([]*RestProperty, 0)
 	for _, curProperty := range restType.AllProperties() {
-		if curProperty.Name != "additionalObjects" {
+		if curProperty.Name != "additionalObjects" && curProperty.Name != "additional" {
 			ret = append(ret, curProperty)
 		}
 	}
