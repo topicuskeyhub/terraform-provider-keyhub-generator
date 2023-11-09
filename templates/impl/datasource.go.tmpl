@@ -15,7 +15,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	keyhub "github.com/topicuskeyhub/sdk-go"
 	keyhubmodels "github.com/topicuskeyhub/sdk-go/models"
 	keyhubreq "github.com/topicuskeyhub/sdk-go/{{ .ResourceBase }}"
 )
@@ -31,7 +30,7 @@ func New{{ .NameUp }}DataSource() datasource.DataSource {
 }
 
 type {{ .Name }}DataSource struct {
-	client *keyhub.KeyHubClient
+	providerData *KeyHubProviderData
 }
 
 func (d *{{ .Name }}DataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
@@ -51,7 +50,7 @@ func (d *{{ .Name }}DataSource) Configure(ctx context.Context, req datasource.Co
 		return
 	}
 
-	client, ok := req.ProviderData.(*keyhub.KeyHubClient)
+	providerData, ok := req.ProviderData.(*KeyHubProviderData)
 
 	if !ok {
 		resp.Diagnostics.AddError(
@@ -62,7 +61,7 @@ func (d *{{ .Name }}DataSource) Configure(ctx context.Context, req datasource.Co
 		return
 	}
 
-	d.client = client
+	d.providerData = providerData
 }
 
 func (d *{{ .Name }}DataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
@@ -79,7 +78,9 @@ func (d *{{ .Name }}DataSource) Read(ctx context.Context, req datasource.ReadReq
 	})
 	uuid := data.UUID.ValueString()
 
-	wrapper, err := d.client.{{ .ResourceBaseUp }}().Get(ctx, &keyhubreq.{{ .ResourceBaseUp }}RequestBuilderGetRequestConfiguration{
+	d.providerData.Mutex.RLock()
+	defer d.providerData.Mutex.RUnlock()
+	wrapper, err := d.providerData.Client.{{ .ResourceBaseUp }}().Get(ctx, &keyhubreq.{{ .ResourceBaseUp }}RequestBuilderGetRequestConfiguration{
 		QueryParameters: &keyhubreq.{{ .ResourceBaseUp }}RequestBuilderGetQueryParameters{
 			Uuid:       []string{uuid},
 			Additional: additional,

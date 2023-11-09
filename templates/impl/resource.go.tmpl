@@ -13,7 +13,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	keyhub "github.com/topicuskeyhub/sdk-go"
 	keyhubmodels "github.com/topicuskeyhub/sdk-go/models"
 	keyhubreq "github.com/topicuskeyhub/sdk-go/{{ .ResourceBase }}"
 )
@@ -30,7 +29,7 @@ func New{{ .NameUp }}Resource() resource.Resource {
 }
 
 type {{ .Name }}Resource struct {
-	client *keyhub.KeyHubClient
+	providerData *KeyHubProviderData
 }
 
 func (r *{{ .Name }}Resource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -50,7 +49,7 @@ func (r *{{ .Name }}Resource) Configure(ctx context.Context, req resource.Config
 		return
 	}
 
-	client, ok := req.ProviderData.(*keyhub.KeyHubClient)
+	providerData, ok := req.ProviderData.(*KeyHubProviderData)
 
 	if !ok {
 		resp.Diagnostics.AddError(
@@ -61,7 +60,7 @@ func (r *{{ .Name }}Resource) Configure(ctx context.Context, req resource.Config
 		return
 	}
 
-	r.client = client
+	r.providerData = providerData
 }
 
 func (r *{{ .Name }}Resource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -71,7 +70,7 @@ func (r *{{ .Name }}Resource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	ctx = context.WithValue(ctx, keyHubClientKey, r.client)
+	ctx = context.WithValue(ctx, keyHubClientKey, r.providerData.Client)
 	obj, diags := types.ObjectValueFrom(ctx, {{ .FullName }}AttrTypesRSRecurse, data)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -84,6 +83,8 @@ func (r *{{ .Name }}Resource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
+	r.providerData.Mutex.Lock()
+	defer r.providerData.Mutex.Unlock()
 	tflog.Info(ctx, "Creating Topicus KeyHub {{ .NameUnderscore }}")
 	newWrapper := keyhubmodels.New{{ .BaseNameUp }}LinkableWrapper()
 	newWrapper.SetItems([]keyhubmodels.{{ .BaseNameUp }}able{newTkh})
@@ -94,9 +95,9 @@ func (r *{{ .Name }}Resource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	wrapper, err := r.client.{{ .ResourceBaseUp }}().By{{ .ResourceBaseUp }}idInt64(*tkhParent.GetLinks()[0].GetId()){{ .SubResourceReqMethod }}.Post(
+	wrapper, err := r.providerData.Client.{{ .ResourceBaseUp }}().By{{ .ResourceBaseUp }}idInt64(*tkhParent.GetLinks()[0].GetId()){{ .SubResourceReqMethod }}.Post(
 {{- else }}
-	wrapper, err := r.client.{{ .ResourceBaseUp }}().Post(
+	wrapper, err := r.providerData.Client.{{ .ResourceBaseUp }}().Post(
 {{- end }}
 		ctx, newWrapper, &keyhubreq.{{ .CollectionRequestTypePrefix }}RequestBuilderPostRequestConfiguration{
 			QueryParameters: &keyhubreq.{{ .CollectionRequestTypePrefix }}RequestBuilderPostQueryParameters{
@@ -133,7 +134,9 @@ func (r *{{ .Name }}Resource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
-	ctx = context.WithValue(ctx, keyHubClientKey, r.client)
+	r.providerData.Mutex.RLock()
+	defer r.providerData.Mutex.RUnlock()
+	ctx = context.WithValue(ctx, keyHubClientKey, r.providerData.Client)
 	tflog.Info(ctx, "Reading {{ .NameUnderscore }} from Topicus KeyHub")
 {{- if .ParentResourceType }}
 	tkhParent, diags := find{{ .ParentResourceType }}ByUUID(ctx, data.{{ .ParentResourceNamePrefixUp }}UUID.ValueStringPointer())
@@ -142,9 +145,9 @@ func (r *{{ .Name }}Resource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
-	tkh, err := r.client.{{ .ResourceBaseUp }}().By{{ .ResourceBaseUp }}idInt64(*tkhParent.GetLinks()[0].GetId()){{ .SubResourceReqMethod }}.By{{ .SubResourceBaseUp }}idInt64(getSelfLink(data.Links).ID.ValueInt64()).Get(
+	tkh, err := r.providerData.Client.{{ .ResourceBaseUp }}().By{{ .ResourceBaseUp }}idInt64(*tkhParent.GetLinks()[0].GetId()){{ .SubResourceReqMethod }}.By{{ .SubResourceBaseUp }}idInt64(getSelfLink(data.Links).ID.ValueInt64()).Get(
 {{- else }}
-	tkh, err := r.client.{{ .ResourceBaseUp }}().By{{ .ResourceBaseUp }}idInt64(getSelfLink(data.Links).ID.ValueInt64()).Get(
+	tkh, err := r.providerData.Client.{{ .ResourceBaseUp }}().By{{ .ResourceBaseUp }}idInt64(getSelfLink(data.Links).ID.ValueInt64()).Get(
 {{- end }}
 		ctx, &keyhubreq.{{ .ItemRequestTypePrefix }}RequestBuilderGetRequestConfiguration{
 			QueryParameters: &keyhubreq.{{ .ItemRequestTypePrefix }}RequestBuilderGetQueryParameters{
@@ -178,7 +181,7 @@ func (r *{{ .Name }}Resource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	ctx = context.WithValue(ctx, keyHubClientKey, r.client)
+	ctx = context.WithValue(ctx, keyHubClientKey, r.providerData.Client)
 	obj, diags := types.ObjectValueFrom(ctx, {{ .FullName }}AttrTypesRSRecurse, data)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
@@ -191,6 +194,8 @@ func (r *{{ .Name }}Resource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
+	r.providerData.Mutex.Lock()
+	defer r.providerData.Mutex.Unlock()
 	tflog.Info(ctx, "Updating Topicus KeyHub {{ .NameUnderscore }}")
 {{- if .ParentResourceType }}
 	tkhParent, diags := find{{ .ParentResourceType }}ByUUID(ctx, data.{{ .ParentResourceNamePrefixUp }}UUID.ValueStringPointer())
@@ -199,9 +204,9 @@ func (r *{{ .Name }}Resource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	tkh, err := r.client.{{ .ResourceBaseUp }}().By{{ .ResourceBaseUp }}idInt64(*tkhParent.GetLinks()[0].GetId()){{ .SubResourceReqMethod }}.By{{ .SubResourceBaseUp }}idInt64(getSelfLink(data.Links).ID.ValueInt64()).Put(
+	tkh, err := r.providerData.Client.{{ .ResourceBaseUp }}().By{{ .ResourceBaseUp }}idInt64(*tkhParent.GetLinks()[0].GetId()){{ .SubResourceReqMethod }}.By{{ .SubResourceBaseUp }}idInt64(getSelfLink(data.Links).ID.ValueInt64()).Put(
 {{- else }}
-	tkh, err := r.client.{{ .ResourceBaseUp }}().By{{ .ResourceBaseUp }}idInt64(getSelfLink(data.Links).ID.ValueInt64()).Put(
+	tkh, err := r.providerData.Client.{{ .ResourceBaseUp }}().By{{ .ResourceBaseUp }}idInt64(getSelfLink(data.Links).ID.ValueInt64()).Put(
 {{- end }}
 		ctx, newTkh, &keyhubreq.{{ .ItemRequestTypePrefix }}RequestBuilderPutRequestConfiguration{
 			QueryParameters: &keyhubreq.{{ .ItemRequestTypePrefix }}RequestBuilderPutQueryParameters{
@@ -239,12 +244,14 @@ func (r *{{ .Name }}Resource) Delete(ctx context.Context, req resource.DeleteReq
 		return
 	}
 
-	ctx = context.WithValue(ctx, keyHubClientKey, r.client)
+	r.providerData.Mutex.Lock()
+	defer r.providerData.Mutex.Unlock()
+	ctx = context.WithValue(ctx, keyHubClientKey, r.providerData.Client)
 	tflog.Info(ctx, "Deleting {{ .NameUnderscore }} from Topicus KeyHub")
 {{- if .ParentResourceType }}
-	err := r.client.{{ .ResourceBaseUp }}().By{{ .ResourceBaseUp }}idInt64(-1){{ .SubResourceReqMethod }}.By{{ .SubResourceBaseUp }}idInt64(-1).WithUrl(getSelfLink(data.Links).Href.ValueString()).Delete(ctx, nil)
+	err := r.providerData.Client.{{ .ResourceBaseUp }}().By{{ .ResourceBaseUp }}idInt64(-1){{ .SubResourceReqMethod }}.By{{ .SubResourceBaseUp }}idInt64(-1).WithUrl(getSelfLink(data.Links).Href.ValueString()).Delete(ctx, nil)
 {{- else }}
-	err := r.client.{{ .ResourceBaseUp }}().By{{ .ResourceBaseUp }}idInt64(-1).WithUrl(getSelfLink(data.Links).Href.ValueString()).Delete(ctx, nil)
+	err := r.providerData.Client.{{ .ResourceBaseUp }}().By{{ .ResourceBaseUp }}idInt64(-1).WithUrl(getSelfLink(data.Links).Href.ValueString()).Delete(ctx, nil)
 {{- end }}
 	if !isHttpStatusCodeOk(ctx, 404, err, &resp.Diagnostics) {
 		return
