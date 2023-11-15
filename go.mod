@@ -4,8 +4,8 @@ go 1.20
 
 require (
 	github.com/getkin/kin-openapi v0.120.0
-	github.com/topicuskeyhub/sdk-go v0.29.1-0.20231109164234-006d9ce6f621
-	golang.org/x/exp v0.0.0-20231108232855-2478ac86f678
+	github.com/topicuskeyhub/sdk-go v0.29.1-0.20231115090905-2e3dacc95093
+	golang.org/x/exp v0.0.0-20231110203233-9a3e6036ecaa
 )
 
 require github.com/rogpeppe/go-internal v1.11.0 // indirect
@@ -29,9 +29,9 @@ require (
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 // indirect
 	github.com/perimeterx/marshmallow v1.1.5 // indirect
 	github.com/std-uritemplate/std-uritemplate/go v0.0.46 // indirect
-	go.opentelemetry.io/otel v1.19.0 // indirect
-	go.opentelemetry.io/otel/metric v1.19.0 // indirect
-	go.opentelemetry.io/otel/trace v1.19.0 // indirect
+	go.opentelemetry.io/otel v1.20.0 // indirect
+	go.opentelemetry.io/otel/metric v1.20.0 // indirect
+	go.opentelemetry.io/otel/trace v1.20.0 // indirect
 	golang.org/x/crypto v0.15.0 // indirect
 	golang.org/x/oauth2 v0.14.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
