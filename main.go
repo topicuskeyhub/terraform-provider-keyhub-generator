@@ -35,6 +35,9 @@ type resourceTemplateParameters struct {
 	Name                               string
 	NameUp                             string
 	NameUnderscore                     string
+	ReadIdentifierQuery                string
+	ReadIdentifierSchema               string
+	ReadIdentifierStruct               string
 	FullName                           string
 	FullNameUp                         string
 	BaseName                           string
@@ -57,6 +60,9 @@ var resourceTemplateConfigs = map[string]resourceTemplateParameters{
 		Name:                               "clientapplication",
 		NameUp:                             "Clientapplication",
 		NameUnderscore:                     "clientapplication",
+		ReadIdentifierQuery:                "Uuid",
+		ReadIdentifierSchema:               "uuid",
+		ReadIdentifierStruct:               "UUID",
 		FullName:                           "clientClientApplication",
 		FullNameUp:                         "ClientClientApplication",
 		BaseName:                           "clientClientApplication",
@@ -77,6 +83,9 @@ var resourceTemplateConfigs = map[string]resourceTemplateParameters{
 		Name:                               "clientVaultrecord",
 		NameUp:                             "ClientVaultrecord",
 		NameUnderscore:                     "client_vaultrecord",
+		ReadIdentifierQuery:                "Uuid",
+		ReadIdentifierSchema:               "uuid",
+		ReadIdentifierStruct:               "UUID",
 		FullName:                           "clientApplicationVaultVaultRecord",
 		FullNameUp:                         "ClientApplicationVaultVaultRecord",
 		BaseName:                           "vaultVaultRecord",
@@ -97,6 +106,9 @@ var resourceTemplateConfigs = map[string]resourceTemplateParameters{
 		Name:                               "groupVaultrecord",
 		NameUp:                             "GroupVaultrecord",
 		NameUnderscore:                     "group_vaultrecord",
+		ReadIdentifierQuery:                "Uuid",
+		ReadIdentifierSchema:               "uuid",
+		ReadIdentifierStruct:               "UUID",
 		FullName:                           "groupVaultVaultRecord",
 		FullNameUp:                         "GroupVaultVaultRecord",
 		BaseName:                           "vaultVaultRecord",
@@ -117,6 +129,9 @@ var resourceTemplateConfigs = map[string]resourceTemplateParameters{
 		Name:                               "group",
 		NameUp:                             "Group",
 		NameUnderscore:                     "group",
+		ReadIdentifierQuery:                "Uuid",
+		ReadIdentifierSchema:               "uuid",
+		ReadIdentifierStruct:               "UUID",
 		FullName:                           "groupGroup",
 		FullNameUp:                         "GroupGroup",
 		BaseName:                           "groupGroup",
@@ -137,6 +152,9 @@ var resourceTemplateConfigs = map[string]resourceTemplateParameters{
 		Name:                               "grouponsystem",
 		NameUp:                             "Grouponsystem",
 		NameUnderscore:                     "grouponsystem",
+		ReadIdentifierQuery:                "NameInSystem",
+		ReadIdentifierSchema:               "name_in_system",
+		ReadIdentifierStruct:               "NameInSystem",
 		FullName:                           "nestedProvisioningGroupOnSystem",
 		FullNameUp:                         "NestedProvisioningGroupOnSystem",
 		BaseName:                           "provisioningGroupOnSystem",
@@ -157,6 +175,9 @@ var resourceTemplateConfigs = map[string]resourceTemplateParameters{
 		Name:                               "serviceaccount",
 		NameUp:                             "Serviceaccount",
 		NameUnderscore:                     "serviceaccount",
+		ReadIdentifierQuery:                "Uuid",
+		ReadIdentifierSchema:               "uuid",
+		ReadIdentifierStruct:               "UUID",
 		FullName:                           "serviceaccountServiceAccount",
 		FullNameUp:                         "ServiceaccountServiceAccount",
 		BaseName:                           "serviceaccountServiceAccount",

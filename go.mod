@@ -3,9 +3,9 @@ module github.com/topicuskeyhub/terraform-provider-keyhub-generator
 go 1.20
 
 require (
-	github.com/getkin/kin-openapi v0.121.0
+	github.com/getkin/kin-openapi v0.122.0
 	github.com/topicuskeyhub/sdk-go v0.30.1
-	golang.org/x/exp v0.0.0-20231127185646-65229373498e
+	golang.org/x/exp v0.0.0-20231206192017-f3f8817b8deb
 )
 
 require github.com/rogpeppe/go-internal v1.11.0 // indirect
@@ -28,7 +28,7 @@ require (
 	github.com/microsoft/kiota-serialization-json-go v1.0.4 // indirect
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 // indirect
 	github.com/perimeterx/marshmallow v1.1.5 // indirect
-	github.com/std-uritemplate/std-uritemplate/go v0.0.47 // indirect
+	github.com/std-uritemplate/std-uritemplate/go v0.0.48 // indirect
 	go.opentelemetry.io/otel v1.21.0 // indirect
 	go.opentelemetry.io/otel/metric v1.21.0 // indirect
 	go.opentelemetry.io/otel/trace v1.21.0 // indirect
