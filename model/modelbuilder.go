@@ -131,9 +131,10 @@ func countSubclasses(typeName string) int {
 func collectSubResources(openapi *openapi3.T) map[string][]string {
 	getpaths := make(map[string]string)
 	stripId := regexp.MustCompile(`\{[^{]*\}`)
-	for str, path := range openapi.Paths {
+	for _, str := range openapi.Paths.InMatchingOrder() {
+		path := openapi.Paths.Find(str)
 		if strings.HasSuffix(str, "}") {
-			for _, schema := range path.Get.Responses["200"].Value.Content {
+			for _, schema := range path.Get.Responses.Status(200).Value.Content {
 				getpaths[stripId.ReplaceAllString(str, "#")] = refToName(schema.Schema.Ref)
 				break
 			}
