@@ -86,6 +86,7 @@ func (p *RestProperty) TFName() string {
 	if alias, ok := aliasses[p.Parent.APITypeName()+"."+name]; ok {
 		name = alias
 	}
+	name = FirstCharToUpper(name)
 	name = strings.ReplaceAll(name, "OIDC", "Oidc")
 	name = strings.ReplaceAll(name, "OAuth2", "Oauth2")
 	name = strings.ReplaceAll(name, "LDAP", "Ldap")
@@ -102,11 +103,11 @@ func (p *RestProperty) TFName() string {
 	name = strings.ReplaceAll(name, "2FA", "2fa")
 	name = strings.ReplaceAll(name, "FA", "Fa")
 	ret := make([]rune, 0)
-	for _, r := range name {
-		if unicode.IsUpper(r) {
+	for i, r := range name {
+		if unicode.IsUpper(r) && i > 0 {
 			ret = append(ret, '_', unicode.ToLower(r))
 		} else {
-			ret = append(ret, r)
+			ret = append(ret, unicode.ToLower(r))
 		}
 	}
 	return string(ret)

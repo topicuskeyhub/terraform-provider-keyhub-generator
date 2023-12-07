@@ -252,13 +252,17 @@ func main() {
 		if err != nil {
 			log.Fatalf("Template parsing failed: %s", err)
 		}
+		resourceBase := *resource
+		if resourceBase == "clientapplication" {
+			resourceBase = "client"
+		}
 		merge("datasource", "-"+*resource, t, map[string]string{
 			"Name":           *resource,
 			"NameUp":         apimodel.FirstCharToUpper(*resource),
 			"FullName":       *linkable,
 			"FullNameUp":     apimodel.FirstCharToUpper(*linkable),
-			"ResourceBase":   *resource,
-			"ResourceBaseUp": apimodel.FirstCharToUpper(*resource),
+			"ResourceBase":   resourceBase,
+			"ResourceBaseUp": apimodel.FirstCharToUpper(resourceBase),
 		})
 	} else if *mode == "resource" {
 		t, err := template.New("provider").ParseFS(tmpls, "templates/impl/*")
