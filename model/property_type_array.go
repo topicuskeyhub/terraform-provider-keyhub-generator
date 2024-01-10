@@ -11,12 +11,19 @@ import (
 
 type restArrayType struct {
 	itemType             RestPropertyType
+	setCollection        bool
 	rsSchemaTemplateBase map[string]any
 }
 
-func NewRestArrayType(itemType RestPropertyType, rsSchemaTemplateBase map[string]any) RestPropertyType {
+func NewRestArrayType(itemType RestPropertyType, setCollection bool, rsSchemaTemplateBase map[string]any) RestPropertyType {
+	if setCollection {
+		rsSchemaTemplateBase["SchemaAttributeType"] = "SetAttribute"
+	} else {
+		rsSchemaTemplateBase["SchemaAttributeType"] = "ListAttribute"
+	}
 	return &restArrayType{
 		itemType:             itemType,
+		setCollection:        setCollection,
 		rsSchemaTemplateBase: rsSchemaTemplateBase,
 	}
 }
@@ -34,19 +41,37 @@ func (t *restArrayType) FlattenMode() string {
 }
 
 func (t *restArrayType) TFName() string {
-	return "types.List"
+	if t.setCollection {
+		return "types.Set"
+	} else {
+		return "types.List"
+	}
 }
 
 func (t *restArrayType) TFAttrType(inAdditionalObjects bool) string {
-	return "types.ListType{ElemType: " + t.itemType.TFAttrType(inAdditionalObjects) + "}"
+	var structName string
+	if t.setCollection {
+		structName = "types.SetType"
+	} else {
+		structName = "types.ListType"
+	}
+	return structName + "{ElemType: " + t.itemType.TFAttrType(inAdditionalObjects) + "}"
 }
 
 func (t *restArrayType) TFValueType() string {
-	return "basetypes.ListValue"
+	if t.setCollection {
+		return "basetypes.SetValue"
+	} else {
+		return "basetypes.ListValue"
+	}
 }
 
 func (t *restArrayType) TFValidatorType() string {
-	return "validator.List"
+	if t.setCollection {
+		return "validator.Set"
+	} else {
+		return "validator.List"
+	}
 }
 
 func (t *restArrayType) TFValidators() []string {
@@ -57,7 +82,11 @@ func (t *restArrayType) TFValidators() []string {
 	typename = typename[strings.LastIndex(typename, ".")+1:]
 
 	var sb strings.Builder
-	sb.WriteString("listvalidator.Value")
+	if t.setCollection {
+		sb.WriteString("setvalidator.Value")
+	} else {
+		sb.WriteString("listvalidator.Value")
+	}
 	sb.WriteString(typename)
 	sb.WriteString("sAre(\n")
 	for _, validator := range t.itemType.TFValidators() {
@@ -102,7 +131,13 @@ func (t *restArrayType) TKHToTF(value string, listItem bool) string {
 	} else {
 		body = "            return " + t.itemType.TKHToTF("tkh", true) + "\n"
 	}
-	return "sliceToTF(elemType, " + value + ", func(tkh " + sdkType + ", diags *diag.Diagnostics) attr.Value {\n" +
+	var functionName string
+	if t.setCollection {
+		functionName = "sliceToTFSet"
+	} else {
+		functionName = "sliceToTFList"
+	}
+	return functionName + "(elemType, " + value + ", func(tkh " + sdkType + ", diags *diag.Diagnostics) attr.Value {\n" +
 		body +
 		"        })"
 }
@@ -117,7 +152,13 @@ func (t *restArrayType) TFToTKH(value string, listItem bool) string {
 	} else {
 		body = "            return " + t.itemType.TFToTKH("val", true) + "\n"
 	}
-	return "tfToSlice(" + value + ".(basetypes.ListValue), func(val attr.Value, diags *diag.Diagnostics) " + sdkType + " {\n" +
+	var functionName string
+	if t.setCollection {
+		functionName = "tfToSliceSet"
+	} else {
+		functionName = "tfToSliceList"
+	}
+	return functionName + "(" + value + ".(" + t.TFValueType() + "), func(val attr.Value, diags *diag.Diagnostics) " + sdkType + " {\n" +
 		body +
 		"        })"
 }
@@ -147,9 +188,11 @@ func (t *restArrayType) DSSchemaTemplate() string {
 }
 
 func (t *restArrayType) DSSchemaTemplateData() map[string]any {
-	return map[string]any{
+	ret := map[string]any{
 		"ElementType": t.itemType.TFAttrType(false),
 	}
+	maps.Copy(ret, t.rsSchemaTemplateBase)
+	return ret
 }
 
 func (t *restArrayType) RSSchemaTemplate() string {
@@ -165,5 +208,5 @@ func (t *restArrayType) RSSchemaTemplateData() map[string]any {
 }
 
 func (t *restArrayType) DS() RestPropertyType {
-	return NewRestArrayType(t.itemType.DS(), t.rsSchemaTemplateBase)
+	return NewRestArrayType(t.itemType.DS(), t.setCollection, t.rsSchemaTemplateBase)
 }

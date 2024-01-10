@@ -318,7 +318,7 @@ func buildType(parentType *restClassType, baseTypeName string, propertyName stri
 		schema = schema.AllOf[0].Value
 	}
 	if schema.Type == "array" {
-		return NewRestArrayType(buildType(parentType, baseTypeName, propertyName, schema.Items, types, restProperty, rsSchemaTemplateBase), rsSchemaTemplateBase)
+		return NewRestArrayType(buildType(parentType, baseTypeName, propertyName, schema.Items, types, restProperty, rsSchemaTemplateBase), schema.UniqueItems, rsSchemaTemplateBase)
 	} else if schema.AdditionalProperties.Schema != nil {
 		return NewRestMapType(baseTypeName+"_"+propertyName,
 			buildType(parentType, baseTypeName, propertyName, schema.AdditionalProperties.Schema, types, restProperty, rsSchemaTemplateBase),

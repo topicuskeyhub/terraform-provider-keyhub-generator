@@ -4,7 +4,7 @@ schemaAttrs["{{ .TFName }}"] = rsschema.ListNestedAttribute{
         Attributes: resourceSchemaAttrs{{ .Type.NestedType.GoTypeName }}({{ RecurseCutOff .Parent }}),
     },
 {{- else -}}
-schemaAttrs["{{ .TFName }}"] = rsschema.ListAttribute{
+schemaAttrs["{{ .TFName }}"] = rsschema.{{ .Type.RSSchemaTemplateData.SchemaAttributeType }}{
     ElementType: {{ .Type.RSSchemaTemplateData.ElementType }},
 {{- end }}
 {{- if eq .Type.RSSchemaTemplateData.Mode "Computed_UseStateForUnknown" }}

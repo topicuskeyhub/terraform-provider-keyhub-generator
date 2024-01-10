@@ -9,7 +9,7 @@ schemaAttrs["{{ .TFName }}"] = dsschema.ListNestedAttribute{
 {{- end }}
 }
 {{- else -}}
-schemaAttrs["{{ .TFName }}"] = dsschema.ListAttribute{
+schemaAttrs["{{ .TFName }}"] = dsschema.{{ .Type.DSSchemaTemplateData.SchemaAttributeType }}{
     ElementType: {{ .Type.DSSchemaTemplateData.ElementType }},
     Computed: true,
 {{- if .Deprecated }}
