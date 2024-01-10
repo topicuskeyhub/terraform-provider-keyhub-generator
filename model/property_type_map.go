@@ -95,14 +95,14 @@ func (t *restMapType) TFAttrNeeded() bool {
 }
 
 func (t *restMapType) TKHToTF(value string, listItem bool) string {
-	sdkType := t.itemType.SDKTypeName(true)
+	sdkType := t.itemType.SDKTypeName(false)
 	var body string
 	if t.itemType.ToTFAttrWithDiag() {
-		body = "            val, d := " + t.itemType.TKHToTF("tkh.("+sdkType+")", true) + "\n" +
+		body = "            val, d := " + t.itemType.TKHToTF("tkh.("+sdkType+")", false) + "\n" +
 			"            diags.Append(d...)\n" +
 			"            return val\n"
 	} else {
-		body = "            return " + t.itemType.TKHToTF("tkh.("+sdkType+")", true) + "\n"
+		body = "            return " + t.itemType.TKHToTF("tkh.("+sdkType+")", false) + "\n"
 	}
 
 	return "mapToTF(elemType, " + value + ".GetAdditionalData(), func(tkh any, diags *diag.Diagnostics) attr.Value {\n" +
