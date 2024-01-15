@@ -9,4 +9,7 @@ schemaAttrs["{{ .TFName }}"] = {{ .Type.DSSchemaTemplateData.Type }}{
 {{- if .Deprecated }}
     DeprecationMessage: "This property will be removed in a future version.",
 {{- end }}
+{{- if .Type.DSSchemaTemplateData.Sensitive }}
+    Sensitive: true,
+{{- end }}
 }

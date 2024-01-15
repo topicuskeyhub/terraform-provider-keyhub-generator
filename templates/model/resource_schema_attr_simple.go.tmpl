@@ -20,4 +20,7 @@ schemaAttrs["{{ .TFName }}"] = {{ .Type.RSSchemaTemplateData.Type }}{
 {{- if .Deprecated }}
     DeprecationMessage: "This property will be removed in a future version.",
 {{- end }}
+{{- if .Type.RSSchemaTemplateData.Sensitive }}
+    Sensitive: true,
+{{- end }}
 }
