@@ -81,7 +81,7 @@ func (t *restNestedObjectType) TFValidators() []string {
 }
 
 func (t *restNestedObjectType) Complex() bool {
-	return false
+	return true
 }
 
 func (t *restNestedObjectType) RequiresReplace() bool {
