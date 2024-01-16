@@ -57,6 +57,10 @@ func (t *restFindByUUIDObjectType) Complex() bool {
 	return false
 }
 
+func (t *restFindByUUIDObjectType) RequiresReplace() bool {
+	return false
+}
+
 func (t *restFindByUUIDObjectType) NestedType() RestType {
 	return t.nestedType.NestedType()
 }

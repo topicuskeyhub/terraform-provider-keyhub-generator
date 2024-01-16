@@ -32,6 +32,7 @@ type RestPropertyType interface {
 	ToTKHCustomCode() string
 	TFAttrNeeded() bool
 	Complex() bool
+	RequiresReplace() bool
 	NestedType() RestType
 	TKHToTF(value string, listItem bool) string
 	TFToTKH(value string, listItem bool) string

@@ -101,6 +101,10 @@ func (t *restArrayType) Complex() bool {
 	return t.itemType.Complex()
 }
 
+func (t *restArrayType) RequiresReplace() bool {
+	return false
+}
+
 func (t *restArrayType) NestedType() RestType {
 	return t.itemType.NestedType()
 }

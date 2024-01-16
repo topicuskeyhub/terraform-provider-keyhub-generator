@@ -74,6 +74,10 @@ func (t *restMapType) Complex() bool {
 	return t.itemType.Complex()
 }
 
+func (t *restMapType) RequiresReplace() bool {
+	return false
+}
+
 func (t *restMapType) NestedType() RestType {
 	return t.itemType.NestedType()
 }

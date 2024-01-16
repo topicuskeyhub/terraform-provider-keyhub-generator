@@ -84,6 +84,10 @@ func (t *restNestedObjectType) Complex() bool {
 	return true
 }
 
+func (t *restNestedObjectType) RequiresReplace() bool {
+	return false
+}
+
 func (t *restNestedObjectType) NestedType() RestType {
 	return t.nestedType
 }

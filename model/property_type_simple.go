@@ -125,6 +125,10 @@ func (t *restSimpleType) Complex() bool {
 	return false
 }
 
+func (t *restSimpleType) RequiresReplace() bool {
+	return false
+}
+
 func (t *restSimpleType) NestedType() RestType {
 	return nil
 }

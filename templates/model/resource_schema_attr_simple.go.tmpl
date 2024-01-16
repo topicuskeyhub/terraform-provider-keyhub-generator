@@ -13,6 +13,9 @@ schemaAttrs["{{ .TFName }}"] = {{ .Type.RSSchemaTemplateData.Type }}{
     PlanModifiers: []{{ .Type.RSSchemaTemplateData.PlanModifierType }}{ {{ .Type.RSSchemaTemplateData.PlanModifierPkg }}.UseStateForUnknown() },
 {{- else }}
     {{ .Type.RSSchemaTemplateData.Mode }}: true,
+{{- if .Type.RequiresReplace }}
+    PlanModifiers: []{{ .Type.RSSchemaTemplateData.PlanModifierType }}{ {{ .Type.RSSchemaTemplateData.PlanModifierPkg }}.RequiresReplace() },
+{{- end }}    
 {{- if ne .Type.RSSchemaTemplateData.Mode "Computed" }}
 {{- template "common_schema_attr_validators.go.tmpl" . }}
 {{- end }}

@@ -66,6 +66,10 @@ func (t *restEnumPropertyType) Complex() bool {
 	return false
 }
 
+func (t *restEnumPropertyType) RequiresReplace() bool {
+	return false
+}
+
 func (t *restEnumPropertyType) NestedType() RestType {
 	return t.enumType
 }

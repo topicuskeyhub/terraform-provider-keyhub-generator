@@ -71,6 +71,10 @@ func (t *restPolymorphicSubtype) Complex() bool {
 	return true
 }
 
+func (t *restPolymorphicSubtype) RequiresReplace() bool {
+	return false
+}
+
 func (t *restPolymorphicSubtype) NestedType() RestType {
 	return t.nestedType
 }

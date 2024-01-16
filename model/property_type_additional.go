@@ -60,6 +60,10 @@ func (t *restAdditionalType) Complex() bool {
 	return false
 }
 
+func (t *restAdditionalType) RequiresReplace() bool {
+	return false
+}
+
 func (t *restAdditionalType) NestedType() RestType {
 	return nil
 }
