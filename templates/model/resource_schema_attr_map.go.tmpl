@@ -2,7 +2,7 @@ schemaAttrs["{{ .TFName }}"] = rsschema.MapAttribute{
     ElementType: {{ .Type.RSSchemaTemplateData.ElementType }},
 {{- if eq .Type.RSSchemaTemplateData.Mode "Computed_UseStateForUnknown" }}
     Computed: true,
-	PlanModifiers: []planmodifier.List{listplanmodifier.UseStateForUnknown()},
+	PlanModifiers: []planmodifier.Map{mapplanmodifier.UseStateForUnknown()},
 {{- else if eq .Type.RSSchemaTemplateData.Mode "Optional_Computed" }}
     Optional: true,
     Computed: true,

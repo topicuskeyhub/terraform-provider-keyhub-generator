@@ -7,7 +7,7 @@
         {{ .Type.TKHToTFGuard -}}
         val, d := {{ .TKHToTF }}
         diags.Append(d...)
-        {{- if eq .Type.FlattenMode "ItemsList" }}
+        {{- if eq .Type.FlattenMode "ItemsSet" }}
         obj["{{ .TFName }}"] = getItemsAttr(val, attrs["{{ .TFName }}"])
         {{- else if eq .Type.FlattenMode "AdditionalObjects" }}
         maps.Copy(obj, val.Attributes())

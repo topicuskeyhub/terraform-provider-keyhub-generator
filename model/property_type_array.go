@@ -16,11 +16,6 @@ type restArrayType struct {
 }
 
 func NewRestArrayType(itemType RestPropertyType, setCollection bool, rsSchemaTemplateBase map[string]any) RestPropertyType {
-	if setCollection {
-		rsSchemaTemplateBase["SchemaAttributeType"] = "SetAttribute"
-	} else {
-		rsSchemaTemplateBase["SchemaAttributeType"] = "ListAttribute"
-	}
 	return &restArrayType{
 		itemType:             itemType,
 		setCollection:        setCollection,
@@ -191,12 +186,29 @@ func (t *restArrayType) DSSchemaTemplate() string {
 	return "data_source_schema_attr_array.go.tmpl"
 }
 
-func (t *restArrayType) DSSchemaTemplateData() map[string]any {
+func (t *restArrayType) fillSchemaTemplateBase() map[string]any {
 	ret := map[string]any{
 		"ElementType": t.itemType.TFAttrType(false),
 	}
+	if t.setCollection {
+		if t.itemType.Complex() {
+			ret["SchemaAttributeType"] = "SetNestedAttribute"
+		} else {
+			ret["SchemaAttributeType"] = "SetAttribute"
+		}
+	} else {
+		if t.itemType.Complex() {
+			ret["SchemaAttributeType"] = "ListNestedAttribute"
+		} else {
+			ret["SchemaAttributeType"] = "ListAttribute"
+		}
+	}
 	maps.Copy(ret, t.rsSchemaTemplateBase)
 	return ret
+}
+
+func (t *restArrayType) DSSchemaTemplateData() map[string]any {
+	return t.fillSchemaTemplateBase()
 }
 
 func (t *restArrayType) RSSchemaTemplate() string {
@@ -204,11 +216,7 @@ func (t *restArrayType) RSSchemaTemplate() string {
 }
 
 func (t *restArrayType) RSSchemaTemplateData() map[string]any {
-	ret := map[string]any{
-		"ElementType": t.itemType.TFAttrType(false),
-	}
-	maps.Copy(ret, t.rsSchemaTemplateBase)
-	return ret
+	return t.fillSchemaTemplateBase()
 }
 
 func (t *restArrayType) DS() RestPropertyType {
