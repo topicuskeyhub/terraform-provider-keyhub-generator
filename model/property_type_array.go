@@ -196,12 +196,14 @@ func (t *restArrayType) fillSchemaTemplateBase() map[string]any {
 		} else {
 			ret["SchemaAttributeType"] = "SetAttribute"
 		}
+		ret["StateForUnknown"] = "[]planmodifier.Set{setplanmodifier.UseStateForUnknown()}"
 	} else {
 		if t.itemType.Complex() {
 			ret["SchemaAttributeType"] = "ListNestedAttribute"
 		} else {
 			ret["SchemaAttributeType"] = "ListAttribute"
 		}
+		ret["StateForUnknown"] = "[]planmodifier.List{listplanmodifier.UseStateForUnknown()}"
 	}
 	maps.Copy(ret, t.rsSchemaTemplateBase)
 	return ret

@@ -2,11 +2,11 @@
     maps.Copy(schemaAttrs, dataSourceSchemaAttrs{{ .Type.NestedType.GoTypeName }}({{ RecurseCutOff .Parent }}))
 {{- else -}}
 {
-{{- if eq .Type.FlattenMode "ItemsSet" }}
+{{- if eq .Type.FlattenMode "ItemsList" }}
 {{- if (index .Type.NestedType.AllProperties 0).Type.Complex }}
-    attr := dataSourceSchemaAttrs{{ .Type.NestedType.GoTypeName }}({{ RecurseCutOff .Parent }})["items"].(dsschema.SetNestedAttribute)
+    attr := dataSourceSchemaAttrs{{ .Type.NestedType.GoTypeName }}({{ RecurseCutOff .Parent }})["items"].(dsschema.ListNestedAttribute)
 {{- else }}
-    attr := dataSourceSchemaAttrs{{ .Type.NestedType.GoTypeName }}({{ RecurseCutOff .Parent }})["items"].(dsschema.SetAttribute)
+    attr := dataSourceSchemaAttrs{{ .Type.NestedType.GoTypeName }}({{ RecurseCutOff .Parent }})["items"].(dsschema.ListAttribute)
 {{- end }}
 {{- else }}
     attr := dsschema.SingleNestedAttribute{

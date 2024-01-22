@@ -2,11 +2,11 @@
     maps.Copy(schemaAttrs, resourceSchemaAttrs{{ .Type.NestedType.GoTypeName }}({{ RecurseCutOff .Parent }}))
 {{- else -}}
 {
-{{- if eq .Type.FlattenMode "ItemsSet" }}
+{{- if eq .Type.FlattenMode "ItemsList" }}
 {{- if (index .Type.NestedType.AllProperties 0).Type.Complex }}
-    attr := resetSetNestedAttributeFlags(resourceSchemaAttrs{{ .Type.NestedType.GoTypeName }}({{ RecurseCutOff .Parent }})["items"].(rsschema.SetNestedAttribute))
+    attr := resetListNestedAttributeFlags(resourceSchemaAttrs{{ .Type.NestedType.GoTypeName }}({{ RecurseCutOff .Parent }})["items"].(rsschema.ListNestedAttribute))
 {{- else }}
-    attr := resetSetAttributeFlags(resourceSchemaAttrs{{ .Type.NestedType.GoTypeName }}({{ RecurseCutOff .Parent }})["items"].(rsschema.SetAttribute))
+    attr := resetListAttributeFlags(resourceSchemaAttrs{{ .Type.NestedType.GoTypeName }}({{ RecurseCutOff .Parent }})["items"].(rsschema.ListAttribute))
 {{- end }}
 {{- else }}
     attr := rsschema.SingleNestedAttribute{

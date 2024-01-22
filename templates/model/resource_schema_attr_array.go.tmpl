@@ -9,7 +9,7 @@ schemaAttrs["{{ .TFName }}"] = rsschema.{{ .Type.RSSchemaTemplateData.SchemaAttr
 {{- end }}
 {{- if eq .Type.RSSchemaTemplateData.Mode "Computed_UseStateForUnknown" }}
     Computed: true,
-	PlanModifiers: []planmodifier.Set{setplanmodifier.UseStateForUnknown()},
+	PlanModifiers: {{ .Type.RSSchemaTemplateData.StateForUnknown }},
 {{- else if eq .Type.RSSchemaTemplateData.Mode "Optional_Computed" }}
     Optional: true,
     Computed: true,

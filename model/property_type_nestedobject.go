@@ -38,15 +38,15 @@ func (t *restNestedObjectType) FlattenMode() string {
 	if strings.HasSuffix(t.nestedType.APITypeName(), "LinkableWrapper") {
 		nestedProps := t.nestedType.AllProperties()
 		if len(nestedProps) == 1 && nestedProps[0].TFName() == "items" {
-			return "ItemsSet"
+			return "ItemsList"
 		}
 	}
 	return "None"
 }
 
 func (t *restNestedObjectType) TFName() string {
-	if t.FlattenMode() == "ItemsSet" {
-		return "types.Set"
+	if t.FlattenMode() == "ItemsList" {
+		return "types.List"
 	}
 	return "types.Object"
 }
@@ -59,15 +59,15 @@ func (t *restNestedObjectType) TFAttrType(inAdditionalObjects bool) string {
 		recurseCutOff = RecurseCutOff(t.property.Parent)
 	}
 	nestedAttrType := "objectAttrsType" + t.nestedType.Suffix() + t.nestedType.GoTypeName() + "(" + recurseCutOff + ")"
-	if t.FlattenMode() == "ItemsSet" {
+	if t.FlattenMode() == "ItemsList" {
 		return nestedAttrType + `["items"]`
 	}
 	return "types.ObjectType{AttrTypes: " + nestedAttrType + "}"
 }
 
 func (t *restNestedObjectType) TFValueType() string {
-	if t.FlattenMode() == "ItemsSet" {
-		return "basetypes.SetValue"
+	if t.FlattenMode() == "ItemsList" {
+		return "basetypes.ListValue"
 	}
 	return "basetypes.ObjectValue"
 }
@@ -117,8 +117,8 @@ func (t *restNestedObjectType) TFToTKH(value string, listItem bool) string {
 	var tfVal string
 	if t.FlattenMode() == "AdditionalObjects" {
 		tfVal = "objVal"
-	} else if t.FlattenMode() == "ItemsSet" {
-		tfVal = `toItemsSet(ctx, objAttrs["` + t.property.TFName() + `"])`
+	} else if t.FlattenMode() == "ItemsList" {
+		tfVal = `toItemsList(ctx, objAttrs["` + t.property.TFName() + `"])`
 	} else {
 		tfVal = value + ".(basetypes.ObjectValue)"
 	}
