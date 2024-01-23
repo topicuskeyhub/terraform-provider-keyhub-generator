@@ -47,3 +47,19 @@ func AllDirectProperties(restType RestType) []*RestProperty {
 	}
 	return ret
 }
+
+func IdentifyingProperties(restType RestType) []*RestProperty {
+	ret := make([]*RestProperty, 0)
+	notComputed := make([]*RestProperty, 0)
+	for _, p := range AllDirectProperties(restType) {
+		if !p.Type.Complex() {
+			if p.IsRequired() {
+				ret = append(ret, p)
+			} else if p.IsNotComputed() {
+				notComputed = append(notComputed, p)
+			}
+		}
+	}
+	ret = append(ret, notComputed...)
+	return ret
+}

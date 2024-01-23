@@ -1,0 +1,48 @@
+{{- define "propreorder" }}
+{{- if and (ne .Type.OrderMode "None") .IsNotComputed }}
+{{- if eq .Type.OrderMode "AdditionalObjects" }}
+    obj = reorder{{ .Type.NestedType.GoTypeName }}(state, priorState, false).Attributes()
+{{- else if eq .Type.OrderMode "Object" }}
+    obj["{{ .TFName }}"] = reorder{{ .Type.NestedType.GoTypeName }}(state.Attributes()["{{ .TFName }}"].(types.Object), priorState.Attributes()["{{ .TFName }}"].(types.Object), recurse)
+{{- else if eq .Type.OrderMode "ItemsList" }}
+    {
+        attrState := (state.Attributes()["{{ .TFName }}"].(types.List)).Elements()
+        attrPriorState := (priorState.Attributes()["{{ .TFName }}"].(types.List)).Elements()
+        newAttrState := make([]attr.Value, 0, len(attrState))
+        for i, s := range attrState {
+            newAttrState = append(newAttrState, reorder{{ (index .Type.NestedType.AllProperties 0).Type.NestedType.GoTypeName }}(s.(types.Object), attrPriorState[i].(types.Object), recurse))
+        }
+        newAttrState = reorderList(newAttrState, attrPriorState, []string{
+{{- range IdentifyingProperties (index .Type.NestedType.AllProperties 0).Type.NestedType }}
+            "{{ .TFName }}",
+{{- end }}
+        })
+        obj["{{ .TFName }}"] = types.ListValueMust(attrs["{{ .TFName }}"].(types.ListType).ElemType, newAttrState)
+    }
+{{- else }}
+	// Reordering not supported for {{ .TFName }} with type {{ .Type.OrderMode }}
+{{- end }}
+{{- end }}
+{{- end }}
+func reorder{{ .GoTypeName }}(state basetypes.ObjectValue, priorState basetypes.ObjectValue, recurse bool) basetypes.ObjectValue {
+    if state.IsNull() || state.IsUnknown() || priorState.IsNull() || priorState.IsUnknown() {
+        return state
+    }
+    var attrs map[string]attr.Type
+    if recurse {
+        attrs = {{ .ObjectAttrTypesName }}{{ .Suffix }}Recurse
+    } else {
+        attrs = {{ .ObjectAttrTypesName }}{{ .Suffix }}
+    }
+    obj := state.Attributes()
+{{- range AdditionalObjectsProperties . }}
+    if recurse {
+{{- template "propreorder" . }}
+    }
+{{- end }}
+{{- range AllDirectProperties . }}
+{{- template "propreorder" . }}
+{{- end }}
+
+    return types.ObjectValueMust(attrs, obj)
+}

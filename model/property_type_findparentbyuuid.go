@@ -21,6 +21,10 @@ func (t *restFindParentByUUIDObjectType) FlattenMode() string {
 	return "None"
 }
 
+func (t *restFindParentByUUIDObjectType) OrderMode() string {
+	return "None"
+}
+
 func (t *restFindParentByUUIDObjectType) TFName() string {
 	return "types.String"
 }

@@ -74,13 +74,13 @@ func (r *{{ .Name }}Resource) Create(ctx context.Context, req resource.CreateReq
 	}
 
 	ctx = context.WithValue(ctx, keyHubClientKey, r.providerData.Client)
-	obj, diags := types.ObjectValueFrom(ctx, {{ .FullName }}AttrTypesRSRecurse, data)
+	plannedState, diags := types.ObjectValueFrom(ctx, {{ .FullName }}AttrTypesRSRecurse, data)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	newTkh, diags := tfObjectToTKHRS{{ .FullNameUp }}(ctx, true, obj)
+	newTkh, diags := tfObjectToTKHRS{{ .FullNameUp }}(ctx, true, plannedState)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -114,16 +114,17 @@ func (r *{{ .Name }}Resource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	tf, diags := tkhToTFObjectRS{{ .FullNameUp }}(true, tkh)
+	postState, diags := tkhToTFObjectRS{{ .FullNameUp }}(true, tkh)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 {{- if .ParentResourceType }}
-	tf = setAttributeValue(ctx, tf, "{{ .ParentResourceNamePrefixUnderscore }}_uuid", types.StringValue(data.{{ .ParentResourceNamePrefixUp }}UUID.ValueString()))
+	postState = setAttributeValue(ctx, postState, "{{ .ParentResourceNamePrefixUnderscore }}_uuid", types.StringValue(data.{{ .ParentResourceNamePrefixUp }}UUID.ValueString()))
 {{- end }}
-	fillDataStructFromTFObjectRS{{ .FullNameUp }}(&data, tf)
+	postState = reorder{{ .FullNameUp }}(postState, plannedState, true)
+	fillDataStructFromTFObjectRS{{ .FullNameUp }}(&data, postState)
 	data.Additional = additionalBackup
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -135,6 +136,11 @@ func (r *{{ .Name }}Resource) Create(ctx context.Context, req resource.CreateReq
 func (r *{{ .Name }}Resource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data {{ .FullName }}DataRS
 	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	priorState, diags := types.ObjectValueFrom(ctx, {{ .FullName }}AttrTypesRSRecurse, data)
+	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -184,16 +190,17 @@ func (r *{{ .Name }}Resource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
-	tf, diags := tkhToTFObjectRS{{ .FullNameUp }}(true, tkh)
+	postState, diags := tkhToTFObjectRS{{ .FullNameUp }}(true, tkh)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 {{- if .ParentResourceType }}
-	tf = setAttributeValue(ctx, tf, "{{ .ParentResourceNamePrefixUnderscore }}_uuid", types.StringValue(data.{{ .ParentResourceNamePrefixUp }}UUID.ValueString()))
+	postState = setAttributeValue(ctx, postState, "{{ .ParentResourceNamePrefixUnderscore }}_uuid", types.StringValue(data.{{ .ParentResourceNamePrefixUp }}UUID.ValueString()))
 {{- end }}
-	fillDataStructFromTFObjectRS{{ .FullNameUp }}(&data, tf)
+	postState = reorder{{ .FullNameUp }}(postState, priorState, true)
+	fillDataStructFromTFObjectRS{{ .FullNameUp }}(&data, postState)
 	data.Additional = additionalBackup
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -208,13 +215,13 @@ func (r *{{ .Name }}Resource) Update(ctx context.Context, req resource.UpdateReq
 	}
 
 	ctx = context.WithValue(ctx, keyHubClientKey, r.providerData.Client)
-	obj, diags := types.ObjectValueFrom(ctx, {{ .FullName }}AttrTypesRSRecurse, data)
+	priorState, diags := types.ObjectValueFrom(ctx, {{ .FullName }}AttrTypesRSRecurse, data)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	newTkh, diags := tfObjectToTKHRS{{ .FullNameUp }}(ctx, true, obj)
+	newTkh, diags := tfObjectToTKHRS{{ .FullNameUp }}(ctx, true, priorState)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -245,16 +252,17 @@ func (r *{{ .Name }}Resource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	tf, diags := tkhToTFObjectRS{{ .FullNameUp }}(true, tkh)
+	postState, diags := tkhToTFObjectRS{{ .FullNameUp }}(true, tkh)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 {{- if .ParentResourceType }}
-	tf = setAttributeValue(ctx, tf, "{{ .ParentResourceNamePrefixUnderscore }}_uuid", types.StringValue(data.{{ .ParentResourceNamePrefixUp }}UUID.ValueString()))
+	postState = setAttributeValue(ctx, postState, "{{ .ParentResourceNamePrefixUnderscore }}_uuid", types.StringValue(data.{{ .ParentResourceNamePrefixUp }}UUID.ValueString()))
 {{- end }}
-	fillDataStructFromTFObjectRS{{ .FullNameUp }}(&data, tf)
+	postState = reorder{{ .FullNameUp }}(postState, priorState, true)
+	fillDataStructFromTFObjectRS{{ .FullNameUp }}(&data, postState)
 	data.Additional = additionalBackup
 
 	tflog.Info(ctx, "Updated a Topicus KeyHub {{ .NameUnderscore }}")

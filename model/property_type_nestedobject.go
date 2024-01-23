@@ -44,6 +44,19 @@ func (t *restNestedObjectType) FlattenMode() string {
 	return "None"
 }
 
+func (t *restNestedObjectType) OrderMode() string {
+	if t.property.TFName() == "additional_objects" {
+		return "AdditionalObjects"
+	}
+	if strings.HasSuffix(t.nestedType.APITypeName(), "LinkableWrapper") {
+		nestedProps := t.nestedType.AllProperties()
+		if len(nestedProps) == 1 && nestedProps[0].TFName() == "items" {
+			return "ItemsList"
+		}
+	}
+	return "Object"
+}
+
 func (t *restNestedObjectType) TFName() string {
 	if t.FlattenMode() == "ItemsList" {
 		return "types.List"

@@ -29,6 +29,10 @@ func (t *restFindBaseByUUIDObjectType) FlattenMode() string {
 	return "None"
 }
 
+func (t *restFindBaseByUUIDObjectType) OrderMode() string {
+	return "None"
+}
+
 func (t *restFindBaseByUUIDObjectType) TFName() string {
 	return "types.String"
 }

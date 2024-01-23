@@ -40,6 +40,10 @@ func (t *restPolymorphicSubtype) FlattenMode() string {
 	return "None"
 }
 
+func (t *restPolymorphicSubtype) OrderMode() string {
+	return "Object"
+}
+
 func (t *restPolymorphicSubtype) TFName() string {
 	return "types.Object"
 }

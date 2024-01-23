@@ -238,6 +238,7 @@ func main() {
 			"RecurseCutOff":               apimodel.RecurseCutOff,
 			"AdditionalObjectsProperties": apimodel.AdditionalObjectsProperties,
 			"AllDirectProperties":         apimodel.AllDirectProperties,
+			"IdentifyingProperties":       apimodel.IdentifyingProperties,
 		}
 		t, err := template.New("provider").Funcs(functions).ParseFS(tmpls, "templates/model/*")
 		if err != nil {
@@ -259,6 +260,7 @@ func main() {
 		merge("full-data-struct-rs", "", t, types)
 		merge("full-object-attrs-ds", "", t, types)
 		merge("full-object-attrs-rs", "", t, types)
+		merge("full-reorder-rs", "", t, types)
 		merge("full-schema-ds", "", t, types)
 		merge("full-schema-rs", "", t, types)
 		merge("full-tf-to-data-struct-ds", "", t, types)

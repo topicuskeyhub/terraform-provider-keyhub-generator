@@ -34,6 +34,10 @@ func (t *restEnumPropertyType) FlattenMode() string {
 	return "None"
 }
 
+func (t *restEnumPropertyType) OrderMode() string {
+	return "None"
+}
+
 func (t *restEnumPropertyType) TFName() string {
 	return "types.String"
 }

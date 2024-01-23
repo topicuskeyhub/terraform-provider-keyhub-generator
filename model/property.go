@@ -22,6 +22,7 @@ type RestPropertyType interface {
 	MarkReachable()
 	PropertyNameSuffix() string
 	FlattenMode() string
+	OrderMode() string
 	TFName() string
 	TFValueType() string
 	TFAttrType(inAdditionalObjects bool) string
@@ -132,6 +133,16 @@ func (p *RestProperty) TKHSetter() string {
 
 func (p *RestProperty) TFToTKH() string {
 	return p.Type.TFToTKH("objAttrs[\""+p.TFName()+"\"]", false)
+}
+
+func (p *RestProperty) IsNotComputed() bool {
+	mode := p.Type.RSSchemaTemplateData()["Mode"]
+	return !(mode == "Computed_UseStateForUnknown" || mode == "Computed")
+}
+
+func (p *RestProperty) IsRequired() bool {
+	mode := p.Type.RSSchemaTemplateData()["Mode"]
+	return mode == "Required"
 }
 
 func (p *RestProperty) DS() *RestProperty {

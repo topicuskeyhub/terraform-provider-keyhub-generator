@@ -28,6 +28,10 @@ func (t *restAdditionalType) FlattenMode() string {
 	return "None"
 }
 
+func (t *restAdditionalType) OrderMode() string {
+	return "None"
+}
+
 func (t *restAdditionalType) TFName() string {
 	return "types.List"
 }

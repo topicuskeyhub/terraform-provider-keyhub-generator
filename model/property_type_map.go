@@ -35,6 +35,10 @@ func (t *restMapType) FlattenMode() string {
 	return "None"
 }
 
+func (t *restMapType) OrderMode() string {
+	return "Map"
+}
+
 func (t *restMapType) TFName() string {
 	return "types.Map"
 }

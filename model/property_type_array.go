@@ -35,6 +35,13 @@ func (t *restArrayType) FlattenMode() string {
 	return "None"
 }
 
+func (t *restArrayType) OrderMode() string {
+	if t.setCollection || !t.Complex() {
+		return "None"
+	}
+	return "List"
+}
+
 func (t *restArrayType) TFName() string {
 	if t.setCollection {
 		return "types.Set"

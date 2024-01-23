@@ -38,6 +38,10 @@ func (t *restSimpleType) FlattenMode() string {
 	return "None"
 }
 
+func (t *restSimpleType) OrderMode() string {
+	return "None"
+}
+
 func (t *restSimpleType) TFName() string {
 	switch t.openapiType {
 	case "boolean":
