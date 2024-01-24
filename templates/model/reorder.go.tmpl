@@ -1,23 +1,29 @@
 {{- define "propreorder" }}
 {{- if and (ne .Type.OrderMode "None") .IsNotComputed }}
 {{- if eq .Type.OrderMode "AdditionalObjects" }}
-    obj = reorder{{ .Type.NestedType.GoTypeName }}(state, priorState, false).Attributes()
+    maps.Copy(obj, reorder{{ .Type.NestedType.GoTypeName }}(state, priorState, false).Attributes())
 {{- else if eq .Type.OrderMode "Object" }}
     obj["{{ .TFName }}"] = reorder{{ .Type.NestedType.GoTypeName }}(state.Attributes()["{{ .TFName }}"].(types.Object), priorState.Attributes()["{{ .TFName }}"].(types.Object), recurse)
 {{- else if eq .Type.OrderMode "ItemsList" }}
     {
-        attrState := (state.Attributes()["{{ .TFName }}"].(types.List)).Elements()
-        attrPriorState := (priorState.Attributes()["{{ .TFName }}"].(types.List)).Elements()
-        newAttrState := make([]attr.Value, 0, len(attrState))
-        for i, s := range attrState {
-            newAttrState = append(newAttrState, reorder{{ (index .Type.NestedType.AllProperties 0).Type.NestedType.GoTypeName }}(s.(types.Object), attrPriorState[i].(types.Object), recurse))
-        }
-        newAttrState = reorderList(newAttrState, attrPriorState, []string{
+        attrState := state.Attributes()["{{ .TFName }}"]
+        attrPriorState := priorState.Attributes()["{{ .TFName }}"]
+        if attrState.IsNull() || attrState.IsUnknown() || attrPriorState.IsNull() || attrPriorState.IsUnknown() {
+            obj["{{ .TFName }}"] = attrState
+        } else {
+            attrStateEl := (attrState.(types.List)).Elements()
+            attrPriorStateEl := (attrPriorState.(types.List)).Elements()
+            newAttrState := make([]attr.Value, 0, len(attrStateEl))
+            for i, s := range attrStateEl {
+                newAttrState = append(newAttrState, reorder{{ (index .Type.NestedType.AllProperties 0).Type.NestedType.GoTypeName }}(s.(types.Object), attrPriorStateEl[i].(types.Object), recurse))
+            }
+            newAttrState = reorderList(newAttrState, attrPriorStateEl, []string{
 {{- range IdentifyingProperties (index .Type.NestedType.AllProperties 0).Type.NestedType }}
-            "{{ .TFName }}",
+                "{{ .TFName }}",
 {{- end }}
-        })
-        obj["{{ .TFName }}"] = types.ListValueMust(attrs["{{ .TFName }}"].(types.ListType).ElemType, newAttrState)
+            })
+            obj["{{ .TFName }}"] = types.ListValueMust(attrs["{{ .TFName }}"].(types.ListType).ElemType, newAttrState)
+        }
     }
 {{- else }}
 	// Reordering not supported for {{ .TFName }} with type {{ .Type.OrderMode }}
@@ -34,7 +40,7 @@ func reorder{{ .GoTypeName }}(state basetypes.ObjectValue, priorState basetypes.
     } else {
         attrs = {{ .ObjectAttrTypesName }}{{ .Suffix }}
     }
-    obj := state.Attributes()
+    obj := filterAttributes(state.Attributes(), attrs)
 {{- range AdditionalObjectsProperties . }}
     if recurse {
 {{- template "propreorder" . }}
