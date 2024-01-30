@@ -13,15 +13,11 @@
         } else {
             attrStateEl := (attrState.(types.List)).Elements()
             attrPriorStateEl := (attrPriorState.(types.List)).Elements()
-            newAttrState := make([]attr.Value, 0, len(attrStateEl))
-            for i, s := range attrStateEl {
-                newAttrState = append(newAttrState, reorder{{ (index .Type.NestedType.AllProperties 0).Type.NestedType.GoTypeName }}(s.(types.Object), attrPriorStateEl[i].(types.Object), recurse))
-            }
-            newAttrState = reorderList(newAttrState, attrPriorStateEl, []string{
+            newAttrState := reorderList(attrStateEl, attrPriorStateEl, recurse, []string{
 {{- range IdentifyingProperties (index .Type.NestedType.AllProperties 0).Type.NestedType }}
                 "{{ .TFName }}",
 {{- end }}
-            })
+            }, reorder{{ (index .Type.NestedType.AllProperties 0).Type.NestedType.GoTypeName }})
             obj["{{ .TFName }}"] = types.ListValueMust(attrs["{{ .TFName }}"].(types.ListType).ElemType, newAttrState)
         }
     }
