@@ -179,7 +179,7 @@ func getOrBuildTypeModel(types map[string]RestType, name string, schema *openapi
 	}
 
 	ownType := findOwnTypeSchema(schema)
-	if ownType.Value.Type == "string" && len(ownType.Value.Enum) > 0 {
+	if ownType.Value.Type.Is("string") && len(ownType.Value.Enum) > 0 {
 		return NewRestEnumType(originalName, ownType.Value.Enum)
 	} else {
 		discriminator := ""
@@ -247,7 +247,7 @@ func buildProperties(parent *restClassType, baseTypeName string, schema *openapi
 		if skipProperty(baseTypeName, name) {
 			continue
 		}
-		rsSchemaTemplateBase := buildRSSchemaTemplateBase(schema, baseTypeName, name)
+		rsSchemaTemplateBase := buildRSSchemaTemplateBase(schema, name)
 		if name == "type" {
 			if baseTypeName == "RestLink" || baseTypeName == "authPermission" {
 				name = "typeEscaped"
@@ -275,23 +275,21 @@ func buildProperties(parent *restClassType, baseTypeName string, schema *openapi
 		return ret[i].Name < ret[j].Name
 	})
 	if additionalObjectsProp != nil {
-		if additionalObjectsProp != nil {
-			names := make([]string, 0)
-			for _, prop := range additionalObjectsProp.Type.NestedType().AllProperties() {
-				if !prop.WriteOnly {
-					names = append(names, prop.Name)
-				}
+		names := make([]string, 0)
+		for _, prop := range additionalObjectsProp.Type.NestedType().AllProperties() {
+			if !prop.WriteOnly {
+				names = append(names, prop.Name)
 			}
-			additionalProp := &RestProperty{
-				Parent:     parent,
-				Name:       "additional",
-				Required:   false,
-				WriteOnly:  false,
-				Deprecated: false,
-				Type:       NewAdditionalType(names),
-			}
-			ret = append([]*RestProperty{additionalProp}, ret...)
 		}
+		additionalProp := &RestProperty{
+			Parent:     parent,
+			Name:       "additional",
+			Required:   false,
+			WriteOnly:  false,
+			Deprecated: false,
+			Type:       NewAdditionalType(names),
+		}
+		ret = append([]*RestProperty{additionalProp}, ret...)
 	}
 	return ret
 }
@@ -317,19 +315,19 @@ func buildType(parentType *restClassType, baseTypeName string, propertyName stri
 		}
 		schema = schema.AllOf[0].Value
 	}
-	if schema.Type == "array" {
+	if schema.Type.Is("array") {
 		return NewRestArrayType(buildType(parentType, baseTypeName, propertyName, schema.Items, types, restProperty, rsSchemaTemplateBase), schema.UniqueItems, rsSchemaTemplateBase)
 	} else if schema.AdditionalProperties.Schema != nil {
 		return NewRestMapType(baseTypeName+"_"+propertyName,
 			buildType(parentType, baseTypeName, propertyName, schema.AdditionalProperties.Schema, types, restProperty, rsSchemaTemplateBase),
 			rsSchemaTemplateBase)
 	}
-	if ref.Ref != "" && schema.Type == "string" && len(schema.Enum) > 0 {
+	if ref.Ref != "" && schema.Type.Is("string") && len(schema.Enum) > 0 {
 		enumName := refToName(ref.Ref)
 		enum := getOrBuildTypeModel(types, enumName, ref, nil)
 		return NewEnumPropertyType(enum, rsSchemaTemplateBase)
 	}
-	if schema.Type == "boolean" || schema.Type == "integer" || schema.Type == "string" {
+	if schema.Type.Is("boolean") || schema.Type.Is("integer") || schema.Type.Is("string") {
 		return NewRestSimpleType(restProperty, schema, rsSchemaTemplateBase)
 	}
 	if is(ref, object) {
@@ -374,7 +372,7 @@ func withUUID(schema *openapi3.Schema) bool {
 }
 
 func object(schema *openapi3.Schema) bool {
-	return schema.Type == "object"
+	return schema.Type.Is("object")
 }
 
 func deprecated(schema *openapi3.Schema) bool {
@@ -408,7 +406,7 @@ Optional or required field that has a default value
 Required
 Required field that does not have a default value
 */
-func buildRSSchemaTemplateBase(ref *openapi3.SchemaRef, typeName string, propertyName string) map[string]any {
+func buildRSSchemaTemplateBase(ref *openapi3.SchemaRef, propertyName string) map[string]any {
 	required := slices.Contains(ref.Value.Required, propertyName)
 	property := ref.Value.Properties[propertyName]
 	if property.Value.AllOf != nil && len(property.Value.AllOf) > 0 {

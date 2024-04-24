@@ -13,7 +13,7 @@ import (
 
 type restSimpleType struct {
 	property             *RestProperty
-	openapiType          string
+	openapiType          *openapi3.Types
 	openapiSchema        *openapi3.Schema
 	rsSchemaTemplateBase map[string]any
 }
@@ -43,12 +43,12 @@ func (t *restSimpleType) OrderMode() string {
 }
 
 func (t *restSimpleType) TFName() string {
-	switch t.openapiType {
-	case "boolean":
+	switch {
+	case t.openapiType.Is("boolean"):
 		return "types.Bool"
-	case "string":
+	case t.openapiType.Is("string"):
 		return "types.String"
-	case "integer":
+	case t.openapiType.Is("integer"):
 		return "types.Int64"
 	default:
 		log.Fatalf("Unknown simple type: %s", t.openapiType)
@@ -57,12 +57,12 @@ func (t *restSimpleType) TFName() string {
 }
 
 func (t *restSimpleType) TFAttrType(inAdditionalObjects bool) string {
-	switch t.openapiType {
-	case "boolean":
+	switch {
+	case t.openapiType.Is("boolean"):
 		return "types.BoolType"
-	case "string":
+	case t.openapiType.Is("string"):
 		return "types.StringType"
-	case "integer":
+	case t.openapiType.Is("integer"):
 		return "types.Int64Type"
 	default:
 		log.Fatalf("Unknown simple type: %s", t.openapiType)
@@ -71,12 +71,12 @@ func (t *restSimpleType) TFAttrType(inAdditionalObjects bool) string {
 }
 
 func (t *restSimpleType) TFValueType() string {
-	switch t.openapiType {
-	case "boolean":
+	switch {
+	case t.openapiType.Is("boolean"):
 		return "basetypes.BoolValue"
-	case "string":
+	case t.openapiType.Is("string"):
 		return "basetypes.StringValue"
-	case "integer":
+	case t.openapiType.Is("integer"):
 		return "basetypes.Int64Value"
 	default:
 		log.Fatalf("Unknown simple type: %s", t.openapiType)
@@ -85,12 +85,12 @@ func (t *restSimpleType) TFValueType() string {
 }
 
 func (t *restSimpleType) TFValidatorType() string {
-	switch t.openapiType {
-	case "boolean":
+	switch {
+	case t.openapiType.Is("boolean"):
 		return "validator.Bool"
-	case "string":
+	case t.openapiType.Is("string"):
 		return "validator.String"
-	case "integer":
+	case t.openapiType.Is("integer"):
 		return "validator.Int64"
 	default:
 		log.Fatalf("Unknown simple type: %s", t.openapiType)
@@ -100,7 +100,7 @@ func (t *restSimpleType) TFValidatorType() string {
 
 func (t *restSimpleType) TFValidators() []string {
 	validators := make([]string, 0)
-	if t.openapiType == "string" {
+	if t.openapiType.Is("string") {
 		minLength := t.openapiSchema.MinLength
 		maxLength := t.openapiSchema.MaxLength
 		if maxLength != nil {
@@ -109,7 +109,7 @@ func (t *restSimpleType) TFValidators() []string {
 		if t.property.Name == "uuid" {
 			validators = append(validators, `stringvalidator.RegexMatches(regexp.MustCompile("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"), "The value must be a valid UUID"),`)
 		}
-	} else if t.openapiType == "integer" {
+	} else if t.openapiType.Is("integer") {
 		min := t.openapiSchema.Min
 		max := t.openapiSchema.Max
 		if min != nil {
@@ -143,7 +143,7 @@ func (t *restSimpleType) ToTFAttrWithDiag() bool {
 
 func (t *restSimpleType) ToTKHAttrWithDiag() bool {
 	openapiFormat := t.openapiSchema.Format
-	return t.openapiType == "string" &&
+	return t.openapiType.Is("string") &&
 		(openapiFormat == "date-time" || openapiFormat == "uuid" || openapiFormat == "date")
 }
 
@@ -158,17 +158,17 @@ func (t *restSimpleType) TFAttrNeeded() bool {
 func (t *restSimpleType) TKHToTF(value string, listItem bool) string {
 	openapiFormat := t.openapiSchema.Format
 	if listItem {
-		switch t.openapiType {
-		case "boolean":
+		switch {
+		case t.openapiType.Is("boolean"):
 			return "types.BoolValue(" + value + ")"
-		case "string":
+		case t.openapiType.Is("string"):
 			if openapiFormat == "date-time" {
 				return "timeToTF(" + value + ")"
 			} else if openapiFormat == "uuid" || openapiFormat == "date" {
 				return "types.StringValue(" + value + ".String())"
 			}
 			return "types.StringValue(" + value + ")"
-		case "integer":
+		case t.openapiType.Is("integer"):
 			if openapiFormat == "int32" {
 				return "types.Int64Value(int64(" + value + "))"
 			}
@@ -178,17 +178,17 @@ func (t *restSimpleType) TKHToTF(value string, listItem bool) string {
 			return "error"
 		}
 	} else {
-		switch t.openapiType {
-		case "boolean":
+		switch {
+		case t.openapiType.Is("boolean"):
 			return "types.BoolPointerValue(" + value + ")"
-		case "string":
+		case t.openapiType.Is("string"):
 			if openapiFormat == "date-time" {
 				return "timePointerToTF(" + value + ")"
 			} else if openapiFormat == "uuid" || openapiFormat == "date" {
 				return "stringerToTF(" + value + ")"
 			}
 			return "types.StringPointerValue(" + value + ")"
-		case "integer":
+		case t.openapiType.Is("integer"):
 			if openapiFormat == "int32" {
 				return "types.Int64PointerValue(int32PToInt64P(" + value + "))"
 			}
@@ -203,10 +203,10 @@ func (t *restSimpleType) TKHToTF(value string, listItem bool) string {
 func (t *restSimpleType) TFToTKH(value string, listItem bool) string {
 	openapiFormat := t.openapiSchema.Format
 	if listItem {
-		switch t.openapiType {
-		case "boolean":
+		switch {
+		case t.openapiType.Is("boolean"):
 			return value + ".(basetypes.BoolValue).ValueBool()"
-		case "string":
+		case t.openapiType.Is("string"):
 			if openapiFormat == "date-time" {
 				return "tfToTime(" + value + ".(basetypes.StringValue))"
 			} else if openapiFormat == "uuid" {
@@ -215,7 +215,7 @@ func (t *restSimpleType) TFToTKH(value string, listItem bool) string {
 				return "parse(" + value + ".(basetypes.StringValue), serialization.ParseDateOnly)"
 			}
 			return value + ".(basetypes.StringValue).ValueString()"
-		case "integer":
+		case t.openapiType.Is("integer"):
 			if openapiFormat == "int32" {
 				return "int32(" + value + ".(basetypes.Int64Value).ValueInt64())"
 			}
@@ -225,10 +225,10 @@ func (t *restSimpleType) TFToTKH(value string, listItem bool) string {
 			return "error"
 		}
 	} else {
-		switch t.openapiType {
-		case "boolean":
+		switch {
+		case t.openapiType.Is("boolean"):
 			return value + ".(basetypes.BoolValue).ValueBoolPointer()"
-		case "string":
+		case t.openapiType.Is("string"):
 			if openapiFormat == "date-time" {
 				return "tfToTimePointer(" + value + ".(basetypes.StringValue))"
 			} else if openapiFormat == "uuid" {
@@ -237,7 +237,7 @@ func (t *restSimpleType) TFToTKH(value string, listItem bool) string {
 				return "parsePointer2(" + value + ".(basetypes.StringValue), serialization.ParseDateOnly)"
 			}
 			return value + ".(basetypes.StringValue).ValueStringPointer()"
-		case "integer":
+		case t.openapiType.Is("integer"):
 			if openapiFormat == "int32" {
 				return "int64PToInt32P(" + value + ".(basetypes.Int64Value).ValueInt64Pointer())"
 			}
@@ -264,10 +264,10 @@ func (t *restSimpleType) TKHGetter(propertyName string) string {
 func (t *restSimpleType) SDKTypeName(listItem bool) string {
 	openapiFormat := t.openapiSchema.Format
 	var ret string
-	switch t.openapiType {
-	case "boolean":
+	switch {
+	case t.openapiType.Is("boolean"):
 		ret = "bool"
-	case "string":
+	case t.openapiType.Is("string"):
 		if openapiFormat == "date-time" {
 			ret = "time.Time"
 		} else if openapiFormat == "uuid" {
@@ -275,7 +275,7 @@ func (t *restSimpleType) SDKTypeName(listItem bool) string {
 		} else {
 			ret = "string"
 		}
-	case "integer":
+	case t.openapiType.Is("integer"):
 		if openapiFormat == "int32" {
 			ret = "int32"
 		} else {
@@ -301,12 +301,12 @@ func (t *restSimpleType) DSSchemaTemplate() string {
 
 func (t *restSimpleType) DSSchemaTemplateData() map[string]any {
 	var attrType string
-	switch t.openapiType {
-	case "boolean":
+	switch {
+	case t.openapiType.Is("boolean"):
 		attrType = "dsschema.BoolAttribute"
-	case "string":
+	case t.openapiType.Is("string"):
 		attrType = "dsschema.StringAttribute"
-	case "integer":
+	case t.openapiType.Is("integer"):
 		attrType = "dsschema.Int64Attribute"
 	default:
 		log.Fatalf("Unknown simple type: %s", t.openapiType)
@@ -330,18 +330,18 @@ func (t *restSimpleType) RSSchemaTemplateData() map[string]any {
 	var planModifierType string
 	var planModifierPkg string
 	var defaultVal string
-	switch t.openapiType {
-	case "boolean":
+	switch {
+	case t.openapiType.Is("boolean"):
 		attrType = "rsschema.BoolAttribute"
 		planModifierType = "planmodifier.Bool"
 		planModifierPkg = "boolplanmodifier"
 		defaultVal = fmt.Sprintf("booldefault.StaticBool(%v)", t.rsSchemaTemplateBase["Default"])
-	case "string":
+	case t.openapiType.Is("string"):
 		attrType = "rsschema.StringAttribute"
 		planModifierType = "planmodifier.String"
 		planModifierPkg = "stringplanmodifier"
 		defaultVal = fmt.Sprintf("stringdefault.StaticString(\"%v\")", t.rsSchemaTemplateBase["Default"])
-	case "integer":
+	case t.openapiType.Is("integer"):
 		attrType = "rsschema.Int64Attribute"
 		planModifierType = "planmodifier.Int64"
 		planModifierPkg = "int64planmodifier"
