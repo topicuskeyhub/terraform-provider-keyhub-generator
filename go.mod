@@ -5,9 +5,9 @@ go 1.22.0
 toolchain go1.22.2
 
 require (
-	github.com/getkin/kin-openapi v0.127.0
-	github.com/topicuskeyhub/sdk-go v0.36.0
-	golang.org/x/exp v0.0.0-20240909161429-701f63a606c0
+	github.com/getkin/kin-openapi v0.128.0
+	github.com/topicuskeyhub/sdk-go v0.37.0
+	golang.org/x/exp v0.0.0-20241009180824-f66d83c29e7c
 )
 
 require (
@@ -28,10 +28,10 @@ require (
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 // indirect
 	github.com/perimeterx/marshmallow v1.1.5 // indirect
 	github.com/std-uritemplate/std-uritemplate/go v1.0.6 // indirect
-	go.opentelemetry.io/otel v1.30.0 // indirect
-	go.opentelemetry.io/otel/metric v1.30.0 // indirect
-	go.opentelemetry.io/otel/trace v1.30.0 // indirect
-	golang.org/x/crypto v0.27.0 // indirect
+	go.opentelemetry.io/otel v1.31.0 // indirect
+	go.opentelemetry.io/otel/metric v1.31.0 // indirect
+	go.opentelemetry.io/otel/trace v1.31.0 // indirect
+	golang.org/x/crypto v0.28.0 // indirect
 	golang.org/x/oauth2 v0.23.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
