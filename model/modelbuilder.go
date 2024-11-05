@@ -133,7 +133,7 @@ func collectSubResources(openapi *openapi3.T) map[string][]string {
 	stripId := regexp.MustCompile(`\{[^{]*\}`)
 	for _, str := range openapi.Paths.InMatchingOrder() {
 		path := openapi.Paths.Find(str)
-		if strings.HasSuffix(str, "}") {
+		if strings.HasSuffix(str, "}") && path.Get != nil {
 			for _, schema := range path.Get.Responses.Status(200).Value.Content {
 				getpaths[stripId.ReplaceAllString(str, "#")] = refToName(schema.Schema.Ref)
 				break
