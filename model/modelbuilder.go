@@ -201,6 +201,9 @@ func getOrBuildTypeModel(types map[string]RestType, name string, schema *openapi
 			ret = NewRestSubresourceClassType(name, parentResourceInfo.prefix, ret)
 		}
 
+		if existing, ok := types[name]; ok {
+			return existing
+		}
 		types[name] = ret
 		classType.properties = buildProperties(classType, originalName, ownType, types)
 

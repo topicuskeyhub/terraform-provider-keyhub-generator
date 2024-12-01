@@ -3,7 +3,9 @@
 
 package model
 
-import "sort"
+import (
+	"sort"
+)
 
 type restPolymorphicBaseClassType struct {
 	reachable  bool
