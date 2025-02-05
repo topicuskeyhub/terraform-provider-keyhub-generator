@@ -113,7 +113,7 @@ func (t *restNestedObjectType) ToTKHAttrWithDiag() bool {
 	return true
 }
 
-func (t *restNestedObjectType) ToTKHCustomCode() string {
+func (t *restNestedObjectType) ToTKHCustomCode(buildType RestType) string {
 	return ""
 }
 

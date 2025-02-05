@@ -119,7 +119,7 @@ func (t *restArrayType) ToTKHAttrWithDiag() bool {
 	return true
 }
 
-func (t *restArrayType) ToTKHCustomCode() string {
+func (t *restArrayType) ToTKHCustomCode(baseType RestType) string {
 	return ""
 }
 

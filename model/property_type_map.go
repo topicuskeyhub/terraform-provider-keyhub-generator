@@ -94,7 +94,7 @@ func (t *restMapType) ToTKHAttrWithDiag() bool {
 	return true
 }
 
-func (t *restMapType) ToTKHCustomCode() string {
+func (t *restMapType) ToTKHCustomCode(buildType RestType) string {
 	return ""
 }
 

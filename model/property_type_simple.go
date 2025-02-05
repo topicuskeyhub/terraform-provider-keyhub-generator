@@ -147,7 +147,7 @@ func (t *restSimpleType) ToTKHAttrWithDiag() bool {
 		(openapiFormat == "date-time" || openapiFormat == "uuid" || openapiFormat == "date")
 }
 
-func (t *restSimpleType) ToTKHCustomCode() string {
+func (t *restSimpleType) ToTKHCustomCode(buildType RestType) string {
 	return ""
 }
 

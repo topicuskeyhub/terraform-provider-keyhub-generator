@@ -86,7 +86,7 @@ func (t *restEnumPropertyType) ToTKHAttrWithDiag() bool {
 	return true
 }
 
-func (t *restEnumPropertyType) ToTKHCustomCode() string {
+func (t *restEnumPropertyType) ToTKHCustomCode(baseType RestType) string {
 	return ""
 }
 

@@ -87,7 +87,7 @@ func collectWritableSubclassCounts() {
 		}
 	}
 	for name, val := range writableSubclassCounts {
-		if val == 1 || countSubclasses(name) < 2 {
+		if val == 1 || countSubclasses(name) < 2 || strings.HasSuffix(name, "Primer") {
 			delete(writableSubclassCounts, name)
 		}
 	}
@@ -208,8 +208,16 @@ func getOrBuildTypeModel(types map[string]RestType, name string, schema *openapi
 		classType.properties = buildProperties(classType, originalName, ownType, types)
 
 		if polymorphicBaseType != nil {
+			found := false
 			polyType := types[*polymorphicBaseType].(*restPolymorphicBaseClassType)
-			polyType.subtypes = append(polyType.subtypes, classType)
+			for _, t := range polyType.subtypes {
+				if t.APITypeName() == classType.APITypeName() {
+					found = true
+				}
+			}
+			if !found {
+				polyType.subtypes = append(polyType.subtypes, classType)
+			}
 		}
 		return ret
 	}

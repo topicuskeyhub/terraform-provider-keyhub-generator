@@ -80,7 +80,7 @@ func (t *restAdditionalType) ToTKHAttrWithDiag() bool {
 	return false
 }
 
-func (t *restAdditionalType) ToTKHCustomCode() string {
+func (t *restAdditionalType) ToTKHCustomCode(buildType RestType) string {
 	return ""
 }
 

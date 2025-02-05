@@ -21,6 +21,11 @@ type RestType interface {
 	DS() RestType
 }
 
+type PropertyWithType struct {
+	Property *RestProperty
+	Type     RestType
+}
+
 func RecurseCutOff(restType RestType) string {
 	if len(AdditionalObjectsProperties(restType)) > 0 {
 		return "false"
@@ -62,4 +67,11 @@ func IdentifyingProperties(restType RestType) []*RestProperty {
 	}
 	ret = append(ret, notComputed...)
 	return ret
+}
+
+func ToPropertyWithType(Property *RestProperty, Type RestType) PropertyWithType {
+	return PropertyWithType{
+		Property: Property,
+		Type:     Type,
+	}
 }

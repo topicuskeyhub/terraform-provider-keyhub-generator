@@ -77,7 +77,7 @@ func (t *restFindByUUIDObjectType) ToTKHAttrWithDiag() bool {
 	return true
 }
 
-func (t *restFindByUUIDObjectType) ToTKHCustomCode() string {
+func (t *restFindByUUIDObjectType) ToTKHCustomCode(buildType RestType) string {
 	return ""
 }
 

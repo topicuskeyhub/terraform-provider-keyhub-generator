@@ -30,7 +30,7 @@ type RestPropertyType interface {
 	TFValidators() []string
 	ToTFAttrWithDiag() bool
 	ToTKHAttrWithDiag() bool
-	ToTKHCustomCode() string
+	ToTKHCustomCode(buildType RestType) string
 	TFAttrNeeded() bool
 	Complex() bool
 	RequiresReplace() bool

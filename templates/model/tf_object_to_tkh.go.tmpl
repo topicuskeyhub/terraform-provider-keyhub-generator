@@ -1,21 +1,21 @@
 {{- define "tkhpropconvert" }}
-{{- if .Type.ToTKHAttrWithDiag }}
-    {{ .Type.TFToTKHGuard }}{
-        val, d := {{ .TFToTKH }}
+{{- if .Property.Type.ToTKHAttrWithDiag }}
+    {{ .Property.Type.TFToTKHGuard }}{
+        val, d := {{ .Property.TFToTKH }}
         diags.Append(d...)
-{{- if .Type.ToTKHCustomCode }}
-        {{ .Type.ToTKHCustomCode }}
+{{- if .Property.Type.ToTKHCustomCode .Type }}
+        {{ .Property.Type.ToTKHCustomCode .Type }}
 {{- else }}
-        tkh.{{ .TKHSetter }}(val)
+        tkh.{{ .Property.TKHSetter }}(val)
 {{- end }}
-{{- if .IsDTypeRequired }}
+{{- if .Property.IsDTypeRequired }}
         if val != nil {
-            val.SetAdditionalData(map[string]any{"$type": "{{ .Type.NestedType.APIDiscriminator }}"})
+            val.SetAdditionalData(map[string]any{"$type": "{{ .Property.Type.NestedType.APIDiscriminator }}"})
         }
 {{- end }}
     }
 {{- else }}
-    tkh.{{ .TKHSetter }}({{ .TFToTKH }})
+    tkh.{{ .Property.TKHSetter }}({{ .Property.TFToTKH }})
 {{- end }}
 {{- end }}
 func tfObjectToTKH{{ .Suffix }}{{ .GoTypeName }}(ctx context.Context, recurse bool, objVal types.Object) ({{ .SDKTypeName }}, diag.Diagnostics) {
@@ -24,6 +24,7 @@ func tfObjectToTKH{{ .Suffix }}{{ .GoTypeName }}(ctx context.Context, recurse bo
         return nil, diags
     }
 
+{{- $type := . }}
 {{- if .AllProperties }}
     objAttrs := objVal.Attributes()
 {{- end }}
@@ -32,13 +33,13 @@ func tfObjectToTKH{{ .Suffix }}{{ .GoTypeName }}(ctx context.Context, recurse bo
 {{- if .AllProperties }}
 {{- range AllDirectProperties . }}
 {{- if ne .TFToTKH "" }}
-{{- template "tkhpropconvert" . }}
+{{- template "tkhpropconvert" ToPropertyWithType . $type }}
 {{- end }}
 {{- end }}
 {{- range AdditionalObjectsProperties . }}
 {{- if ne .TFToTKH "" }}
     if recurse {
-{{- template "tkhpropconvert" . }}
+{{- template "tkhpropconvert" ToPropertyWithType . $type }}
     }
 {{- end }}
 {{- end }}

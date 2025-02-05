@@ -117,7 +117,7 @@ func (t *restPolymorphicSubtype) TKHGetter(propertyName string) string {
 	return "tkhCast"
 }
 
-func (t *restPolymorphicSubtype) ToTKHCustomCode() string {
+func (t *restPolymorphicSubtype) ToTKHCustomCode(buildType RestType) string {
 	typename := t.nestedType.GoTypeName()
 	superTypename := t.superType.GoTypeName()
 	return fmt.Sprintf("dtype := val.GetTypeEscaped()\n"+

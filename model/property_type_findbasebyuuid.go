@@ -73,8 +73,8 @@ func (t *restFindBaseByUUIDObjectType) ToTKHAttrWithDiag() bool {
 	return true
 }
 
-func (t *restFindBaseByUUIDObjectType) ToTKHCustomCode() string {
-	typename := t.baseType.GoTypeName()
+func (t *restFindBaseByUUIDObjectType) ToTKHCustomCode(buildType RestType) string {
+	typename := buildType.GoTypeName()
 	superTypename := t.baseType.superClass.GoTypeName()
 	return fmt.Sprintf("if val != nil {\n"+
 		"dtype := tkh.GetTypeEscaped()\n"+

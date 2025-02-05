@@ -239,6 +239,7 @@ func main() {
 			"AdditionalObjectsProperties": apimodel.AdditionalObjectsProperties,
 			"AllDirectProperties":         apimodel.AllDirectProperties,
 			"IdentifyingProperties":       apimodel.IdentifyingProperties,
+			"ToPropertyWithType":          apimodel.ToPropertyWithType,
 		}
 		t, err := template.New("provider").Funcs(functions).ParseFS(tmpls, "templates/model/*")
 		if err != nil {
