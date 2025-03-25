@@ -35,9 +35,14 @@ func (t *restNestedObjectType) FlattenMode() string {
 	if t.property.TFName() == "additional_objects" {
 		return "AdditionalObjects"
 	}
-	if strings.HasSuffix(t.nestedType.APITypeName(), "LinkableWrapper") {
+	if strings.HasSuffix(t.nestedType.APITypeName(), "LinkableWrapper") ||
+		strings.HasSuffix(t.nestedType.APITypeName(), "LinkableWrapperWithCount") {
 		nestedProps := t.nestedType.AllProperties()
 		if len(nestedProps) == 1 && nestedProps[0].TFName() == "items" {
+			return "ItemsList"
+		}
+		if len(nestedProps) == 2 &&
+			(nestedProps[0].TFName() == "items" || nestedProps[1].TFName() == "items") {
 			return "ItemsList"
 		}
 	}
@@ -48,9 +53,14 @@ func (t *restNestedObjectType) OrderMode() string {
 	if t.property.TFName() == "additional_objects" {
 		return "AdditionalObjects"
 	}
-	if strings.HasSuffix(t.nestedType.APITypeName(), "LinkableWrapper") {
+	if strings.HasSuffix(t.nestedType.APITypeName(), "LinkableWrapper") ||
+		strings.HasSuffix(t.nestedType.APITypeName(), "LinkableWrapperWithCount") {
 		nestedProps := t.nestedType.AllProperties()
 		if len(nestedProps) == 1 && nestedProps[0].TFName() == "items" {
+			return "ItemsList"
+		}
+		if len(nestedProps) == 2 &&
+			(nestedProps[0].TFName() == "items" || nestedProps[1].TFName() == "items") {
 			return "ItemsList"
 		}
 	}

@@ -69,9 +69,18 @@ func IdentifyingProperties(restType RestType) []*RestProperty {
 	return ret
 }
 
-func ToPropertyWithType(Property *RestProperty, Type RestType) PropertyWithType {
+func ItemsProperty(properties []*RestProperty) *RestProperty {
+	for _, p := range properties {
+		if p.Name == "items" {
+			return p
+		}
+	}
+	return nil
+}
+
+func ToPropertyWithType(property *RestProperty, restType RestType) PropertyWithType {
 	return PropertyWithType{
-		Property: Property,
-		Type:     Type,
+		Property: property,
+		Type:     restType,
 	}
 }

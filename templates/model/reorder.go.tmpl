@@ -14,10 +14,10 @@
             attrStateEl := (attrState.(types.List)).Elements()
             attrPriorStateEl := (attrPriorState.(types.List)).Elements()
             newAttrState := reorderList(attrStateEl, attrPriorStateEl, recurse, []string{
-{{- range IdentifyingProperties (index .Type.NestedType.AllProperties 0).Type.NestedType }}
+{{- range IdentifyingProperties (ItemsProperty .Type.NestedType.AllProperties).Type.NestedType }}
                 "{{ .TFName }}",
 {{- end }}
-            }, reorder{{ (index .Type.NestedType.AllProperties 0).Type.NestedType.GoTypeName }})
+            }, reorder{{ (ItemsProperty .Type.NestedType.AllProperties).Type.NestedType.GoTypeName }})
             obj["{{ .TFName }}"] = types.ListValueMust(attrs["{{ .TFName }}"].(types.ListType).ElemType, newAttrState)
         }
     }

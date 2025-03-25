@@ -3,7 +3,7 @@
 {{- else -}}
 {
 {{- if eq .Type.FlattenMode "ItemsList" }}
-{{- if (index .Type.NestedType.AllProperties 0).Type.Complex }}
+{{- if (ItemsProperty .Type.NestedType.AllProperties).Type.Complex }}
     attr := dataSourceSchemaAttrs{{ .Type.NestedType.GoTypeName }}({{ RecurseCutOff .Parent }})["items"].(dsschema.ListNestedAttribute)
 {{- else }}
     attr := dataSourceSchemaAttrs{{ .Type.NestedType.GoTypeName }}({{ RecurseCutOff .Parent }})["items"].(dsschema.ListAttribute)
