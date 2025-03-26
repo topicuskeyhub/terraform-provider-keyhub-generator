@@ -152,6 +152,27 @@ func tfToTimePointer(val basetypes.StringValue) (*time.Time, diag.Diagnostics) {
 	return &parsed, diags
 }
 
+func tfToInt64Pointer(val attr.Value) *int64 {
+	if val == nil {
+		return nil
+	}
+	return val.(basetypes.Int64Value).ValueInt64Pointer()
+}
+
+func tfToBooleanPointer(val attr.Value) *bool {
+	if val == nil {
+		return nil
+	}
+	return val.(basetypes.BoolValue).ValueBoolPointer()
+}
+
+func tfToStringPointer(val attr.Value) *string {
+	if val == nil {
+		return nil
+	}
+	return val.(basetypes.StringValue).ValueStringPointer()
+}
+
 func withUuidToTF(val interface{ GetUuid() *string }) attr.Value {
 	if val == nil {
 		return types.StringNull()

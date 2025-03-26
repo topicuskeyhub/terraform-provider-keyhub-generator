@@ -227,7 +227,7 @@ func (t *restSimpleType) TFToTKH(value string, listItem bool) string {
 	} else {
 		switch {
 		case t.openapiType.Is("boolean"):
-			return value + ".(basetypes.BoolValue).ValueBoolPointer()"
+			return "tfToBooleanPointer(" + value + ")"
 		case t.openapiType.Is("string"):
 			if openapiFormat == "date-time" {
 				return "tfToTimePointer(" + value + ".(basetypes.StringValue))"
@@ -236,12 +236,12 @@ func (t *restSimpleType) TFToTKH(value string, listItem bool) string {
 			} else if openapiFormat == "date" {
 				return "parsePointer2(" + value + ".(basetypes.StringValue), serialization.ParseDateOnly)"
 			}
-			return value + ".(basetypes.StringValue).ValueStringPointer()"
+			return "tfToStringPointer(" + value + ")"
 		case t.openapiType.Is("integer"):
 			if openapiFormat == "int32" {
-				return "int64PToInt32P(" + value + ".(basetypes.Int64Value).ValueInt64Pointer())"
+				return "int64PToInt32P(tfToInt64Pointer(" + value + "))"
 			}
-			return value + ".(basetypes.Int64Value).ValueInt64Pointer()"
+			return "tfToInt64Pointer(" + value + ")"
 		default:
 			log.Fatalf("Unknown simple type: %s", t.openapiType)
 			return "error"
