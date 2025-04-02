@@ -166,6 +166,8 @@ func (t *restSimpleType) TKHToTF(value string, listItem bool) string {
 				return "timeToTF(" + value + ")"
 			} else if openapiFormat == "uuid" || openapiFormat == "date" {
 				return "types.StringValue(" + value + ".String())"
+			} else if openapiFormat == "byte" {
+				return "types.StringValue(string(" + value + "))"
 			}
 			return "types.StringValue(" + value + ")"
 		case t.openapiType.Is("integer"):
@@ -186,6 +188,8 @@ func (t *restSimpleType) TKHToTF(value string, listItem bool) string {
 				return "timePointerToTF(" + value + ")"
 			} else if openapiFormat == "uuid" || openapiFormat == "date" {
 				return "stringerToTF(" + value + ")"
+			} else if openapiFormat == "byte" {
+				return "types.StringValue(string(" + value + "))"
 			}
 			return "types.StringPointerValue(" + value + ")"
 		case t.openapiType.Is("integer"):
@@ -213,6 +217,8 @@ func (t *restSimpleType) TFToTKH(value string, listItem bool) string {
 				return "parse(" + value + ".(basetypes.StringValue), uuid.Parse)"
 			} else if openapiFormat == "date" {
 				return "parse(" + value + ".(basetypes.StringValue), serialization.ParseDateOnly)"
+			} else if openapiFormat == "byte" {
+				return "[]byte(" + value + ".(basetypes.StringValue).ValueString())"
 			}
 			return value + ".(basetypes.StringValue).ValueString()"
 		case t.openapiType.Is("integer"):
@@ -235,6 +241,8 @@ func (t *restSimpleType) TFToTKH(value string, listItem bool) string {
 				return "parsePointer(" + value + ".(basetypes.StringValue), uuid.Parse)"
 			} else if openapiFormat == "date" {
 				return "parsePointer2(" + value + ".(basetypes.StringValue), serialization.ParseDateOnly)"
+			} else if openapiFormat == "byte" {
+				return "[]byte(" + value + ".(basetypes.StringValue).ValueString())"
 			}
 			return "tfToStringPointer(" + value + ")"
 		case t.openapiType.Is("integer"):
@@ -272,6 +280,8 @@ func (t *restSimpleType) SDKTypeName(listItem bool) string {
 			ret = "time.Time"
 		} else if openapiFormat == "uuid" {
 			ret = "uuid.UUID"
+		} else if openapiFormat == "byte" {
+			ret = "[]byte"
 		} else {
 			ret = "string"
 		}
