@@ -144,7 +144,7 @@ func (t *restSimpleType) ToTFAttrWithDiag() bool {
 func (t *restSimpleType) ToTKHAttrWithDiag() bool {
 	openapiFormat := t.openapiSchema.Format
 	return t.openapiType.Is("string") &&
-		(openapiFormat == "date-time" || openapiFormat == "uuid" || openapiFormat == "date")
+		(openapiFormat == "date-time" || openapiFormat == "uuid" || openapiFormat == "date" || openapiFormat == "byte")
 }
 
 func (t *restSimpleType) ToTKHCustomCode(buildType RestType) string {
@@ -167,7 +167,7 @@ func (t *restSimpleType) TKHToTF(value string, listItem bool) string {
 			} else if openapiFormat == "uuid" || openapiFormat == "date" {
 				return "types.StringValue(" + value + ".String())"
 			} else if openapiFormat == "byte" {
-				return "types.StringValue(string(" + value + "))"
+				return "byteArrayToTfBase64(" + value + ")"
 			}
 			return "types.StringValue(" + value + ")"
 		case t.openapiType.Is("integer"):
@@ -189,7 +189,7 @@ func (t *restSimpleType) TKHToTF(value string, listItem bool) string {
 			} else if openapiFormat == "uuid" || openapiFormat == "date" {
 				return "stringerToTF(" + value + ")"
 			} else if openapiFormat == "byte" {
-				return "types.StringValue(string(" + value + "))"
+				return "byteArrayToTfBase64(" + value + ")"
 			}
 			return "types.StringPointerValue(" + value + ")"
 		case t.openapiType.Is("integer"):
@@ -218,7 +218,7 @@ func (t *restSimpleType) TFToTKH(value string, listItem bool) string {
 			} else if openapiFormat == "date" {
 				return "parse(" + value + ".(basetypes.StringValue), serialization.ParseDateOnly)"
 			} else if openapiFormat == "byte" {
-				return "[]byte(" + value + ".(basetypes.StringValue).ValueString())"
+				return "tfBase64ToByteArray(" + value + ".(basetypes.StringValue))"
 			}
 			return value + ".(basetypes.StringValue).ValueString()"
 		case t.openapiType.Is("integer"):
@@ -242,7 +242,7 @@ func (t *restSimpleType) TFToTKH(value string, listItem bool) string {
 			} else if openapiFormat == "date" {
 				return "parsePointer2(" + value + ".(basetypes.StringValue), serialization.ParseDateOnly)"
 			} else if openapiFormat == "byte" {
-				return "[]byte(" + value + ".(basetypes.StringValue).ValueString())"
+				return "tfBase64ToByteArray(" + value + ".(basetypes.StringValue))"
 			}
 			return "tfToStringPointer(" + value + ")"
 		case t.openapiType.Is("integer"):
