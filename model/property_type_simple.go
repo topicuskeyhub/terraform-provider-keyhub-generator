@@ -144,7 +144,7 @@ func (t *restSimpleType) ToTFAttrWithDiag() bool {
 func (t *restSimpleType) ToTKHAttrWithDiag() bool {
 	openapiFormat := t.openapiSchema.Format
 	return t.openapiType.Is("string") &&
-		(openapiFormat == "date-time" || openapiFormat == "uuid" || openapiFormat == "date")
+		(openapiFormat == "date-time" || openapiFormat == "uuid" || openapiFormat == "date" || openapiFormat == "byte")
 }
 
 func (t *restSimpleType) ToTKHCustomCode(buildType RestType) string {
