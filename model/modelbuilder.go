@@ -428,6 +428,7 @@ func buildRSSchemaTemplateBase(ref *openapi3.SchemaRef, propertyName string) map
 	immutable := property.Value.Extensions["x-tkh-immutable"] != nil && property.Value.Extensions["x-tkh-immutable"].(bool)
 	createOnly := property.Value.Extensions["x-tkh-create-only"] != nil && property.Value.Extensions["x-tkh-create-only"].(bool)
 	backendDefault := property.Value.Extensions["x-tkh-backend-determines-default"] != nil && property.Value.Extensions["x-tkh-backend-determines-default"].(bool)
+	writeOnly := property.Value.WriteOnly
 
 	if immutable && !createOnly {
 		return map[string]any{
@@ -453,6 +454,11 @@ func buildRSSchemaTemplateBase(ref *openapi3.SchemaRef, propertyName string) map
 	if backendDefault {
 		return map[string]any{
 			"Mode": "Optional_Computed",
+		}
+	}
+	if writeOnly {
+		return map[string]any{
+			"Mode": "WriteOnly",
 		}
 	}
 	return map[string]any{

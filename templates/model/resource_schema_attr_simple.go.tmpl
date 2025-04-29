@@ -11,6 +11,9 @@ schemaAttrs["{{ .TFName }}"] = {{ .Type.RSSchemaTemplateData.Type }}{
 {{- else if eq .Type.RSSchemaTemplateData.Mode "Computed_UseStateForUnknown" }}
     Computed: true,
     PlanModifiers: []{{ .Type.RSSchemaTemplateData.PlanModifierType }}{ {{ .Type.RSSchemaTemplateData.PlanModifierPkg }}.UseStateForUnknown() },
+{{- else if eq .Type.RSSchemaTemplateData.Mode "WriteOnly" }}
+    WriteOnly: true,
+    Optional: true,
 {{- else }}
     {{ .Type.RSSchemaTemplateData.Mode }}: true,
 {{- if .Type.RequiresReplace }}
@@ -26,4 +29,5 @@ schemaAttrs["{{ .TFName }}"] = {{ .Type.RSSchemaTemplateData.Type }}{
 {{- if .Type.RSSchemaTemplateData.Sensitive }}
     Sensitive: true,
 {{- end }}
+
 }
