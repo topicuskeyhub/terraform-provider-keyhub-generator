@@ -336,7 +336,7 @@ func buildType(parentType *restClassType, baseTypeName string, propertyName stri
 	if ref.Ref != "" && schema.Type.Is("string") && len(schema.Enum) > 0 {
 		enumName := refToName(ref.Ref)
 		enum := getOrBuildTypeModel(types, enumName, ref, nil)
-		return NewEnumPropertyType(enum, rsSchemaTemplateBase)
+		return NewEnumPropertyType(restProperty, enum, rsSchemaTemplateBase)
 	}
 	if schema.Type.Is("boolean") || schema.Type.Is("integer") || schema.Type.Is("string") {
 		return NewRestSimpleType(restProperty, schema, rsSchemaTemplateBase)

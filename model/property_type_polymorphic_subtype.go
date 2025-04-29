@@ -100,9 +100,9 @@ func (t *restPolymorphicSubtype) TKHToTF(value string, listItem bool) string {
 		"(" + RecurseCutOff(t.property.Parent) + ", " + value + ")"
 }
 
-func (t *restPolymorphicSubtype) TFToTKH(value string, listItem bool) string {
+func (t *restPolymorphicSubtype) TFToTKH(planValue string, configValue string, listItem bool) string {
 	return "tfObjectToTKH" + t.nestedType.Suffix() + t.nestedType.GoTypeName() +
-		"(ctx, " + RecurseCutOff(t.property.Parent) + ", " + value + ".(basetypes.ObjectValue))"
+		"(ctx, " + RecurseCutOff(t.property.Parent) + ", " + planValue + ".(basetypes.ObjectValue), " + configValue + ".(basetypes.ObjectValue))"
 }
 
 func (t *restPolymorphicSubtype) TKHToTFGuard() string {
@@ -110,7 +110,11 @@ func (t *restPolymorphicSubtype) TKHToTFGuard() string {
 }
 
 func (t *restPolymorphicSubtype) TFToTKHGuard() string {
-	return "if !objAttrs[\"" + t.property.TFName() + "\"].IsNull() "
+	if t.property.IsValueFromConfig() {
+		return `if !configAttrValues["` + t.property.TFName() + `"].IsNull() `
+	} else {
+		return `if !planAttrValues["` + t.property.TFName() + `"].IsNull()`
+	}
 }
 
 func (t *restPolymorphicSubtype) TKHGetter(propertyName string) string {

@@ -118,19 +118,21 @@ func (t *restMapType) TKHToTF(value string, listItem bool) string {
 		"        })"
 }
 
-func (t *restMapType) TFToTKH(value string, listItem bool) string {
+func (t *restMapType) TFToTKH(planValue string, configValue string, listItem bool) string {
 	var body string
 	if t.itemType.ToTKHAttrWithDiag() {
-		body = "            tkh, d := " + t.itemType.TFToTKH("val", true) + "\n" +
+		body = "            tkh, d := " + t.itemType.TFToTKH("planValue", "configValue", true) + "\n" +
 			"            diags.Append(d...)\n" +
 			"            return tkh\n"
 	} else {
-		body = "            return " + t.itemType.TFToTKH("val", true) + "\n"
+		body = "            return " + t.itemType.TFToTKH("planValue", "configValue", true) + "\n"
 	}
 
-	return "tfToMap(" + value + ".(basetypes.MapValue), func(val attr.Value, diags *diag.Diagnostics) any {\n" +
+	elementFunction := "func(planValue attr.Value, configValue attr.Value, diags *diag.Diagnostics) any {\n" +
 		body +
-		"        }, " + t.SDKTypeConstructor() + ")"
+		"        }"
+
+	return "tfToMap(" + planValue + ".(basetypes.MapValue), " + configValue + ".(basetypes.MapValue), " + elementFunction + ", " + t.SDKTypeConstructor() + ")"
 }
 
 func (t *restMapType) TKHGetter(propertyName string) string {

@@ -204,7 +204,14 @@ func (t *restSimpleType) TKHToTF(value string, listItem bool) string {
 	}
 }
 
-func (t *restSimpleType) TFToTKH(value string, listItem bool) string {
+func (t *restSimpleType) TFToTKH(planValue string, configValue string, listItem bool) string {
+	var value string
+	if t.property.IsValueFromConfig() {
+		value = configValue
+	} else {
+		value = planValue
+	}
+
 	openapiFormat := t.openapiSchema.Format
 	if listItem {
 		switch {

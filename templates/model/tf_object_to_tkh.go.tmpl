@@ -18,15 +18,18 @@
     tkh.{{ .Property.TKHSetter }}({{ .Property.TFToTKH }})
 {{- end }}
 {{- end }}
-func tfObjectToTKH{{ .Suffix }}{{ .GoTypeName }}(ctx context.Context, recurse bool, objVal types.Object) ({{ .SDKTypeName }}, diag.Diagnostics) {
+func tfObjectToTKH{{ .Suffix }}{{ .GoTypeName }}(ctx context.Context, recurse bool, planValues types.Object, configValues types.Object) ({{ .SDKTypeName }}, diag.Diagnostics) {
     var diags diag.Diagnostics
-    if objVal.IsNull() || objVal.IsUnknown() {
+    if planValues.IsNull() || planValues.IsUnknown() || configValues.IsNull() || configValues.IsUnknown() {
         return nil, diags
     }
 
 {{- $type := . }}
 {{- if .AllProperties }}
-    objAttrs := objVal.Attributes()
+    planAttrValues := planValues.Attributes()
+    configAttrValues := configValues.Attributes()
+    // avoids the "declared but not used" compiler errors since we don't know beforehand which one we need
+    _, _ = planAttrValues, configAttrValues
 {{- end }}
     var tkh {{ .SDKTypeName }}
     tkh = {{ .SDKTypeConstructor }}

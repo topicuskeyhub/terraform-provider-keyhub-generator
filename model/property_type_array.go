@@ -148,25 +148,29 @@ func (t *restArrayType) TKHToTF(value string, listItem bool) string {
 		"        })"
 }
 
-func (t *restArrayType) TFToTKH(value string, listItem bool) string {
+func (t *restArrayType) TFToTKH(planValue string, configValue string, listItem bool) string {
 	sdkType := t.itemType.SDKTypeName(true)
 	var body string
 	if t.itemType.ToTKHAttrWithDiag() {
-		body = "            tkh, d := " + t.itemType.TFToTKH("val", true) + "\n" +
+		body = "            tkh, d := " + t.itemType.TFToTKH("planValue", "configValue", true) + "\n" +
 			"            diags.Append(d...)\n" +
 			"            return tkh\n"
 	} else {
-		body = "            return " + t.itemType.TFToTKH("val", true) + "\n"
+		body = "            return " + t.itemType.TFToTKH("planValue", "configValue", true) + "\n"
 	}
-	var functionName string
-	if t.setCollection {
-		functionName = "tfToSliceSet"
-	} else {
-		functionName = "tfToSliceList"
-	}
-	return functionName + "(" + value + ".(" + t.TFValueType() + "), func(val attr.Value, diags *diag.Diagnostics) " + sdkType + " {\n" +
+	elementFunction := "func(planValue attr.Value, configValue attr.Value, diags *diag.Diagnostics) " + sdkType + " {\n" +
 		body +
-		"        })"
+		"        }"
+
+	var collectionFunctionName string
+	if t.setCollection {
+		collectionFunctionName = "tfToSliceSet"
+	} else {
+		collectionFunctionName = "tfToSliceListBinary"
+	}
+
+	// basically a foreach construction
+	return collectionFunctionName + "(" + planValue + ".(" + t.TFValueType() + ")," + configValue + ".(" + t.TFValueType() + "), " + elementFunction + ")"
 }
 
 func (t *restArrayType) TKHGetter(propertyName string) string {

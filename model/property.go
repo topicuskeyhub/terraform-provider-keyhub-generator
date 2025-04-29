@@ -36,7 +36,7 @@ type RestPropertyType interface {
 	RequiresReplace() bool
 	NestedType() RestType
 	TKHToTF(value string, listItem bool) string
-	TFToTKH(value string, listItem bool) string
+	TFToTKH(planValue string, configValue string, listItem bool) string
 	TKHToTFGuard() string
 	TFToTKHGuard() string
 	TKHGetter(propertyName string) string
@@ -132,7 +132,7 @@ func (p *RestProperty) TKHSetter() string {
 }
 
 func (p *RestProperty) TFToTKH() string {
-	return p.Type.TFToTKH("objAttrs[\""+p.TFName()+"\"]", false)
+	return p.Type.TFToTKH("planAttrValues[\""+p.TFName()+"\"]", "configAttrValues[\""+p.TFName()+"\"]", false)
 }
 
 func (p *RestProperty) IsNotComputed() bool {
@@ -143,6 +143,11 @@ func (p *RestProperty) IsNotComputed() bool {
 func (p *RestProperty) IsRequired() bool {
 	mode := p.Type.RSSchemaTemplateData()["Mode"]
 	return mode == "Required"
+}
+
+func (p *RestProperty) IsValueFromConfig() bool {
+	mode := p.Type.RSSchemaTemplateData()["Mode"]
+	return mode == "WriteOnly"
 }
 
 func (p *RestProperty) DS() *RestProperty {
