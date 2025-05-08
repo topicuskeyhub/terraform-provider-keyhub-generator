@@ -146,8 +146,8 @@ func (t *restNestedObjectType) TFToTKH(planValue string, configValue string, lis
 		tfPlanVal = `toItemsList(ctx, planAttrValues["` + t.property.TFName() + `"])`
 		tfConfigVal = `toItemsList(ctx, configAttrValues["` + t.property.TFName() + `"])`
 	} else {
-		tfPlanVal = planValue + ".(basetypes.ObjectValue)"
-		tfConfigVal = configValue + ".(basetypes.ObjectValue)"
+		tfPlanVal = "toObjectValue(" + planValue + ")"
+		tfConfigVal = "toObjectValue(" + configValue + ")"
 	}
 
 	return "tfObjectToTKH" + t.nestedType.Suffix() + t.nestedType.GoTypeName() +

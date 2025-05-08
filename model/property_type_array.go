@@ -68,6 +68,14 @@ func (t *restArrayType) TFValueType() string {
 	}
 }
 
+func (t *restArrayType) TFValueTypeCast() string {
+	if t.setCollection {
+		return "toSetValue"
+	} else {
+		return "toListValue"
+	}
+}
+
 func (t *restArrayType) TFValidatorType() string {
 	if t.setCollection {
 		return "validator.Set"
@@ -170,7 +178,7 @@ func (t *restArrayType) TFToTKH(planValue string, configValue string, listItem b
 	}
 
 	// basically a foreach construction
-	return collectionFunctionName + "(" + planValue + ".(" + t.TFValueType() + ")," + configValue + ".(" + t.TFValueType() + "), " + elementFunction + ")"
+	return collectionFunctionName + "(" + t.TFValueTypeCast() + "(" + planValue + ")," + t.TFValueTypeCast() + "(" + configValue + "), " + elementFunction + ")"
 }
 
 func (t *restArrayType) TKHGetter(propertyName string) string {

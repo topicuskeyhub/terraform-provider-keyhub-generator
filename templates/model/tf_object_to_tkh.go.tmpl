@@ -22,14 +22,23 @@
 {{- end }}
 func tfObjectToTKH{{ .Suffix }}{{ .GoTypeName }}(ctx context.Context, recurse bool, planValues types.Object, configValues types.Object) ({{ .SDKTypeName }}, diag.Diagnostics) {
     var diags diag.Diagnostics
-    if planValues.IsNull() || planValues.IsUnknown() || configValues.IsNull() || configValues.IsUnknown() {
+    var missingPlanValues = planValues.IsNull() || planValues.IsUnknown()
+    var missingConfigValues = configValues.IsNull() || configValues.IsUnknown()
+    if missingPlanValues && missingConfigValues {
         return nil, diags
     }
 
 {{- $type := . }}
 {{- if .AllProperties }}
-    planAttrValues := planValues.Attributes()
-    configAttrValues := configValues.Attributes()
+    planAttrValues := make(map[string]attr.Value)
+    if !missingPlanValues {
+        planAttrValues = planValues.Attributes()
+    }
+    configAttrValues := make(map[string]attr.Value)
+    if !missingPlanValues {
+        configAttrValues = configValues.Attributes()
+    }
+
     // avoids the "declared but not used" compiler errors since we don't know beforehand which one we need
     _, _ = planAttrValues, configAttrValues
     litter.Config.HidePrivateFields = false

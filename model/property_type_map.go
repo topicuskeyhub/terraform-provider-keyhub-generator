@@ -51,6 +51,10 @@ func (t *restMapType) TFValueType() string {
 	return "basetypes.MapValue"
 }
 
+func (t *restMapType) TFValueTypeCast() string {
+	return "toMapValue"
+}
+
 func (t *restMapType) TFValidatorType() string {
 	return "validator.Map"
 }
@@ -132,7 +136,7 @@ func (t *restMapType) TFToTKH(planValue string, configValue string, listItem boo
 		body +
 		"        }"
 
-	return "tfToMap(" + planValue + ".(basetypes.MapValue), " + configValue + ".(basetypes.MapValue), " + elementFunction + ", " + t.SDKTypeConstructor() + ")"
+	return "tfToMap(" + t.TFValueTypeCast() + "(" + planValue + ")," + t.TFValueTypeCast() + "(" + configValue + "), " + elementFunction + ", " + t.SDKTypeConstructor() + ")"
 }
 
 func (t *restMapType) TKHGetter(propertyName string) string {
