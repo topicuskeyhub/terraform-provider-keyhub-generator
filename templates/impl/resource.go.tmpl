@@ -238,7 +238,7 @@ func (r *{{ .Name }}Resource) Update(ctx context.Context, req resource.UpdateReq
 	}
 
 	var configData {{ .FullName }}DataRS
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &configData)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &configData)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
