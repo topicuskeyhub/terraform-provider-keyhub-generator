@@ -35,7 +35,7 @@ func tfObjectToTKH{{ .Suffix }}{{ .GoTypeName }}(ctx context.Context, recurse bo
         planAttrValues = planValues.Attributes()
     }
     configAttrValues := make(map[string]attr.Value)
-    if !missingPlanValues {
+    if !missingConfigValues {
         configAttrValues = configValues.Attributes()
     }
 
