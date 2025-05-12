@@ -38,7 +38,7 @@ type {{ .Name }}Resource struct {
 
 func (r *{{ .Name }}Resource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = ProviderName + "_{{ .NameUnderscore }}"
-	tflog.Info(ctx, "Registred resource "+resp.TypeName)
+	tflog.Info(ctx, "Registered resource "+resp.TypeName)
 }
 
 func (r *{{ .Name }}Resource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -76,7 +76,7 @@ func (r *{{ .Name }}Resource) Create(ctx context.Context, req resource.CreateReq
 
 	litter.Config.HidePrivateFields = false
 
-	tflog.Debug(ctx, "planData: "+litter.Sdump(planData))
+	tflog.Trace(ctx, "planData: "+litter.Sdump(planData))
 
 	var configData {{ .FullName }}DataRS
 	resp.Diagnostics.Append(req.Config.Get(ctx, &configData)...)
@@ -84,7 +84,7 @@ func (r *{{ .Name }}Resource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	tflog.Debug(ctx, "configData: "+litter.Sdump(configData))
+	tflog.Trace(ctx, "configData: "+litter.Sdump(configData))
 
 	ctx = context.WithValue(ctx, keyHubClientKey, r.providerData.Client)
 	planValues, diags := types.ObjectValueFrom(ctx, {{ .FullName }}AttrTypesRSRecurse, planData)
@@ -93,15 +93,11 @@ func (r *{{ .Name }}Resource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	tflog.Debug(ctx, "planValues: "+litter.Sdump(planValues))
-
 	configValues, diags := types.ObjectValueFrom(ctx, {{ .FullName }}AttrTypesRSRecurse, configData)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
-	tflog.Debug(ctx, "configValues: "+litter.Sdump(configValues))
 
 	newTkh, diags := tfObjectToTKHRS{{ .FullNameUp }}(ctx, true, planValues, configValues)
 	resp.Diagnostics.Append(diags...)
