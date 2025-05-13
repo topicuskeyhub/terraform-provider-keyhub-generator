@@ -92,7 +92,7 @@ func (t *restAdditionalType) TKHToTF(value string, listItem bool) string {
 	return "types.ListNull(types.StringType)"
 }
 
-func (t *restAdditionalType) TFToTKH(value string, listItem bool) string {
+func (t *restAdditionalType) TFToTKH(planValue string, configValue string, listItem bool) string {
 	return ""
 }
 

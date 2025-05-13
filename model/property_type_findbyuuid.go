@@ -89,8 +89,8 @@ func (t *restFindByUUIDObjectType) TKHToTF(value string, listItem bool) string {
 	return "withUuidToTF(" + value + ")"
 }
 
-func (t *restFindByUUIDObjectType) TFToTKH(value string, listItem bool) string {
-	return "find" + t.nestedType.NestedType().GoTypeName() + "ByUUID(ctx, " + value + ".(basetypes.StringValue).ValueStringPointer())"
+func (t *restFindByUUIDObjectType) TFToTKH(planValue string, configValue string, listItem bool) string {
+	return "find" + t.nestedType.NestedType().GoTypeName() + "ByUUID(ctx, " + planValue + ".(basetypes.StringValue).ValueStringPointer())"
 }
 
 func (t *restFindByUUIDObjectType) TKHToTFGuard() string {

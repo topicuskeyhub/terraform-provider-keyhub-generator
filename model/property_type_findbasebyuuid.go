@@ -90,8 +90,8 @@ func (t *restFindBaseByUUIDObjectType) TKHToTF(value string, listItem bool) stri
 	return "withUuidToTF(tkh)"
 }
 
-func (t *restFindBaseByUUIDObjectType) TFToTKH(value string, listItem bool) string {
-	return "find" + t.baseType.superClass.GoTypeName() + "ByUUID(ctx, " + value + ".(basetypes.StringValue).ValueStringPointer())"
+func (t *restFindBaseByUUIDObjectType) TFToTKH(planValue string, configValue string, listItem bool) string {
+	return "find" + t.baseType.superClass.GoTypeName() + "ByUUID(ctx, " + planValue + ".(basetypes.StringValue).ValueStringPointer())"
 }
 
 func (t *restFindBaseByUUIDObjectType) TKHGetter(propertyName string) string {

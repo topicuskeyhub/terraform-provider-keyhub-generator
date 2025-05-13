@@ -77,7 +77,7 @@ func (t *restFindParentByUUIDObjectType) TKHToTF(value string, listItem bool) st
 	return "types.StringNull()"
 }
 
-func (t *restFindParentByUUIDObjectType) TFToTKH(value string, listItem bool) string {
+func (t *restFindParentByUUIDObjectType) TFToTKH(planValue string, configValue string, listItem bool) string {
 	return ""
 }
 

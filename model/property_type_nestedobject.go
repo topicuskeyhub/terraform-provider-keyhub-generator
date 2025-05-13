@@ -136,18 +136,22 @@ func (t *restNestedObjectType) TKHToTF(value string, listItem bool) string {
 		"(" + RecurseCutOff(t.property.Parent) + ", " + value + ")"
 }
 
-func (t *restNestedObjectType) TFToTKH(value string, listItem bool) string {
-	var tfVal string
+func (t *restNestedObjectType) TFToTKH(planValue string, configValue string, listItem bool) string {
+	var tfPlanVal string
+	var tfConfigVal string
 	if t.FlattenMode() == "AdditionalObjects" {
-		tfVal = "objVal"
+		tfPlanVal = "planValues"
+		tfConfigVal = "configValues"
 	} else if t.FlattenMode() == "ItemsList" {
-		tfVal = `toItemsList(ctx, objAttrs["` + t.property.TFName() + `"])`
+		tfPlanVal = `toItemsList(ctx, planAttrValues["` + t.property.TFName() + `"])`
+		tfConfigVal = `toItemsList(ctx, configAttrValues["` + t.property.TFName() + `"])`
 	} else {
-		tfVal = value + ".(basetypes.ObjectValue)"
+		tfPlanVal = "toObjectValue(" + planValue + ")"
+		tfConfigVal = "toObjectValue(" + configValue + ")"
 	}
 
 	return "tfObjectToTKH" + t.nestedType.Suffix() + t.nestedType.GoTypeName() +
-		"(ctx, " + RecurseCutOff(t.property.Parent) + ", " + tfVal + ")"
+		"(ctx, " + RecurseCutOff(t.property.Parent) + ", " + tfPlanVal + ", " + tfConfigVal + ")"
 }
 
 func (t *restNestedObjectType) TKHToTFGuard() string {

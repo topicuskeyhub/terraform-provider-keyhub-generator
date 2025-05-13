@@ -6,6 +6,7 @@
 {{- if .Property.Type.ToTKHCustomCode .Type }}
         {{ .Property.Type.ToTKHCustomCode .Type }}
 {{- else }}
+        tflog.Debug(ctx, "Setting " + litter.Sdump(val) + " using {{ .Property.TKHSetter }}")
         tkh.{{ .Property.TKHSetter }}(val)
 {{- end }}
 {{- if .Property.IsDTypeRequired }}
@@ -15,18 +16,34 @@
 {{- end }}
     }
 {{- else }}
+    tflog.Debug(ctx, "Setting " + litter.Sdump({{ .Property.TFToTKH }}) + " using {{ .Property.TKHSetter }}")
     tkh.{{ .Property.TKHSetter }}({{ .Property.TFToTKH }})
 {{- end }}
 {{- end }}
-func tfObjectToTKH{{ .Suffix }}{{ .GoTypeName }}(ctx context.Context, recurse bool, objVal types.Object) ({{ .SDKTypeName }}, diag.Diagnostics) {
+func tfObjectToTKH{{ .Suffix }}{{ .GoTypeName }}(ctx context.Context, recurse bool, planValues types.Object, configValues types.Object) ({{ .SDKTypeName }}, diag.Diagnostics) {
     var diags diag.Diagnostics
-    if objVal.IsNull() || objVal.IsUnknown() {
+    var missingPlanValues = planValues.IsNull() || planValues.IsUnknown()
+    var missingConfigValues = configValues.IsNull() || configValues.IsUnknown()
+    if missingPlanValues && missingConfigValues {
         return nil, diags
     }
 
 {{- $type := . }}
 {{- if .AllProperties }}
-    objAttrs := objVal.Attributes()
+    planAttrValues := make(map[string]attr.Value)
+    if !missingPlanValues {
+        planAttrValues = planValues.Attributes()
+    }
+    configAttrValues := make(map[string]attr.Value)
+    if !missingConfigValues {
+        configAttrValues = configValues.Attributes()
+    }
+
+    // avoids the "declared but not used" compiler errors since we don't know beforehand which one we need
+    _, _ = planAttrValues, configAttrValues
+    litter.Config.HidePrivateFields = false
+    tflog.Trace(ctx, "planAttrValues: "+litter.Sdump(planAttrValues))
+    tflog.Trace(ctx, "configAttrValues: "+litter.Sdump(configAttrValues))
 {{- end }}
     var tkh {{ .SDKTypeName }}
     tkh = {{ .SDKTypeConstructor }}

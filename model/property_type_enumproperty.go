@@ -11,12 +11,14 @@ import (
 )
 
 type restEnumPropertyType struct {
+	property             *RestProperty
 	enumType             *restEnumType
 	rsSchemaTemplateBase map[string]any
 }
 
-func NewEnumPropertyType(enumType RestType, rsSchemaTemplateBase map[string]any) RestPropertyType {
+func NewEnumPropertyType(property *RestProperty, enumType RestType, rsSchemaTemplateBase map[string]any) RestPropertyType {
 	return &restEnumPropertyType{
+		property:             property,
 		enumType:             enumType.(*restEnumType),
 		rsSchemaTemplateBase: rsSchemaTemplateBase,
 	}
@@ -101,7 +103,14 @@ func (t *restEnumPropertyType) TKHToTF(value string, listItem bool) string {
 	return "stringerToTF(" + value + ")"
 }
 
-func (t *restEnumPropertyType) TFToTKH(value string, listItem bool) string {
+func (t *restEnumPropertyType) TFToTKH(planValue string, configValue string, listItem bool) string {
+	var value string
+	if t.property.IsValueFromConfig() {
+		value = configValue
+	} else {
+		value = planValue
+	}
+
 	caster := "func(val any) " + t.SDKTypeName(listItem) + " { return *val.(*" + t.SDKTypeName(listItem) + ") }"
 	if listItem {
 		return "parseCast(" + value + ".(basetypes.StringValue), " + t.SDKTypeConstructor() + ", " + caster + ")"
@@ -155,5 +164,5 @@ func (t *restEnumPropertyType) RSSchemaTemplateData() map[string]any {
 }
 
 func (t *restEnumPropertyType) DS() RestPropertyType {
-	return NewEnumPropertyType(t.enumType.DS(), t.rsSchemaTemplateBase)
+	return NewEnumPropertyType(t.property.DS(), t.enumType.DS(), t.rsSchemaTemplateBase)
 }
