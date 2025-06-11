@@ -7,6 +7,7 @@ import (
 	"log"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 	"unicode"
 	"unicode/utf8"
@@ -27,7 +28,7 @@ func BuildModel(openapi *openapi3.T) map[string]RestType {
 		if name == "RequestRange" {
 			continue
 		}
-		getOrBuildTypeModel(ret, name, schema, nil)
+		getOrBuildTypeModel(ret, name, schema, nil, false)
 	}
 	for name, parents := range subresources {
 		for _, parent := range parents {
@@ -42,7 +43,7 @@ func BuildModel(openapi *openapi3.T) map[string]RestType {
 				typeName:     nestedName,
 				prefix:       prefix,
 				originalName: name,
-			})
+			}, false)
 		}
 	}
 	markReachable(ret)
@@ -158,7 +159,7 @@ type parentResourceInfo struct {
 }
 
 func getOrBuildTypeModel(types map[string]RestType, name string, schema *openapi3.SchemaRef,
-	parentResourceInfo *parentResourceInfo) RestType {
+	parentResourceInfo *parentResourceInfo, inReadOnlyContext bool) RestType {
 	if ret, ok := types[name]; ok {
 		return ret
 	}
@@ -172,7 +173,7 @@ func getOrBuildTypeModel(types map[string]RestType, name string, schema *openapi
 	polymorphicBaseType := findPolymorphicBaseType(originalName)
 	if schema != nil && schema.Value.AllOf != nil {
 		superTypeName := refToName(schema.Value.AllOf[0].Ref)
-		realSuperType = getOrBuildTypeModel(types, superTypeName, schema.Value.AllOf[0], nil)
+		realSuperType = getOrBuildTypeModel(types, superTypeName, schema.Value.AllOf[0], nil, inReadOnlyContext)
 	}
 	if polymorphicBaseType == nil {
 		superType = realSuperType
@@ -205,7 +206,7 @@ func getOrBuildTypeModel(types map[string]RestType, name string, schema *openapi
 			return existing
 		}
 		types[name] = ret
-		classType.properties = buildProperties(classType, originalName, ownType, types)
+		classType.properties = buildProperties(classType, originalName, ownType, types, inReadOnlyContext)
 
 		if polymorphicBaseType != nil {
 			found := false
@@ -250,7 +251,7 @@ func isWritableWithUnwritableSuperClass(restType *restClassType, schema *openapi
 	return ownScope.(bool) && !superScope.(bool)
 }
 
-func buildProperties(parent *restClassType, baseTypeName string, schema *openapi3.SchemaRef, types map[string]RestType) []*RestProperty {
+func buildProperties(parent *restClassType, baseTypeName string, schema *openapi3.SchemaRef, types map[string]RestType, inReadOnlyContext bool) []*RestProperty {
 	required := schema.Value.Required
 	ret := make([]*RestProperty, 0)
 	var additionalObjectsProp *RestProperty = nil
@@ -276,7 +277,7 @@ func buildProperties(parent *restClassType, baseTypeName string, schema *openapi
 			Deprecated: is(property, deprecated),
 			WriteOnly:  is(property, writeOnly),
 		}
-		restProperty.Type = buildType(parent, baseTypeName, name, property, types, restProperty, rsSchemaTemplateBase)
+		restProperty.Type = buildType(parent, baseTypeName, name, property, types, restProperty, rsSchemaTemplateBase, inReadOnlyContext)
 		ret = append(ret, restProperty)
 		if name == "additionalObjects" {
 			additionalObjectsProp = restProperty
@@ -318,8 +319,13 @@ func skipProperty(baseTypeName string, propertyName string) bool {
 	return false
 }
 
-func buildType(parentType *restClassType, baseTypeName string, propertyName string, ref *openapi3.SchemaRef, types map[string]RestType, restProperty *RestProperty, rsSchemaTemplateBase map[string]any) RestPropertyType {
+func buildType(parentType *restClassType, baseTypeName string, propertyName string, ref *openapi3.SchemaRef, types map[string]RestType, restProperty *RestProperty, rsSchemaTemplateBase map[string]any, inReadOnlyContext bool) RestPropertyType {
 	schema := ref.Value
+
+	log.Print("Building type for " + parentType.name + "." + propertyName + ", readonly: " + strconv.FormatBool(inReadOnlyContext))
+	curInReadOnlyContext := (inReadOnlyContext || is(ref, readOnly))
+	log.Print("Read-only context now: " + strconv.FormatBool(curInReadOnlyContext))
+
 	if len(schema.AllOf) > 0 {
 		if ref.Ref == "" {
 			ref = schema.AllOf[0]
@@ -327,18 +333,22 @@ func buildType(parentType *restClassType, baseTypeName string, propertyName stri
 		schema = schema.AllOf[0].Value
 	}
 	if schema.Type.Is("array") {
-		return NewRestArrayType(buildType(parentType, baseTypeName, propertyName, schema.Items, types, restProperty, rsSchemaTemplateBase), schema.UniqueItems, rsSchemaTemplateBase)
+		log.Print("Returning array type")
+		return NewRestArrayType(buildType(parentType, baseTypeName, propertyName, schema.Items, types, restProperty, rsSchemaTemplateBase, curInReadOnlyContext), schema.UniqueItems, rsSchemaTemplateBase)
 	} else if schema.AdditionalProperties.Schema != nil {
+		log.Print("Returning additional objects map type")
 		return NewRestMapType(baseTypeName+"_"+propertyName,
-			buildType(parentType, baseTypeName, propertyName, schema.AdditionalProperties.Schema, types, restProperty, rsSchemaTemplateBase),
+			buildType(parentType, baseTypeName, propertyName, schema.AdditionalProperties.Schema, types, restProperty, rsSchemaTemplateBase, curInReadOnlyContext),
 			rsSchemaTemplateBase)
 	}
 	if ref.Ref != "" && schema.Type.Is("string") && len(schema.Enum) > 0 {
+		log.Print("Returning enum type")
 		enumName := refToName(ref.Ref)
-		enum := getOrBuildTypeModel(types, enumName, ref, nil)
+		enum := getOrBuildTypeModel(types, enumName, ref, nil, curInReadOnlyContext)
 		return NewEnumPropertyType(restProperty, enum, rsSchemaTemplateBase)
 	}
 	if schema.Type.Is("boolean") || schema.Type.Is("integer") || schema.Type.Is("string") {
+		log.Print("Returning simple type")
 		return NewRestSimpleType(restProperty, schema, rsSchemaTemplateBase)
 	}
 	if is(ref, object) {
@@ -346,13 +356,18 @@ func buildType(parentType *restClassType, baseTypeName string, propertyName stri
 		if nestedTypeName == "" {
 			nestedTypeName = baseTypeName + "_" + propertyName
 		}
-		nested := getOrBuildTypeModel(types, nestedTypeName, ref, nil)
+		log.Print("Is object of type " + nestedTypeName)
+
+		nested := getOrBuildTypeModel(types, nestedTypeName, ref, nil, curInReadOnlyContext)
 		ret := NewNestedObjectType(restProperty, nested, rsSchemaTemplateBase)
 		if ref.Ref != "" && is(ref, withUUID) {
-			if useFindByUUID(parentType, nested) {
+			log.Print("Might be findbyuuid type: " + nestedTypeName)
+			if useFindByUUID(parentType, nested, curInReadOnlyContext) {
+				log.Print("Returning findbyuuid type for " + nestedTypeName)
 				ret = NewFindByUUIDObjectType(ret, rsSchemaTemplateBase)
 			}
 		}
+		log.Print("Returning object type " + nestedTypeName)
 		return ret
 	}
 
@@ -360,9 +375,11 @@ func buildType(parentType *restClassType, baseTypeName string, propertyName stri
 	return nil
 }
 
-func useFindByUUID(parentType *restClassType, nested RestType) bool {
-	return (parentType.Extends("Linkable") || strings.HasSuffix(parentType.name, "_additionalObjects")) &&
+func useFindByUUID(parentType *restClassType, nested RestType, inReadOnlyContext bool) bool {
+	ret := !inReadOnlyContext && (parentType.Extends("Linkable") || strings.HasSuffix(parentType.name, "_additionalObjects") || strings.HasSuffix(parentType.name, "LinkableWrapper") || strings.HasSuffix(parentType.name, "LinkableWrapperWithCount")) &&
 		nested.Extends("Linkable") && nested.HasDirectUUIDProperty()
+	log.Print("useFindByUUID returning " + strconv.FormatBool(ret) + " for parent type " + parentType.name + " and nested type " + nested.APITypeName())
+	return ret
 }
 
 func is(ref *openapi3.SchemaRef, check func(*openapi3.Schema) bool) bool {
@@ -388,6 +405,10 @@ func object(schema *openapi3.Schema) bool {
 
 func deprecated(schema *openapi3.Schema) bool {
 	return schema.Deprecated
+}
+
+func readOnly(schema *openapi3.Schema) bool {
+	return schema.ReadOnly
 }
 
 func writeOnly(schema *openapi3.Schema) bool {
