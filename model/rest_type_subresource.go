@@ -4,18 +4,20 @@
 package model
 
 type restSubresourceClassType struct {
-	reachable  bool
-	name       string
-	prefix     string
-	nestedType RestType
-	dsType     *restSubresourceClassType
+	reachable         bool
+	inReadOnlyContext bool
+	name              string
+	prefix            string
+	nestedType        RestType
+	dsType            *restSubresourceClassType
 }
 
-func NewRestSubresourceClassType(name string, prefix string, nestedType RestType) RestType {
+func NewRestSubresourceClassType(name string, prefix string, nestedType RestType, inReadOnlyContext bool) RestType {
 	return &restSubresourceClassType{
-		name:       name,
-		prefix:     prefix,
-		nestedType: nestedType,
+		name:              name,
+		prefix:            prefix,
+		nestedType:        nestedType,
+		inReadOnlyContext: inReadOnlyContext,
 	}
 }
 
@@ -37,6 +39,10 @@ func (t *restSubresourceClassType) Extends(typeName string) bool {
 
 func (t *restSubresourceClassType) IsObject() bool {
 	return t.nestedType.IsObject()
+}
+
+func (t *restSubresourceClassType) InReadOnlyContext() bool {
+	return t.inReadOnlyContext
 }
 
 func (t *restSubresourceClassType) ObjectAttrTypesName() string {
@@ -101,9 +107,10 @@ func (t *restSubresourceClassType) DS() RestType {
 	}
 
 	t.dsType = &restSubresourceClassType{
-		name:       t.name,
-		prefix:     t.prefix,
-		nestedType: t.nestedType.DS(),
+		name:              t.name,
+		prefix:            t.prefix,
+		nestedType:        t.nestedType.DS(),
+		inReadOnlyContext: t.inReadOnlyContext,
 	}
 	return t.dsType
 }

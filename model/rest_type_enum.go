@@ -36,6 +36,10 @@ func (t *restEnumType) IsObject() bool {
 	return false
 }
 
+func (t *restEnumType) InReadOnlyContext() bool {
+	return false
+}
+
 func (t *restEnumType) ObjectAttrTypesName() string {
 	log.Fatalf("Enum type %s has no attributes", t.name)
 	return ""
@@ -85,9 +89,13 @@ func (t *restEnumType) Suffix() string {
 }
 
 func (t *restEnumType) DS() RestType {
-	return &restEnumType{
+	ret := &restEnumType{
 		suffix: "DS",
 		name:   t.name,
 		values: t.values,
 	}
+	if t.InReadOnlyContext() {
+		ret.suffix = ret.suffix + "RO"
+	}
+	return ret
 }

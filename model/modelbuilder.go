@@ -187,19 +187,19 @@ func getOrBuildTypeModel(types map[string]map[bool]RestType, name string, schema
 		if discriminatorVal, ok := ownType.Value.Extensions["x-tkh-discriminator"]; ok {
 			discriminator = discriminatorVal.(string)
 		}
-		classType := NewRestClassType(realSuperType, superType, originalName, discriminator)
+		classType := NewRestClassType(realSuperType, superType, originalName, discriminator, inReadOnlyContext)
 
 		var ret RestType
 		if isWritableWithUnwritableSuperClass(classType, ownType) {
-			ret = NewRestFindByUUIDClassType(superType, originalName, classType)
+			ret = NewRestFindByUUIDClassType(superType, originalName, classType, inReadOnlyContext)
 		} else if _, ok := writableSubclassCounts[originalName]; ok {
-			ret = NewRestPolymorphicBaseClassType(classType)
+			ret = NewRestPolymorphicBaseClassType(classType, inReadOnlyContext)
 		} else {
 			ret = classType
 		}
 
 		if parentResourceInfo != nil {
-			ret = NewRestSubresourceClassType(name, parentResourceInfo.prefix, ret)
+			ret = NewRestSubresourceClassType(name, parentResourceInfo.prefix, ret, inReadOnlyContext)
 		}
 
 		if existing, ok := types[name][inReadOnlyContext]; ok {

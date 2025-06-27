@@ -377,6 +377,10 @@ func findDirectoryAccountDirectoryPrimerByUUID(ctx context.Context, uuid *string
 	return nil, diag
 }
 
+func findOrganizationOrganizationalUnitPrimerROByUUID(ctx context.Context, uuid *string) (keyhubmodels.OrganizationOrganizationalUnitPrimerable, diag.Diagnostics) {
+	return findOrganizationOrganizationalUnitPrimerByUUID(ctx, uuid)
+}
+
 func findOrganizationOrganizationalUnitPrimerByUUID(ctx context.Context, uuid *string) (keyhubmodels.OrganizationOrganizationalUnitPrimerable, diag.Diagnostics) {
 	if uuid == nil || *uuid == "" {
 		return nil, diag.Diagnostics{}
@@ -567,8 +571,12 @@ func findClientLdapClientByUUID(ctx context.Context, uuid *string) (keyhubmodels
 	return nil, diag
 }
 
+func findAuthAccountPrimerROByUUID(ctx context.Context, uuid *string) (keyhubmodels.AuthAccountPrimerable, diag.Diagnostics) {
+	return findAuthAccountPrimerByUUID(ctx, uuid)
+}
+
 func findAuthAccountPrimerByUUID(ctx context.Context, uuid *string) (keyhubmodels.AuthAccountPrimerable, diag.Diagnostics) {
-	ret, diag := findAuthAccountByUUID(ctx, uuid)
+	ret, diag := findAuthAccountPrimerByUUID(ctx, uuid)
 	if ret == nil {
 		return ret, diag
 	}

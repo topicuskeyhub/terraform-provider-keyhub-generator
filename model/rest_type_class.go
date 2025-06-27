@@ -4,24 +4,30 @@
 package model
 
 type restClassType struct {
-	reachable      bool
-	suffix         string
-	superClass     RestType
-	realSuperClass RestType
-	name           string
-	discriminator  string
-	properties     []*RestProperty
-	dsType         *restClassType
+	reachable         bool
+	inReadOnlyContext bool
+	suffix            string
+	superClass        RestType
+	realSuperClass    RestType
+	name              string
+	discriminator     string
+	properties        []*RestProperty
+	dsType            *restClassType
 }
 
-func NewRestClassType(realSuperClass RestType, superClass RestType, name string, discriminator string) *restClassType {
-	return &restClassType{
-		suffix:         "RS",
-		realSuperClass: realSuperClass,
-		superClass:     superClass,
-		name:           name,
-		discriminator:  discriminator,
+func NewRestClassType(realSuperClass RestType, superClass RestType, name string, discriminator string, inReadOnlyContext bool) *restClassType {
+	ret := &restClassType{
+		suffix:            "RS",
+		realSuperClass:    realSuperClass,
+		superClass:        superClass,
+		name:              name,
+		discriminator:     discriminator,
+		inReadOnlyContext: inReadOnlyContext,
 	}
+	if inReadOnlyContext {
+		ret.suffix = ret.suffix + "RO"
+	}
+	return ret
 }
 
 func (t *restClassType) Reachable() bool {
@@ -49,6 +55,10 @@ func (t *restClassType) IsObject() bool {
 	return true
 }
 
+func (t *restClassType) InReadOnlyContext() bool {
+	return t.inReadOnlyContext
+}
+
 func (t *restClassType) ObjectAttrTypesName() string {
 	return FirstCharToLower(t.name) + "AttrTypes"
 }
@@ -66,7 +76,11 @@ func (t *restClassType) APIDiscriminator() string {
 }
 
 func (t *restClassType) GoTypeName() string {
-	return FirstCharToUpper(t.name)
+	if t.InReadOnlyContext() {
+		return FirstCharToUpper(t.name) + "RO"
+	} else {
+		return FirstCharToUpper(t.name)
+	}
 }
 
 func (t *restClassType) SDKInterfaceTypeName() string {
@@ -127,8 +141,12 @@ func (t *restClassType) DS() RestType {
 	}
 
 	t.dsType = &restClassType{
-		suffix: "DS",
-		name:   t.name,
+		suffix:            "DS",
+		name:              t.name,
+		inReadOnlyContext: t.inReadOnlyContext,
+	}
+	if t.inReadOnlyContext {
+		t.dsType.suffix = t.dsType.suffix + "RO"
 	}
 	if t.realSuperClass != nil {
 		t.dsType.realSuperClass = t.realSuperClass.DS()
