@@ -166,8 +166,8 @@ func (t *restNestedObjectType) TKHGetter(propertyName string) string {
 	return "tkh.Get" + FirstCharToUpper(propertyName) + "()"
 }
 
-func (t *restNestedObjectType) SDKTypeName(listItem bool) string {
-	return t.nestedType.SDKTypeName()
+func (t *restNestedObjectType) SDKInterfaceTypeName(listItem bool) string {
+	return t.nestedType.SDKInterfaceTypeName()
 }
 
 func (t *restNestedObjectType) SDKTypeConstructor() string {

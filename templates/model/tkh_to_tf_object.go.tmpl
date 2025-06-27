@@ -21,7 +21,7 @@
     ERROR in {{ .TFName }}
 {{- end }}
 {{- end }}
-func tkhToTFObject{{ .Suffix }}{{ .GoTypeName }}(recurse bool, tkh {{ .SDKTypeName }}) (types.Object, diag.Diagnostics) {
+func tkhToTFObject{{ .Suffix }}{{ .GoTypeName }}(recurse bool, tkh {{ .SDKInterfaceTypeName }}) (types.Object, diag.Diagnostics) {
     var diags diag.Diagnostics
     var attrs map[string]attr.Type
     if recurse {

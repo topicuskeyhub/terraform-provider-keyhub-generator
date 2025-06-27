@@ -59,6 +59,10 @@ func (t *restSubresourceClassType) GoTypeName() string {
 	return FirstCharToUpper(t.name)
 }
 
+func (t *restSubresourceClassType) SDKInterfaceTypeName() string {
+	return t.nestedType.SDKInterfaceTypeName()
+}
+
 func (t *restSubresourceClassType) SDKTypeName() string {
 	return t.nestedType.SDKTypeName()
 }

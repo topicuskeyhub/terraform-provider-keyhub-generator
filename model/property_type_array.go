@@ -136,7 +136,7 @@ func (t *restArrayType) TFAttrNeeded() bool {
 }
 
 func (t *restArrayType) TKHToTF(value string, listItem bool) string {
-	sdkType := t.itemType.SDKTypeName(true)
+	sdkType := t.itemType.SDKInterfaceTypeName(true)
 	var body string
 	if t.itemType.ToTFAttrWithDiag() {
 		body = "            val, d := " + t.itemType.TKHToTF("tkh", true) + "\n" +
@@ -157,7 +157,7 @@ func (t *restArrayType) TKHToTF(value string, listItem bool) string {
 }
 
 func (t *restArrayType) TFToTKH(planValue string, configValue string, listItem bool) string {
-	sdkType := t.itemType.SDKTypeName(true)
+	sdkType := t.itemType.SDKInterfaceTypeName(true)
 	var body string
 	if t.itemType.ToTKHAttrWithDiag() {
 		body = "            tkh, d := " + t.itemType.TFToTKH("planValue", "configValue", true) + "\n" +
@@ -193,12 +193,12 @@ func (t *restArrayType) TFToTKHGuard() string {
 	return ""
 }
 
-func (t *restArrayType) SDKTypeName(listItem bool) string {
-	return "[]" + t.itemType.SDKTypeName(true)
+func (t *restArrayType) SDKInterfaceTypeName(listItem bool) string {
+	return "[]" + t.itemType.SDKInterfaceTypeName(true)
 }
 
 func (t *restArrayType) SDKTypeConstructor() string {
-	return "make([]" + t.itemType.SDKTypeName(true) + ", 0)"
+	return "make([]" + t.itemType.SDKInterfaceTypeName(true) + ", 0)"
 }
 
 func (t *restArrayType) DSSchemaTemplate() string {

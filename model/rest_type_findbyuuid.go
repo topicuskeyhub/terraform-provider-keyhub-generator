@@ -68,6 +68,10 @@ func (t *restFindByUUIDClassType) GoTypeName() string {
 	return t.nestedType.GoTypeName()
 }
 
+func (t *restFindByUUIDClassType) SDKInterfaceTypeName() string {
+	return t.nestedType.SDKInterfaceTypeName()
+}
+
 func (t *restFindByUUIDClassType) SDKTypeName() string {
 	return t.nestedType.SDKTypeName()
 }

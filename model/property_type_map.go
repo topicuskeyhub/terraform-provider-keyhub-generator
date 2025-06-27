@@ -107,7 +107,7 @@ func (t *restMapType) TFAttrNeeded() bool {
 }
 
 func (t *restMapType) TKHToTF(value string, listItem bool) string {
-	sdkType := t.itemType.SDKTypeName(false)
+	sdkType := t.itemType.SDKInterfaceTypeName(false)
 	var body string
 	if t.itemType.ToTFAttrWithDiag() {
 		body = "            val, d := " + t.itemType.TKHToTF("tkh.("+sdkType+")", false) + "\n" +
@@ -151,7 +151,7 @@ func (t *restMapType) TFToTKHGuard() string {
 	return ""
 }
 
-func (t *restMapType) SDKTypeName(listItem bool) string {
+func (t *restMapType) SDKInterfaceTypeName(listItem bool) string {
 	return "keyhubmodel." + FirstCharToUpper(t.name) + "able"
 }
 

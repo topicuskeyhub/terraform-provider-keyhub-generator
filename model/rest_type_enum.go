@@ -59,6 +59,10 @@ func (t *restEnumType) GoTypeName() string {
 	return ""
 }
 
+func (t *restEnumType) SDKInterfaceTypeName() string {
+	return t.SDKTypeName()
+}
+
 func (t *restEnumType) SDKTypeName() string {
 	return "keyhubmodel." + FirstCharToUpper(t.name)
 }

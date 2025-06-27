@@ -5,6 +5,7 @@ package model
 
 import (
 	"fmt"
+	"strings"
 )
 
 type restFindBaseByUUIDObjectType struct {
@@ -74,12 +75,13 @@ func (t *restFindBaseByUUIDObjectType) ToTKHAttrWithDiag() bool {
 }
 
 func (t *restFindBaseByUUIDObjectType) ToTKHCustomCode(buildType RestType) string {
-	typename := buildType.GoTypeName()
-	superTypename := t.baseType.superClass.GoTypeName()
+	typename := buildType.SDKTypeName()
+	superTypename := t.baseType.superClass.SDKTypeName()
+	superTypePropertyName := strings.Replace(superTypename, "keyhubmodel.", "", 1)
 	return fmt.Sprintf("if val != nil {\n"+
 		"dtype := tkh.GetTypeEscaped()\n"+
-		"(*tkh.(*keyhubmodel.%s)).%s = *(val.(*keyhubmodel.%s))\n"+
-		"tkh.SetTypeEscaped(dtype)\n}", typename, superTypename, superTypename)
+		"(*tkh.(*%s)).%s = *(val.(*%s))\n"+
+		"tkh.SetTypeEscaped(dtype)\n}", typename, superTypePropertyName, superTypename)
 }
 
 func (t *restFindBaseByUUIDObjectType) TFAttrNeeded() bool {
@@ -106,7 +108,7 @@ func (t *restFindBaseByUUIDObjectType) TFToTKHGuard() string {
 	return ""
 }
 
-func (t *restFindBaseByUUIDObjectType) SDKTypeName(listItem bool) string {
+func (t *restFindBaseByUUIDObjectType) SDKInterfaceTypeName(listItem bool) string {
 	return "NONE"
 }
 

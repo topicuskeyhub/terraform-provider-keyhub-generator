@@ -93,7 +93,7 @@ func (t *restFindParentByUUIDObjectType) TFToTKHGuard() string {
 	return ""
 }
 
-func (t *restFindParentByUUIDObjectType) SDKTypeName(listItem bool) string {
+func (t *restFindParentByUUIDObjectType) SDKInterfaceTypeName(listItem bool) string {
 	return "NONE"
 }
 

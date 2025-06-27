@@ -69,8 +69,12 @@ func (t *restClassType) GoTypeName() string {
 	return FirstCharToUpper(t.name)
 }
 
+func (t *restClassType) SDKInterfaceTypeName() string {
+	return t.SDKTypeName() + "able"
+}
+
 func (t *restClassType) SDKTypeName() string {
-	return "keyhubmodel." + FirstCharToUpper(t.name) + "able"
+	return "keyhubmodel." + FirstCharToUpper(t.name)
 }
 
 func (t *restClassType) SDKTypeConstructor() string {

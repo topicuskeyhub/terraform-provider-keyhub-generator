@@ -105,8 +105,8 @@ func (t *restFindByUUIDObjectType) TKHGetter(propertyName string) string {
 	return "tkh.Get" + FirstCharToUpper(propertyName) + "()"
 }
 
-func (t *restFindByUUIDObjectType) SDKTypeName(listItem bool) string {
-	return t.nestedType.NestedType().SDKTypeName()
+func (t *restFindByUUIDObjectType) SDKInterfaceTypeName(listItem bool) string {
+	return t.nestedType.NestedType().SDKInterfaceTypeName()
 }
 
 func (t *restFindByUUIDObjectType) SDKTypeConstructor() string {

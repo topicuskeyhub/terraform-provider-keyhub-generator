@@ -68,6 +68,10 @@ func (t *restPolymorphicBaseClassType) GoTypeName() string {
 	return t.nestedType.GoTypeName()
 }
 
+func (t *restPolymorphicBaseClassType) SDKInterfaceTypeName() string {
+	return t.nestedType.SDKInterfaceTypeName()
+}
+
 func (t *restPolymorphicBaseClassType) SDKTypeName() string {
 	return t.nestedType.SDKTypeName()
 }

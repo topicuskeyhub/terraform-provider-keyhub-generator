@@ -13,6 +13,7 @@ type RestType interface {
 	APITypeName() string
 	APIDiscriminator() string
 	GoTypeName() string
+	SDKInterfaceTypeName() string
 	SDKTypeName() string
 	SDKTypeConstructor() string
 	AllProperties() []*RestProperty
