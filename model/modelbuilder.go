@@ -368,6 +368,10 @@ func buildType(parentType *restClassType, baseTypeName string, propertyName stri
 			if useFindByUUID(parentType, nested, curInReadOnlyContext) {
 				log.Print("Returning findbyuuid type for " + nestedTypeName)
 				ret = NewFindByUUIDObjectType(ret, rsSchemaTemplateBase)
+				if isLinkableWrapperType(parentType) {
+					log.Print("Returning nested findbyuuid type for " + nestedTypeName)
+					ret = NewFindByUUIDNestedItemType(ret, propertyName)
+				}
 			}
 		}
 		log.Print("Returning object type " + nestedTypeName)
@@ -379,10 +383,14 @@ func buildType(parentType *restClassType, baseTypeName string, propertyName stri
 }
 
 func useFindByUUID(parentType *restClassType, nested RestType, inReadOnlyContext bool) bool {
-	ret := !inReadOnlyContext && (parentType.Extends("Linkable") || strings.HasSuffix(parentType.name, "_additionalObjects") || strings.HasSuffix(parentType.name, "LinkableWrapper") || strings.HasSuffix(parentType.name, "LinkableWrapperWithCount")) &&
+	ret := !inReadOnlyContext && (parentType.Extends("Linkable") || strings.HasSuffix(parentType.name, "_additionalObjects") || isLinkableWrapperType(parentType)) &&
 		nested.Extends("Linkable") && nested.HasDirectUUIDProperty()
 	log.Print("useFindByUUID returning " + strconv.FormatBool(ret) + " for parent type " + parentType.name + " and nested type " + nested.APITypeName())
 	return ret
+}
+
+func isLinkableWrapperType(currentType *restClassType) bool {
+	return strings.HasSuffix(currentType.name, "LinkableWrapper") || strings.HasSuffix(currentType.name, "LinkableWrapperWithCount")
 }
 
 func is(ref *openapi3.SchemaRef, check func(*openapi3.Schema) bool) bool {
