@@ -15,9 +15,3 @@ import (
 {{ template "object_attrs_type.go.tmpl" . }}
 {{- end }}
 {{- end }}
-
-func objectAttrsTypeRSFindByUUIDNestedItemType(recurse bool) map[string]attr.Type {
-	objectAttrs := make(map[string]attr.Type)
-	objectAttrs["uuid"] = types.StringType
-	return objectAttrs
-}

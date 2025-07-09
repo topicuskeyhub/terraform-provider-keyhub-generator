@@ -649,13 +649,6 @@ func findVaultVaultRecordByUUID(ctx context.Context, uuid *string) (keyhubmodels
 	return findFirst[keyhubmodels.VaultVaultRecordable](ctx, wrapper, "vault record", uuid, false, err)
 }
 
-func tkhToTFNestedFindByUuidType(uuidValue attr.Value) attr.Value {
-	var attrs = map[string]attr.Type{"uuid": types.StringType}
-	obj := map[string]attr.Value{"uuid": uuidValue.(basetypes.StringValue) }
-	objVal, _ := types.ObjectValue(attrs, obj)
-	return objVal
-}
-
 func errorReportToString(ctx context.Context, err error) string {
 	report, ok := err.(keyhubmodels.ErrorReportable)
 	if !ok {
