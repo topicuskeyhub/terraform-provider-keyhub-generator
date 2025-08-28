@@ -50,6 +50,10 @@ func (t *restPolymorphicBaseClassType) IsObject() bool {
 	return t.nestedType.IsObject()
 }
 
+func (t *restPolymorphicBaseClassType) IsListOfFindByUuid() bool {
+	return false
+}
+
 func (t *restPolymorphicBaseClassType) InReadOnlyContext() bool {
 	return t.inReadOnlyContext
 }

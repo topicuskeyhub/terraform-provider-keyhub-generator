@@ -41,6 +41,10 @@ func (t *restSubresourceClassType) IsObject() bool {
 	return t.nestedType.IsObject()
 }
 
+func (t *restSubresourceClassType) IsListOfFindByUuid() bool {
+	return false
+}
+
 func (t *restSubresourceClassType) InReadOnlyContext() bool {
 	return t.inReadOnlyContext
 }

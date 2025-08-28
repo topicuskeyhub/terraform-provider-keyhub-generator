@@ -50,6 +50,10 @@ func (t *restFindByUUIDClassType) IsObject() bool {
 	return t.nestedType.IsObject()
 }
 
+func (t *restFindByUUIDClassType) IsListOfFindByUuid() bool {
+	return false
+}
+
 func (t *restFindByUUIDClassType) InReadOnlyContext() bool {
 	return t.inReadOnlyContext
 }

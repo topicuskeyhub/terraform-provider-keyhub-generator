@@ -28,6 +28,9 @@ func (t *restNestedObjectType) MarkReachable() {
 }
 
 func (t *restNestedObjectType) PropertyNameSuffix() string {
+	if t.nestedType.IsListOfFindByUuid() {
+		return "Uuid"
+	}
 	return ""
 }
 

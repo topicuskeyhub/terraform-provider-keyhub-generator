@@ -3,6 +3,10 @@
 
 package model
 
+import (
+	"strings"
+)
+
 type restClassType struct {
 	reachable         bool
 	inReadOnlyContext bool
@@ -53,6 +57,22 @@ func (t *restClassType) Extends(typeName string) bool {
 
 func (t *restClassType) IsObject() bool {
 	return true
+}
+
+func (t *restClassType) IsListOfFindByUuid() bool {
+	if strings.HasSuffix(t.APITypeName(), "LinkableWrapper") ||
+		strings.HasSuffix(t.APITypeName(), "LinkableWrapperWithCount") {
+		nestedProps := t.AllProperties()
+		var itemsPropertyType RestPropertyType
+		if nestedProps[0].TFName() == "items" {
+			itemsPropertyType = nestedProps[0].Type.(*restArrayType).itemType
+		} else if nestedProps[1].TFName() == "items" {
+			itemsPropertyType = nestedProps[1].Type.(*restArrayType).itemType
+		}
+		_, ok := itemsPropertyType.(*restFindByUUIDObjectType)
+		return ok
+	}
+	return false
 }
 
 func (t *restClassType) InReadOnlyContext() bool {

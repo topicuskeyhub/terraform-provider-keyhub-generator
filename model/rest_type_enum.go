@@ -36,6 +36,10 @@ func (t *restEnumType) IsObject() bool {
 	return false
 }
 
+func (t *restEnumType) IsListOfFindByUuid() bool {
+	return false
+}
+
 func (t *restEnumType) InReadOnlyContext() bool {
 	return false
 }

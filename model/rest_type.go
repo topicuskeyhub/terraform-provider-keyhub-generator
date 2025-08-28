@@ -8,6 +8,7 @@ type RestType interface {
 	MarkReachable()
 	Extends(typeName string) bool
 	IsObject() bool
+	IsListOfFindByUuid() bool
 	InReadOnlyContext() bool
 	ObjectAttrTypesName() string
 	DataStructName() string
