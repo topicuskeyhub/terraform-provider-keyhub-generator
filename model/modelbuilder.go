@@ -214,6 +214,7 @@ func getOrBuildTypeModel(types map[string]map[bool]RestType, name string, schema
 		if polymorphicBaseType != nil {
 			found := false
 			polyType := types[*polymorphicBaseType][inReadOnlyContext].(*restPolymorphicBaseClassType)
+
 			for _, t := range polyType.subtypes {
 				if t.APITypeName() == classType.APITypeName() {
 					found = true
@@ -222,6 +223,9 @@ func getOrBuildTypeModel(types map[string]map[bool]RestType, name string, schema
 			if !found {
 				polyType.subtypes = append(polyType.subtypes, classType)
 			}
+
+			// ensure other variant of every subtype exists
+			getOrBuildTypeModel(types, name, schema, parentResourceInfo, !inReadOnlyContext)
 		}
 		return ret
 	}
