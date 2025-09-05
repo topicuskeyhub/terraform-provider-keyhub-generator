@@ -734,6 +734,14 @@ func resetListAttributeFlags(schema rsschema.ListAttribute) rsschema.ListAttribu
 	return schema
 }
 
+func resetSetAttributeFlags(schema rsschema.SetAttribute) rsschema.SetAttribute {
+	schema.Optional = false
+	schema.Computed = false
+	schema.Required = false
+	schema.PlanModifiers = nil
+	return schema
+}
+
 func isHttpStatusCodeOk(ctx context.Context, status int32, err error, diags *diag.Diagnostics) bool {
 	if err != nil {
 		report, ok := err.(keyhubmodels.ErrorReportable)

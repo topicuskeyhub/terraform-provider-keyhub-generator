@@ -183,3 +183,11 @@ func (t *restClassType) DS() RestType {
 	t.dsType.properties = rsProperties
 	return t.dsType
 }
+
+func (t *restClassType) MarkItemsListAsSet() {
+	for _, p := range t.properties {
+		if p.Name == "items" {
+			p.Type.(*restArrayType).MarkAsSetCollection()
+		}
+	}
+}

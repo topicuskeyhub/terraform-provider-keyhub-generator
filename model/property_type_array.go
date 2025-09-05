@@ -243,3 +243,7 @@ func (t *restArrayType) RSSchemaTemplateData() map[string]any {
 func (t *restArrayType) DS() RestPropertyType {
 	return NewRestArrayType(t.itemType.DS(), t.setCollection, t.rsSchemaTemplateBase)
 }
+
+func (t *restArrayType) MarkAsSetCollection() {
+	t.setCollection = true
+}

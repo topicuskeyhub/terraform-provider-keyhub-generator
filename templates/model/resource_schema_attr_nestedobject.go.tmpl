@@ -3,7 +3,9 @@
 {{- else -}}
 {
 {{- if eq .Type.FlattenMode "ItemsList" }}
-{{- if (ItemsProperty .Type.NestedType.AllProperties).Type.Complex }}
+{{- if .Type.NestedType.IsListOfFindByUuid }}
+    attr := resetSetAttributeFlags(resourceSchemaAttrs{{ .Type.NestedType.GoTypeName }}({{ RecurseCutOff .Parent }})["items"].(rsschema.SetAttribute))
+{{- else if (ItemsProperty .Type.NestedType.AllProperties).Type.Complex }}
     attr := resetListNestedAttributeFlags(resourceSchemaAttrs{{ .Type.NestedType.GoTypeName }}({{ RecurseCutOff .Parent }})["items"].(rsschema.ListNestedAttribute))
 {{- else }}
     attr := resetListAttributeFlags(resourceSchemaAttrs{{ .Type.NestedType.GoTypeName }}({{ RecurseCutOff .Parent }})["items"].(rsschema.ListAttribute))
