@@ -331,7 +331,6 @@ func buildType(parentType *restClassType, baseTypeName string, propertyName stri
 
 	log.Print("Building type for " + parentType.name + "." + propertyName + ", readonly: " + strconv.FormatBool(inReadOnlyContext))
 	curInReadOnlyContext := (inReadOnlyContext || is(ref, readOnly))
-	log.Print("Read-only context now: " + strconv.FormatBool(curInReadOnlyContext))
 
 	if len(schema.AllOf) > 0 {
 		if ref.Ref == "" {
@@ -340,22 +339,18 @@ func buildType(parentType *restClassType, baseTypeName string, propertyName stri
 		schema = schema.AllOf[0].Value
 	}
 	if schema.Type.Is("array") {
-		log.Print("Returning array type")
 		return NewRestArrayType(buildType(parentType, baseTypeName, propertyName, schema.Items, types, restProperty, rsSchemaTemplateBase, curInReadOnlyContext), schema.UniqueItems, rsSchemaTemplateBase)
 	} else if schema.AdditionalProperties.Schema != nil {
-		log.Print("Returning additional objects map type")
 		return NewRestMapType(baseTypeName+"_"+propertyName,
 			buildType(parentType, baseTypeName, propertyName, schema.AdditionalProperties.Schema, types, restProperty, rsSchemaTemplateBase, curInReadOnlyContext),
 			rsSchemaTemplateBase)
 	}
 	if ref.Ref != "" && schema.Type.Is("string") && len(schema.Enum) > 0 {
-		log.Print("Returning enum type")
 		enumName := refToName(ref.Ref)
 		enum := getOrBuildTypeModel(types, enumName, ref, nil, curInReadOnlyContext)
 		return NewEnumPropertyType(restProperty, enum, rsSchemaTemplateBase)
 	}
 	if schema.Type.Is("boolean") || schema.Type.Is("integer") || schema.Type.Is("string") {
-		log.Print("Returning simple type")
 		return NewRestSimpleType(restProperty, schema, rsSchemaTemplateBase)
 	}
 	if is(ref, object) {
@@ -363,18 +358,14 @@ func buildType(parentType *restClassType, baseTypeName string, propertyName stri
 		if nestedTypeName == "" {
 			nestedTypeName = baseTypeName + "_" + propertyName
 		}
-		log.Print("Is object of type " + nestedTypeName)
 
 		nested := getOrBuildTypeModel(types, nestedTypeName, ref, nil, curInReadOnlyContext)
 		ret := NewNestedObjectType(restProperty, nested, rsSchemaTemplateBase)
 		if ref.Ref != "" && is(ref, withUUID) {
-			log.Print("Might be findbyuuid type: " + nestedTypeName)
 			if useFindByUUID(parentType, nested, curInReadOnlyContext) {
-				log.Print("Returning findbyuuid type for " + nestedTypeName)
 				ret = NewFindByUUIDObjectType(ret, rsSchemaTemplateBase)
 			}
 		}
-		log.Print("Returning object type " + nestedTypeName)
 		return ret
 	}
 
@@ -385,7 +376,7 @@ func buildType(parentType *restClassType, baseTypeName string, propertyName stri
 func useFindByUUID(parentType *restClassType, nested RestType, inReadOnlyContext bool) bool {
 	ret := !inReadOnlyContext && (parentType.Extends("Linkable") || strings.HasSuffix(parentType.name, "_additionalObjects") || strings.HasSuffix(parentType.name, "LinkableWrapper") || strings.HasSuffix(parentType.name, "LinkableWrapperWithCount")) &&
 		nested.Extends("Linkable") && nested.HasDirectUUIDProperty()
-	log.Print("useFindByUUID returning " + strconv.FormatBool(ret) + " for parent type " + parentType.name + " and nested type " + nested.APITypeName())
+
 	return ret
 }
 

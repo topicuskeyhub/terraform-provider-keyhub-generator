@@ -220,32 +220,16 @@ func sortedTypes(model map[string]map[bool]apimodel.RestType) []apimodel.RestTyp
 	slices.Sort(typeNames)
 
 	ret := make([]apimodel.RestType, 0)
-	i := 0
 	for _, typeName := range typeNames {
 		readWriteContextType := model[typeName][false]
 		readOnlyContextType := model[typeName][true]
 
 		if readWriteContextType != nil {
 			ret = append(ret, readWriteContextType)
-			i++
-			log.Printf("Keeping read/write type %s", readWriteContextType.GoTypeName())
-
-			if readOnlyContextType != nil {
-				// if reflect.TypeOf(readWriteContextType) != reflect.TypeOf(readOnlyContextType) {
-				ret = append(ret, readOnlyContextType)
-				i++
-				log.Printf("Also keeping readonly type %s", readOnlyContextType.GoTypeName())
-				// } else {
-				// 	log.Printf("Not keeping readonly type %s since it is the same", readOnlyContextType.GoTypeName())
-				// }
-			}
-
-		} else if readOnlyContextType != nil {
-			ret = append(ret, readOnlyContextType)
-			i++
-			log.Printf("Only keeping readonly type %s", readOnlyContextType.GoTypeName())
 		}
-
+		if readOnlyContextType != nil {
+			ret = append(ret, readOnlyContextType)
+		}
 	}
 	return ret
 }
