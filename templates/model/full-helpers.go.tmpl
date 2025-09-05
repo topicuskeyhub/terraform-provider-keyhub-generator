@@ -592,7 +592,7 @@ func findAuthAccountPrimerROByUUID(ctx context.Context, uuid *string) (keyhubmod
 }
 
 func findAuthAccountPrimerByUUID(ctx context.Context, uuid *string) (keyhubmodels.AuthAccountPrimerable, diag.Diagnostics) {
-	ret, diag := findAuthAccountPrimerByUUID(ctx, uuid)
+	ret, diag := findAuthAccountByUUID(ctx, uuid)
 	if ret == nil {
 		return ret, diag
 	}
