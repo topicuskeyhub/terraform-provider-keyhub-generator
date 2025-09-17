@@ -106,7 +106,7 @@ func findPolymorphicBaseType(name string) *string {
 		if !ok {
 			return nil
 		}
-		if checkType.Value.AllOf == nil || len(checkType.Value.AllOf) < 2 {
+		if len(checkType.Value.AllOf) < 2 {
 			return nil
 		}
 		checkName = refToName(checkType.Value.AllOf[0].Ref)
@@ -119,7 +119,7 @@ func findPolymorphicBaseType(name string) *string {
 func countSubclasses(typeName string) int {
 	ret := 0
 	for _, schema := range allSchemas {
-		if schema.Value.AllOf != nil && len(schema.Value.AllOf) > 1 {
+		if len(schema.Value.AllOf) > 1 {
 			superType := schema.Value.AllOf[0]
 			if refToName(superType.Ref) == typeName {
 				ret++
@@ -439,7 +439,7 @@ Required field that does not have a default value
 func buildRSSchemaTemplateBase(ref *openapi3.SchemaRef, propertyName string) map[string]any {
 	required := slices.Contains(ref.Value.Required, propertyName)
 	property := ref.Value.Properties[propertyName]
-	if property.Value.AllOf != nil && len(property.Value.AllOf) > 0 {
+	if len(property.Value.AllOf) > 0 {
 		property = property.Value.AllOf[1]
 	}
 	defaultVal := property.Value.Extensions["x-tkh-default"]
