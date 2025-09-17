@@ -162,14 +162,16 @@ func (t *restSimpleType) TKHToTF(value string, listItem bool) string {
 		case t.openapiType.Is("boolean"):
 			return "types.BoolValue(" + value + ")"
 		case t.openapiType.Is("string"):
-			if openapiFormat == "date-time" {
+			switch openapiFormat {
+			case "date-time":
 				return "timeToTF(" + value + ")"
-			} else if openapiFormat == "uuid" || openapiFormat == "date" {
+			case "uuid", "date":
 				return "types.StringValue(" + value + ".String())"
-			} else if openapiFormat == "byte" {
+			case "byte":
 				return "byteArrayToTfBase64(" + value + ")"
+			default:
+				return "types.StringValue(" + value + ")"
 			}
-			return "types.StringValue(" + value + ")"
 		case t.openapiType.Is("integer"):
 			if openapiFormat == "int32" {
 				return "types.Int64Value(int64(" + value + "))"
@@ -184,14 +186,16 @@ func (t *restSimpleType) TKHToTF(value string, listItem bool) string {
 		case t.openapiType.Is("boolean"):
 			return "types.BoolPointerValue(" + value + ")"
 		case t.openapiType.Is("string"):
-			if openapiFormat == "date-time" {
+			switch openapiFormat {
+			case "date-time":
 				return "timePointerToTF(" + value + ")"
-			} else if openapiFormat == "uuid" || openapiFormat == "date" {
+			case "uuid", "date":
 				return "stringerToTF(" + value + ")"
-			} else if openapiFormat == "byte" {
+			case "byte":
 				return "byteArrayToTfBase64(" + value + ")"
+			default:
+				return "types.StringPointerValue(" + value + ")"
 			}
-			return "types.StringPointerValue(" + value + ")"
 		case t.openapiType.Is("integer"):
 			if openapiFormat == "int32" {
 				return "types.Int64PointerValue(int32PToInt64P(" + value + "))"
@@ -218,16 +222,18 @@ func (t *restSimpleType) TFToTKH(planValue string, configValue string, listItem 
 		case t.openapiType.Is("boolean"):
 			return value + ".(basetypes.BoolValue).ValueBool()"
 		case t.openapiType.Is("string"):
-			if openapiFormat == "date-time" {
+			switch openapiFormat {
+			case "date-time":
 				return "tfToTime(" + value + ".(basetypes.StringValue))"
-			} else if openapiFormat == "uuid" {
+			case "uuid":
 				return "parse(" + value + ".(basetypes.StringValue), uuid.Parse)"
-			} else if openapiFormat == "date" {
+			case "date":
 				return "parse(" + value + ".(basetypes.StringValue), serialization.ParseDateOnly)"
-			} else if openapiFormat == "byte" {
+			case "byte":
 				return "tfBase64ToByteArray(" + value + ".(basetypes.StringValue))"
+			default:
+				return value + ".(basetypes.StringValue).ValueString()"
 			}
-			return value + ".(basetypes.StringValue).ValueString()"
 		case t.openapiType.Is("integer"):
 			if openapiFormat == "int32" {
 				return "int32(" + value + ".(basetypes.Int64Value).ValueInt64())"
@@ -242,16 +248,18 @@ func (t *restSimpleType) TFToTKH(planValue string, configValue string, listItem 
 		case t.openapiType.Is("boolean"):
 			return "tfToBooleanPointer(" + value + ")"
 		case t.openapiType.Is("string"):
-			if openapiFormat == "date-time" {
+			switch openapiFormat {
+			case "date-time":
 				return "tfToTimePointer(" + value + ".(basetypes.StringValue))"
-			} else if openapiFormat == "uuid" {
+			case "uuid":
 				return "parsePointer(" + value + ".(basetypes.StringValue), uuid.Parse)"
-			} else if openapiFormat == "date" {
+			case "date":
 				return "parsePointer2(" + value + ".(basetypes.StringValue), serialization.ParseDateOnly)"
-			} else if openapiFormat == "byte" {
+			case "byte":
 				return "tfBase64ToByteArray(" + value + ".(basetypes.StringValue))"
+			default:
+				return "tfToStringPointer(" + value + ")"
 			}
-			return "tfToStringPointer(" + value + ")"
 		case t.openapiType.Is("integer"):
 			if openapiFormat == "int32" {
 				return "int64PToInt32P(tfToInt64Pointer(" + value + "))"
@@ -283,13 +291,14 @@ func (t *restSimpleType) SDKInterfaceTypeName(listItem bool) string {
 	case t.openapiType.Is("boolean"):
 		ret = "bool"
 	case t.openapiType.Is("string"):
-		if openapiFormat == "date-time" {
+		switch openapiFormat {
+		case "date-time":
 			ret = "time.Time"
-		} else if openapiFormat == "uuid" {
+		case "uuid":
 			ret = "uuid.UUID"
-		} else if openapiFormat == "byte" {
+		case "byte":
 			ret = "[]byte"
-		} else {
+		default:
 			ret = "string"
 		}
 	case t.openapiType.Is("integer"):

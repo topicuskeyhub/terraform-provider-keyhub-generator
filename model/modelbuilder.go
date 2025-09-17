@@ -267,13 +267,14 @@ func buildProperties(parent *restClassType, baseTypeName string, schema *openapi
 			continue
 		}
 		rsSchemaTemplateBase := buildRSSchemaTemplateBase(schema, name)
-		if name == "type" {
+		switch name {
+		case "type":
 			if baseTypeName == "RestLink" || baseTypeName == "authPermission" {
 				name = "typeEscaped"
 			} else {
 				name = baseTypeName + "Type"
 			}
-		} else if name == "vendor" {
+		case "vendor":
 			name = "vendorEscaped"
 		}
 
