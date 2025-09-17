@@ -40,7 +40,7 @@ type RestPropertyType interface {
 	TKHToTFGuard() string
 	TFToTKHGuard() string
 	TKHGetter(propertyName string) string
-	SDKTypeName(listItem bool) string
+	SDKInterfaceTypeName(listItem bool) string
 	SDKTypeConstructor() string
 	DSSchemaTemplate() string
 	DSSchemaTemplateData() map[string]any

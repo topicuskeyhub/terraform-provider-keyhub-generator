@@ -36,6 +36,14 @@ func (t *restEnumType) IsObject() bool {
 	return false
 }
 
+func (t *restEnumType) IsListOfFindByUuid() bool {
+	return false
+}
+
+func (t *restEnumType) InReadOnlyContext() bool {
+	return false
+}
+
 func (t *restEnumType) ObjectAttrTypesName() string {
 	log.Fatalf("Enum type %s has no attributes", t.name)
 	return ""
@@ -57,6 +65,10 @@ func (t *restEnumType) APIDiscriminator() string {
 func (t *restEnumType) GoTypeName() string {
 	log.Fatalf("Enum type %s has no attributes", t.name)
 	return ""
+}
+
+func (t *restEnumType) SDKInterfaceTypeName() string {
+	return t.SDKTypeName()
 }
 
 func (t *restEnumType) SDKTypeName() string {
@@ -81,9 +93,13 @@ func (t *restEnumType) Suffix() string {
 }
 
 func (t *restEnumType) DS() RestType {
-	return &restEnumType{
+	ret := &restEnumType{
 		suffix: "DS",
 		name:   t.name,
 		values: t.values,
 	}
+	if t.InReadOnlyContext() {
+		ret.suffix = ret.suffix + "RO"
+	}
+	return ret
 }

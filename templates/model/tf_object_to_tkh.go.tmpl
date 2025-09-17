@@ -20,7 +20,7 @@
     tkh.{{ .Property.TKHSetter }}({{ .Property.TFToTKH }})
 {{- end }}
 {{- end }}
-func tfObjectToTKH{{ .Suffix }}{{ .GoTypeName }}(ctx context.Context, recurse bool, planValues types.Object, configValues types.Object) ({{ .SDKTypeName }}, diag.Diagnostics) {
+func tfObjectToTKH{{ .Suffix }}{{ .GoTypeName }}(ctx context.Context, recurse bool, planValues types.Object, configValues types.Object) ({{ .SDKInterfaceTypeName }}, diag.Diagnostics) {
     var diags diag.Diagnostics
     var missingPlanValues = planValues.IsNull() || planValues.IsUnknown()
     var missingConfigValues = configValues.IsNull() || configValues.IsUnknown()
@@ -45,7 +45,7 @@ func tfObjectToTKH{{ .Suffix }}{{ .GoTypeName }}(ctx context.Context, recurse bo
     tflog.Trace(ctx, "planAttrValues: "+litter.Sdump(planAttrValues))
     tflog.Trace(ctx, "configAttrValues: "+litter.Sdump(configAttrValues))
 {{- end }}
-    var tkh {{ .SDKTypeName }}
+    var tkh {{ .SDKInterfaceTypeName }}
     tkh = {{ .SDKTypeConstructor }}
 {{- if .AllProperties }}
 {{- range AllDirectProperties . }}

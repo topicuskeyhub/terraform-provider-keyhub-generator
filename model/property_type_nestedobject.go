@@ -25,9 +25,15 @@ func NewNestedObjectType(property *RestProperty, nestedType RestType, rsSchemaTe
 
 func (t *restNestedObjectType) MarkReachable() {
 	t.nestedType.MarkReachable()
+	if t.nestedType.IsListOfFindByUuid() {
+		(t.nestedType).(*restClassType).MarkItemsListAsSet()
+	}
 }
 
 func (t *restNestedObjectType) PropertyNameSuffix() string {
+	if t.nestedType.IsListOfFindByUuid() {
+		return "Uuid"
+	}
 	return ""
 }
 
@@ -53,6 +59,9 @@ func (t *restNestedObjectType) OrderMode() string {
 	if t.property.TFName() == "additional_objects" {
 		return "AdditionalObjects"
 	}
+	if t.nestedType.IsListOfFindByUuid() {
+		return "None"
+	}
 	if strings.HasSuffix(t.nestedType.APITypeName(), "LinkableWrapper") ||
 		strings.HasSuffix(t.nestedType.APITypeName(), "LinkableWrapperWithCount") {
 		nestedProps := t.nestedType.AllProperties()
@@ -68,6 +77,9 @@ func (t *restNestedObjectType) OrderMode() string {
 }
 
 func (t *restNestedObjectType) TFName() string {
+	if t.nestedType.IsListOfFindByUuid() {
+		return "types.Set"
+	}
 	if t.FlattenMode() == "ItemsList" {
 		return "types.List"
 	}
@@ -89,6 +101,9 @@ func (t *restNestedObjectType) TFAttrType(inAdditionalObjects bool) string {
 }
 
 func (t *restNestedObjectType) TFValueType() string {
+	if t.nestedType.IsListOfFindByUuid() {
+		return "basetypes.SetValue"
+	}
 	if t.FlattenMode() == "ItemsList" {
 		return "basetypes.ListValue"
 	}
@@ -166,8 +181,8 @@ func (t *restNestedObjectType) TKHGetter(propertyName string) string {
 	return "tkh.Get" + FirstCharToUpper(propertyName) + "()"
 }
 
-func (t *restNestedObjectType) SDKTypeName(listItem bool) string {
-	return t.nestedType.SDKTypeName()
+func (t *restNestedObjectType) SDKInterfaceTypeName(listItem bool) string {
+	return t.nestedType.SDKInterfaceTypeName()
 }
 
 func (t *restNestedObjectType) SDKTypeConstructor() string {

@@ -4,18 +4,20 @@
 package model
 
 type restFindByUUIDClassType struct {
-	reachable    bool
-	superClass   RestType
-	name         string
-	uuidProperty *RestProperty
-	nestedType   *restClassType
+	reachable         bool
+	inReadOnlyContext bool
+	superClass        RestType
+	name              string
+	uuidProperty      *RestProperty
+	nestedType        *restClassType
 }
 
-func NewRestFindByUUIDClassType(superClass RestType, name string, nestedType *restClassType) RestType {
+func NewRestFindByUUIDClassType(superClass RestType, name string, nestedType *restClassType, inReadOnlyContext bool) RestType {
 	uuidType := &restFindByUUIDClassType{
-		superClass: superClass,
-		name:       name,
-		nestedType: nestedType,
+		superClass:        superClass,
+		name:              name,
+		nestedType:        nestedType,
+		inReadOnlyContext: inReadOnlyContext,
 	}
 	uuidType.uuidProperty = &RestProperty{
 		Parent:   uuidType,
@@ -48,6 +50,14 @@ func (t *restFindByUUIDClassType) IsObject() bool {
 	return t.nestedType.IsObject()
 }
 
+func (t *restFindByUUIDClassType) IsListOfFindByUuid() bool {
+	return false
+}
+
+func (t *restFindByUUIDClassType) InReadOnlyContext() bool {
+	return t.inReadOnlyContext
+}
+
 func (t *restFindByUUIDClassType) ObjectAttrTypesName() string {
 	return t.nestedType.ObjectAttrTypesName()
 }
@@ -66,6 +76,10 @@ func (t *restFindByUUIDClassType) APIDiscriminator() string {
 
 func (t *restFindByUUIDClassType) GoTypeName() string {
 	return t.nestedType.GoTypeName()
+}
+
+func (t *restFindByUUIDClassType) SDKInterfaceTypeName() string {
+	return t.nestedType.SDKInterfaceTypeName()
 }
 
 func (t *restFindByUUIDClassType) SDKTypeName() string {
@@ -88,7 +102,11 @@ func (t *restFindByUUIDClassType) HasDirectUUIDProperty() bool {
 }
 
 func (t *restFindByUUIDClassType) Suffix() string {
-	return "RS"
+	if t.inReadOnlyContext {
+		return "RSRO"
+	} else {
+		return "RS"
+	}
 }
 
 func (t *restFindByUUIDClassType) DS() RestType {

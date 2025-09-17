@@ -8,11 +8,14 @@ type RestType interface {
 	MarkReachable()
 	Extends(typeName string) bool
 	IsObject() bool
+	IsListOfFindByUuid() bool
+	InReadOnlyContext() bool
 	ObjectAttrTypesName() string
 	DataStructName() string
 	APITypeName() string
 	APIDiscriminator() string
 	GoTypeName() string
+	SDKInterfaceTypeName() string
 	SDKTypeName() string
 	SDKTypeConstructor() string
 	AllProperties() []*RestProperty

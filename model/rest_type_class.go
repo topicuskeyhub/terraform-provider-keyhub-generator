@@ -3,25 +3,35 @@
 
 package model
 
+import (
+	"strings"
+)
+
 type restClassType struct {
-	reachable      bool
-	suffix         string
-	superClass     RestType
-	realSuperClass RestType
-	name           string
-	discriminator  string
-	properties     []*RestProperty
-	dsType         *restClassType
+	reachable         bool
+	inReadOnlyContext bool
+	suffix            string
+	superClass        RestType
+	realSuperClass    RestType
+	name              string
+	discriminator     string
+	properties        []*RestProperty
+	dsType            *restClassType
 }
 
-func NewRestClassType(realSuperClass RestType, superClass RestType, name string, discriminator string) *restClassType {
-	return &restClassType{
-		suffix:         "RS",
-		realSuperClass: realSuperClass,
-		superClass:     superClass,
-		name:           name,
-		discriminator:  discriminator,
+func NewRestClassType(realSuperClass RestType, superClass RestType, name string, discriminator string, inReadOnlyContext bool) *restClassType {
+	ret := &restClassType{
+		suffix:            "RS",
+		realSuperClass:    realSuperClass,
+		superClass:        superClass,
+		name:              name,
+		discriminator:     discriminator,
+		inReadOnlyContext: inReadOnlyContext,
 	}
+	if inReadOnlyContext {
+		ret.suffix = ret.suffix + "RO"
+	}
+	return ret
 }
 
 func (t *restClassType) Reachable() bool {
@@ -49,6 +59,26 @@ func (t *restClassType) IsObject() bool {
 	return true
 }
 
+func (t *restClassType) IsListOfFindByUuid() bool {
+	if strings.HasSuffix(t.APITypeName(), "LinkableWrapper") ||
+		strings.HasSuffix(t.APITypeName(), "LinkableWrapperWithCount") {
+		nestedProps := t.AllProperties()
+		var itemsPropertyType RestPropertyType
+		if nestedProps[0].TFName() == "items" {
+			itemsPropertyType = nestedProps[0].Type.(*restArrayType).itemType
+		} else if nestedProps[1].TFName() == "items" {
+			itemsPropertyType = nestedProps[1].Type.(*restArrayType).itemType
+		}
+		_, ok := itemsPropertyType.(*restFindByUUIDObjectType)
+		return ok
+	}
+	return false
+}
+
+func (t *restClassType) InReadOnlyContext() bool {
+	return t.inReadOnlyContext
+}
+
 func (t *restClassType) ObjectAttrTypesName() string {
 	return FirstCharToLower(t.name) + "AttrTypes"
 }
@@ -66,11 +96,19 @@ func (t *restClassType) APIDiscriminator() string {
 }
 
 func (t *restClassType) GoTypeName() string {
-	return FirstCharToUpper(t.name)
+	if t.InReadOnlyContext() {
+		return FirstCharToUpper(t.name) + "RO"
+	} else {
+		return FirstCharToUpper(t.name)
+	}
+}
+
+func (t *restClassType) SDKInterfaceTypeName() string {
+	return t.SDKTypeName() + "able"
 }
 
 func (t *restClassType) SDKTypeName() string {
-	return "keyhubmodel." + FirstCharToUpper(t.name) + "able"
+	return "keyhubmodel." + FirstCharToUpper(t.name)
 }
 
 func (t *restClassType) SDKTypeConstructor() string {
@@ -123,8 +161,12 @@ func (t *restClassType) DS() RestType {
 	}
 
 	t.dsType = &restClassType{
-		suffix: "DS",
-		name:   t.name,
+		suffix:            "DS",
+		name:              t.name,
+		inReadOnlyContext: t.inReadOnlyContext,
+	}
+	if t.inReadOnlyContext {
+		t.dsType.suffix = t.dsType.suffix + "RO"
 	}
 	if t.realSuperClass != nil {
 		t.dsType.realSuperClass = t.realSuperClass.DS()
@@ -140,4 +182,12 @@ func (t *restClassType) DS() RestType {
 	}
 	t.dsType.properties = rsProperties
 	return t.dsType
+}
+
+func (t *restClassType) MarkItemsListAsSet() {
+	for _, p := range t.properties {
+		if p.Name == "items" {
+			p.Type.(*restArrayType).MarkAsSetCollection()
+		}
+	}
 }

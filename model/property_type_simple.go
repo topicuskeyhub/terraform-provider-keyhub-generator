@@ -276,7 +276,7 @@ func (t *restSimpleType) TKHGetter(propertyName string) string {
 	return "tkh.Get" + FirstCharToUpper(propertyName) + "()"
 }
 
-func (t *restSimpleType) SDKTypeName(listItem bool) string {
+func (t *restSimpleType) SDKInterfaceTypeName(listItem bool) string {
 	openapiFormat := t.openapiSchema.Format
 	var ret string
 	switch {

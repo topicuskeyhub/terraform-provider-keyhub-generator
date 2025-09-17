@@ -108,7 +108,7 @@ func (t *restAdditionalType) TKHGetter(propertyName string) string {
 	return ""
 }
 
-func (t *restAdditionalType) SDKTypeName(listItem bool) string {
+func (t *restAdditionalType) SDKInterfaceTypeName(listItem bool) string {
 	return "NONE"
 }
 

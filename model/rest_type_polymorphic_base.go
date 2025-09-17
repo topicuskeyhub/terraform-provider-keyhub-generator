@@ -8,16 +8,18 @@ import (
 )
 
 type restPolymorphicBaseClassType struct {
-	reachable  bool
-	nestedType RestType
-	subtypes   []RestType
-	dsType     *restPolymorphicBaseClassType
+	reachable         bool
+	inReadOnlyContext bool
+	nestedType        RestType
+	subtypes          []RestType
+	dsType            *restPolymorphicBaseClassType
 }
 
-func NewRestPolymorphicBaseClassType(nestedType RestType) RestType {
+func NewRestPolymorphicBaseClassType(nestedType RestType, inReadOnlyContext bool) RestType {
 	return &restPolymorphicBaseClassType{
-		nestedType: nestedType,
-		subtypes:   make([]RestType, 0),
+		nestedType:        nestedType,
+		subtypes:          make([]RestType, 0),
+		inReadOnlyContext: inReadOnlyContext,
 	}
 }
 
@@ -48,6 +50,14 @@ func (t *restPolymorphicBaseClassType) IsObject() bool {
 	return t.nestedType.IsObject()
 }
 
+func (t *restPolymorphicBaseClassType) IsListOfFindByUuid() bool {
+	return false
+}
+
+func (t *restPolymorphicBaseClassType) InReadOnlyContext() bool {
+	return t.inReadOnlyContext
+}
+
 func (t *restPolymorphicBaseClassType) ObjectAttrTypesName() string {
 	return t.nestedType.ObjectAttrTypesName()
 }
@@ -66,6 +76,10 @@ func (t *restPolymorphicBaseClassType) APIDiscriminator() string {
 
 func (t *restPolymorphicBaseClassType) GoTypeName() string {
 	return t.nestedType.GoTypeName()
+}
+
+func (t *restPolymorphicBaseClassType) SDKInterfaceTypeName() string {
+	return t.nestedType.SDKInterfaceTypeName()
 }
 
 func (t *restPolymorphicBaseClassType) SDKTypeName() string {
@@ -108,8 +122,10 @@ func (t *restPolymorphicBaseClassType) DS() RestType {
 	}
 
 	t.dsType = &restPolymorphicBaseClassType{
-		nestedType: t.nestedType.DS(),
+		nestedType:        t.nestedType.DS(),
+		inReadOnlyContext: t.inReadOnlyContext,
 	}
+
 	t.dsType.subtypes = make([]RestType, 0)
 	for _, subtype := range t.subtypes {
 		t.dsType.subtypes = append(t.dsType.subtypes, subtype.DS())

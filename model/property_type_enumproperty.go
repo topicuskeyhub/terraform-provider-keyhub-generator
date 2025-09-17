@@ -111,7 +111,7 @@ func (t *restEnumPropertyType) TFToTKH(planValue string, configValue string, lis
 		value = planValue
 	}
 
-	caster := "func(val any) " + t.SDKTypeName(listItem) + " { return *val.(*" + t.SDKTypeName(listItem) + ") }"
+	caster := "func(val any) " + t.SDKInterfaceTypeName(listItem) + " { return *val.(*" + t.SDKInterfaceTypeName(listItem) + ") }"
 	if listItem {
 		return "parseCast(" + value + ".(basetypes.StringValue), " + t.SDKTypeConstructor() + ", " + caster + ")"
 	}
@@ -130,8 +130,8 @@ func (t *restEnumPropertyType) TKHGetter(propertyName string) string {
 	return "tkh.Get" + FirstCharToUpper(propertyName) + "()"
 }
 
-func (t *restEnumPropertyType) SDKTypeName(listItem bool) string {
-	return t.enumType.SDKTypeName()
+func (t *restEnumPropertyType) SDKInterfaceTypeName(listItem bool) string {
+	return t.enumType.SDKInterfaceTypeName()
 }
 
 func (t *restEnumPropertyType) SDKTypeConstructor() string {

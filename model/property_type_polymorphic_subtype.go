@@ -5,6 +5,7 @@ package model
 
 import (
 	"fmt"
+	"strings"
 
 	"golang.org/x/exp/maps"
 )
@@ -106,7 +107,7 @@ func (t *restPolymorphicSubtype) TFToTKH(planValue string, configValue string, l
 }
 
 func (t *restPolymorphicSubtype) TKHToTFGuard() string {
-	return "tkhCast, _ := tkh.(" + t.nestedType.SDKTypeName() + ")\n"
+	return "tkhCast, _ := tkh.(" + t.nestedType.SDKInterfaceTypeName() + ")\n"
 }
 
 func (t *restPolymorphicSubtype) TFToTKHGuard() string {
@@ -122,16 +123,17 @@ func (t *restPolymorphicSubtype) TKHGetter(propertyName string) string {
 }
 
 func (t *restPolymorphicSubtype) ToTKHCustomCode(buildType RestType) string {
-	typename := t.nestedType.GoTypeName()
-	superTypename := t.superType.GoTypeName()
+	typename := t.nestedType.SDKTypeName()
+	superTypename := t.superType.SDKTypeName()
+	superTypePropertyName := strings.Replace(superTypename, "keyhubmodel.", "", 1)
 	return fmt.Sprintf("dtype := val.GetTypeEscaped()\n"+
-		"(*val.(*keyhubmodel.%s)).%s = *tkh.(*keyhubmodel.%s)\n"+
+		"(*val.(*%s)).%s = *tkh.(*%s)\n"+
 		"val.SetTypeEscaped(dtype)\n"+
-		"tkh = val", typename, superTypename, superTypename)
+		"tkh = val", typename, superTypePropertyName, superTypename)
 }
 
-func (t *restPolymorphicSubtype) SDKTypeName(listItem bool) string {
-	return t.nestedType.SDKTypeName()
+func (t *restPolymorphicSubtype) SDKInterfaceTypeName(listItem bool) string {
+	return t.nestedType.SDKInterfaceTypeName()
 }
 
 func (t *restPolymorphicSubtype) SDKTypeConstructor() string {

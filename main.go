@@ -215,15 +215,21 @@ func merge(template string, suffix string, t *template.Template, model any) {
 	f.Close()
 }
 
-func sortedTypes(model map[string]apimodel.RestType) []apimodel.RestType {
+func sortedTypes(model map[string]map[bool]apimodel.RestType) []apimodel.RestType {
 	typeNames := maps.Keys(model)
 	slices.Sort(typeNames)
 
-	ret := make([]apimodel.RestType, len(model))
-	i := 0
+	ret := make([]apimodel.RestType, 0)
 	for _, typeName := range typeNames {
-		ret[i] = model[typeName]
-		i++
+		readWriteContextType := model[typeName][false]
+		readOnlyContextType := model[typeName][true]
+
+		if readWriteContextType != nil {
+			ret = append(ret, readWriteContextType)
+		}
+		if readOnlyContextType != nil {
+			ret = append(ret, readOnlyContextType)
+		}
 	}
 	return ret
 }
@@ -258,6 +264,7 @@ func main() {
 		}
 		model := apimodel.BuildModel(doc)
 		types := sortedTypes(model)
+		log.Printf("Number of types after sorting and filtering: %d", len(types))
 		merge("full-data-struct-ds", "", t, types)
 		merge("full-data-struct-rs", "", t, types)
 		merge("full-object-attrs-ds", "", t, types)

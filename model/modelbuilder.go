@@ -7,6 +7,7 @@ import (
 	"log"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 	"unicode"
 	"unicode/utf8"
@@ -18,16 +19,16 @@ import (
 var allSchemas openapi3.Schemas
 var writableSubclassCounts map[string]int
 
-func BuildModel(openapi *openapi3.T) map[string]RestType {
+func BuildModel(openapi *openapi3.T) map[string]map[bool]RestType {
 	allSchemas = openapi.Components.Schemas
 	collectWritableSubclassCounts()
 	subresources := collectSubResources(openapi)
-	ret := make(map[string]RestType, 100)
+	ret := make(map[string]map[bool]RestType, 100)
 	for name, schema := range allSchemas {
 		if name == "RequestRange" {
 			continue
 		}
-		getOrBuildTypeModel(ret, name, schema, nil)
+		getOrBuildTypeModel(ret, name, schema, nil, false)
 	}
 	for name, parents := range subresources {
 		for _, parent := range parents {
@@ -42,32 +43,32 @@ func BuildModel(openapi *openapi3.T) map[string]RestType {
 				typeName:     nestedName,
 				prefix:       prefix,
 				originalName: name,
-			})
+			}, false)
 		}
 	}
 	markReachable(ret)
 	return ret
 }
 
-func markReachable(types map[string]RestType) {
-	types["authAccount"].DS().MarkReachable()
-	types["certificateCertificate"].DS().MarkReachable()
-	types["clientClientApplication"].DS().MarkReachable()
-	types["directoryAccountDirectory"].DS().MarkReachable()
-	types["groupGroup"].DS().MarkReachable()
-	types["groupGroupClassification"].DS().MarkReachable()
-	types["organizationOrganizationalUnit"].DS().MarkReachable()
-	types["serviceaccountServiceAccount"].DS().MarkReachable()
-	types["provisioningProvisionedSystem"].DS().MarkReachable()
-	types["vaultVaultRecord"].DS().MarkReachable()
-	types["webhookWebhook"].DS().MarkReachable()
+func markReachable(types map[string]map[bool]RestType) {
+	types["authAccount"][false].DS().MarkReachable()
+	types["certificateCertificate"][false].DS().MarkReachable()
+	types["clientClientApplication"][false].DS().MarkReachable()
+	types["directoryAccountDirectory"][false].DS().MarkReachable()
+	types["groupGroup"][false].DS().MarkReachable()
+	types["groupGroupClassification"][false].DS().MarkReachable()
+	types["organizationOrganizationalUnit"][false].DS().MarkReachable()
+	types["serviceaccountServiceAccount"][false].DS().MarkReachable()
+	types["provisioningProvisionedSystem"][false].DS().MarkReachable()
+	types["vaultVaultRecord"][false].DS().MarkReachable()
+	types["webhookWebhook"][false].DS().MarkReachable()
 
-	types["clientClientApplication"].MarkReachable()
-	types["clientApplicationVaultVaultRecord"].MarkReachable()
-	types["groupVaultVaultRecord"].MarkReachable()
-	types["groupGroup"].MarkReachable()
-	types["nestedProvisioningGroupOnSystem"].MarkReachable()
-	types["serviceaccountServiceAccount"].MarkReachable()
+	types["clientClientApplication"][false].MarkReachable()
+	types["clientApplicationVaultVaultRecord"][false].MarkReachable()
+	types["groupVaultVaultRecord"][false].MarkReachable()
+	types["groupGroup"][false].MarkReachable()
+	types["nestedProvisioningGroupOnSystem"][false].MarkReachable()
+	types["serviceaccountServiceAccount"][false].MarkReachable()
 }
 
 func collectWritableSubclassCounts() {
@@ -157,9 +158,9 @@ type parentResourceInfo struct {
 	prefix       string
 }
 
-func getOrBuildTypeModel(types map[string]RestType, name string, schema *openapi3.SchemaRef,
-	parentResourceInfo *parentResourceInfo) RestType {
-	if ret, ok := types[name]; ok {
+func getOrBuildTypeModel(types map[string]map[bool]RestType, name string, schema *openapi3.SchemaRef,
+	parentResourceInfo *parentResourceInfo, inReadOnlyContext bool) RestType {
+	if ret, ok := types[name][inReadOnlyContext]; ok {
 		return ret
 	}
 
@@ -172,7 +173,7 @@ func getOrBuildTypeModel(types map[string]RestType, name string, schema *openapi
 	polymorphicBaseType := findPolymorphicBaseType(originalName)
 	if schema != nil && schema.Value.AllOf != nil {
 		superTypeName := refToName(schema.Value.AllOf[0].Ref)
-		realSuperType = getOrBuildTypeModel(types, superTypeName, schema.Value.AllOf[0], nil)
+		realSuperType = getOrBuildTypeModel(types, superTypeName, schema.Value.AllOf[0], nil, inReadOnlyContext)
 	}
 	if polymorphicBaseType == nil {
 		superType = realSuperType
@@ -186,30 +187,34 @@ func getOrBuildTypeModel(types map[string]RestType, name string, schema *openapi
 		if discriminatorVal, ok := ownType.Value.Extensions["x-tkh-discriminator"]; ok {
 			discriminator = discriminatorVal.(string)
 		}
-		classType := NewRestClassType(realSuperType, superType, originalName, discriminator)
+		classType := NewRestClassType(realSuperType, superType, originalName, discriminator, inReadOnlyContext)
 
 		var ret RestType
 		if isWritableWithUnwritableSuperClass(classType, ownType) {
-			ret = NewRestFindByUUIDClassType(superType, originalName, classType)
+			ret = NewRestFindByUUIDClassType(superType, originalName, classType, inReadOnlyContext)
 		} else if _, ok := writableSubclassCounts[originalName]; ok {
-			ret = NewRestPolymorphicBaseClassType(classType)
+			ret = NewRestPolymorphicBaseClassType(classType, inReadOnlyContext)
 		} else {
 			ret = classType
 		}
 
 		if parentResourceInfo != nil {
-			ret = NewRestSubresourceClassType(name, parentResourceInfo.prefix, ret)
+			ret = NewRestSubresourceClassType(name, parentResourceInfo.prefix, ret, inReadOnlyContext)
 		}
 
-		if existing, ok := types[name]; ok {
+		if existing, ok := types[name][inReadOnlyContext]; ok {
 			return existing
 		}
-		types[name] = ret
-		classType.properties = buildProperties(classType, originalName, ownType, types)
+		if types[name] == nil {
+			types[name] = make(map[bool]RestType)
+		}
+		types[name][inReadOnlyContext] = ret
+		classType.properties = buildProperties(classType, originalName, ownType, types, inReadOnlyContext)
 
 		if polymorphicBaseType != nil {
 			found := false
-			polyType := types[*polymorphicBaseType].(*restPolymorphicBaseClassType)
+			polyType := types[*polymorphicBaseType][inReadOnlyContext].(*restPolymorphicBaseClassType)
+
 			for _, t := range polyType.subtypes {
 				if t.APITypeName() == classType.APITypeName() {
 					found = true
@@ -218,6 +223,9 @@ func getOrBuildTypeModel(types map[string]RestType, name string, schema *openapi
 			if !found {
 				polyType.subtypes = append(polyType.subtypes, classType)
 			}
+
+			// ensure other variant of every subtype exists
+			getOrBuildTypeModel(types, name, schema, parentResourceInfo, !inReadOnlyContext)
 		}
 		return ret
 	}
@@ -250,7 +258,7 @@ func isWritableWithUnwritableSuperClass(restType *restClassType, schema *openapi
 	return ownScope.(bool) && !superScope.(bool)
 }
 
-func buildProperties(parent *restClassType, baseTypeName string, schema *openapi3.SchemaRef, types map[string]RestType) []*RestProperty {
+func buildProperties(parent *restClassType, baseTypeName string, schema *openapi3.SchemaRef, types map[string]map[bool]RestType, inReadOnlyContext bool) []*RestProperty {
 	required := schema.Value.Required
 	ret := make([]*RestProperty, 0)
 	var additionalObjectsProp *RestProperty = nil
@@ -276,7 +284,7 @@ func buildProperties(parent *restClassType, baseTypeName string, schema *openapi
 			Deprecated: is(property, deprecated),
 			WriteOnly:  is(property, writeOnly),
 		}
-		restProperty.Type = buildType(parent, baseTypeName, name, property, types, restProperty, rsSchemaTemplateBase)
+		restProperty.Type = buildType(parent, baseTypeName, name, property, types, restProperty, rsSchemaTemplateBase, inReadOnlyContext)
 		ret = append(ret, restProperty)
 		if name == "additionalObjects" {
 			additionalObjectsProp = restProperty
@@ -318,8 +326,12 @@ func skipProperty(baseTypeName string, propertyName string) bool {
 	return false
 }
 
-func buildType(parentType *restClassType, baseTypeName string, propertyName string, ref *openapi3.SchemaRef, types map[string]RestType, restProperty *RestProperty, rsSchemaTemplateBase map[string]any) RestPropertyType {
+func buildType(parentType *restClassType, baseTypeName string, propertyName string, ref *openapi3.SchemaRef, types map[string]map[bool]RestType, restProperty *RestProperty, rsSchemaTemplateBase map[string]any, inReadOnlyContext bool) RestPropertyType {
 	schema := ref.Value
+
+	log.Print("Building type for " + parentType.name + "." + propertyName + ", readonly: " + strconv.FormatBool(inReadOnlyContext))
+	curInReadOnlyContext := (inReadOnlyContext || is(ref, readOnly))
+
 	if len(schema.AllOf) > 0 {
 		if ref.Ref == "" {
 			ref = schema.AllOf[0]
@@ -327,15 +339,15 @@ func buildType(parentType *restClassType, baseTypeName string, propertyName stri
 		schema = schema.AllOf[0].Value
 	}
 	if schema.Type.Is("array") {
-		return NewRestArrayType(buildType(parentType, baseTypeName, propertyName, schema.Items, types, restProperty, rsSchemaTemplateBase), schema.UniqueItems, rsSchemaTemplateBase)
+		return NewRestArrayType(buildType(parentType, baseTypeName, propertyName, schema.Items, types, restProperty, rsSchemaTemplateBase, curInReadOnlyContext), schema.UniqueItems, rsSchemaTemplateBase)
 	} else if schema.AdditionalProperties.Schema != nil {
 		return NewRestMapType(baseTypeName+"_"+propertyName,
-			buildType(parentType, baseTypeName, propertyName, schema.AdditionalProperties.Schema, types, restProperty, rsSchemaTemplateBase),
+			buildType(parentType, baseTypeName, propertyName, schema.AdditionalProperties.Schema, types, restProperty, rsSchemaTemplateBase, curInReadOnlyContext),
 			rsSchemaTemplateBase)
 	}
 	if ref.Ref != "" && schema.Type.Is("string") && len(schema.Enum) > 0 {
 		enumName := refToName(ref.Ref)
-		enum := getOrBuildTypeModel(types, enumName, ref, nil)
+		enum := getOrBuildTypeModel(types, enumName, ref, nil, curInReadOnlyContext)
 		return NewEnumPropertyType(restProperty, enum, rsSchemaTemplateBase)
 	}
 	if schema.Type.Is("boolean") || schema.Type.Is("integer") || schema.Type.Is("string") {
@@ -346,10 +358,11 @@ func buildType(parentType *restClassType, baseTypeName string, propertyName stri
 		if nestedTypeName == "" {
 			nestedTypeName = baseTypeName + "_" + propertyName
 		}
-		nested := getOrBuildTypeModel(types, nestedTypeName, ref, nil)
+
+		nested := getOrBuildTypeModel(types, nestedTypeName, ref, nil, curInReadOnlyContext)
 		ret := NewNestedObjectType(restProperty, nested, rsSchemaTemplateBase)
 		if ref.Ref != "" && is(ref, withUUID) {
-			if useFindByUUID(parentType, nested) {
+			if useFindByUUID(parentType, nested, curInReadOnlyContext) {
 				ret = NewFindByUUIDObjectType(ret, rsSchemaTemplateBase)
 			}
 		}
@@ -360,9 +373,11 @@ func buildType(parentType *restClassType, baseTypeName string, propertyName stri
 	return nil
 }
 
-func useFindByUUID(parentType *restClassType, nested RestType) bool {
-	return (parentType.Extends("Linkable") || strings.HasSuffix(parentType.name, "_additionalObjects")) &&
+func useFindByUUID(parentType *restClassType, nested RestType, inReadOnlyContext bool) bool {
+	ret := !inReadOnlyContext && (parentType.Extends("Linkable") || strings.HasSuffix(parentType.name, "_additionalObjects") || strings.HasSuffix(parentType.name, "LinkableWrapper") || strings.HasSuffix(parentType.name, "LinkableWrapperWithCount")) &&
 		nested.Extends("Linkable") && nested.HasDirectUUIDProperty()
+
+	return ret
 }
 
 func is(ref *openapi3.SchemaRef, check func(*openapi3.Schema) bool) bool {
@@ -388,6 +403,10 @@ func object(schema *openapi3.Schema) bool {
 
 func deprecated(schema *openapi3.Schema) bool {
 	return schema.Deprecated
+}
+
+func readOnly(schema *openapi3.Schema) bool {
+	return schema.ReadOnly
 }
 
 func writeOnly(schema *openapi3.Schema) bool {
