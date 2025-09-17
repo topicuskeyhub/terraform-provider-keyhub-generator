@@ -127,7 +127,7 @@ func (r *{{ .Name }}Resource) Create(ctx context.Context, req resource.CreateReq
 				Additional: collectAdditional(ctx, planData, planData.Additional),
 			},
 		})
-	tkh, diags := findFirst[keyhubmodels.{{ .BaseNameUp }}able](ctx, wrapper, "{{ .NameUnderscore }}", nil, false, err)
+	tkh, diags := findFirst(ctx, wrapper, "{{ .NameUnderscore }}", nil, false, err)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -197,7 +197,7 @@ func (r *{{ .Name }}Resource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
-	tkh, diags := findFirst[keyhubmodels.{{ .BaseNameUp }}able](ctx, wrapper, "{{ .NameUnderscore }}", planData.{{ .ReadIdentifierStruct }}.ValueStringPointer(), true, err)
+	tkh, diags := findFirst(ctx, wrapper, "{{ .NameUnderscore }}", planData.{{ .ReadIdentifierStruct }}.ValueStringPointer(), true, err)
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
