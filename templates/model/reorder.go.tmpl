@@ -3,7 +3,7 @@
 {{- if eq .Type.OrderMode "AdditionalObjects" }}
     maps.Copy(obj, reorder{{ .Type.NestedType.GoTypeName }}(state, priorState, false).Attributes())
 {{- else if eq .Type.OrderMode "Object" }}
-    obj["{{ .TFName }}"] = reorder{{ .Type.NestedType.GoTypeName }}(state.Attributes()["{{ .TFName }}"].(types.Object), priorState.Attributes()["{{ .TFName }}"].(types.Object), recurse)
+    obj["{{ .TFName }}"] = reorder{{ .Type.NestedType.GoTypeName }}(state.Attributes()["{{ .TFName }}"].(types.Object), priorState.Attributes()["{{ .TFName }}"].(types.Object), false)
 {{- else if eq .Type.OrderMode "ItemsList" }}
     {
         attrState := state.Attributes()["{{ .TFName }}"]
