@@ -21,6 +21,9 @@
 {{- else if eq .Type.RSSchemaTemplateData.Mode "Optional_Computed" }}
     attr.Optional = true
     attr.Computed = true
+{{- else if eq .Type.RSSchemaTemplateData.Mode "WriteOnly" }}
+    attr.Optional = true
+    attr.WriteOnly = true
 {{- else }}
     attr.{{ .Type.RSSchemaTemplateData.Mode }} = true
 {{- end }}
