@@ -332,9 +332,9 @@ func castTKHToLaunchpadVaultRecordLaunchpadTile(tkh keyhubmodels.LaunchpadLaunch
 	if tkh == nil {
 		return nil, diags
 	}
-	ret, ok := tkh.(keyhubmodels.LaunchpadSsoApplicationLaunchpadTileable)
+	ret, ok := tkh.(keyhubmodels.LaunchpadVaultRecordLaunchpadTileable)
 	if !ok {
-		diags.AddError("Conversion error", "Unable to convert "+reflect.TypeOf(tkh).String()+" to castTKHToLaunchpadVaultRecordLaunchpadTile")
+		diags.AddError("Conversion error", "Unable to convert "+reflect.TypeOf(tkh).String()+" to LaunchpadVaultRecordLaunchpadTileable")
 	}
 	return ret, diags
 }
