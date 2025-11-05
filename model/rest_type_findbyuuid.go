@@ -42,6 +42,10 @@ func (t *restFindByUUIDClassType) MarkReachable() {
 	t.nestedType.MarkReachable()
 }
 
+func (t *restFindByUUIDClassType) ResolveRenderPropertyType() RestType {
+	return t
+}
+
 func (t *restFindByUUIDClassType) Extends(typeName string) bool {
 	return t.nestedType.Extends(typeName)
 }

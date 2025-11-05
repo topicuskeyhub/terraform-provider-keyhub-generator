@@ -43,12 +43,22 @@ func (t *restClassType) MarkReachable() {
 		return
 	}
 	t.reachable = true
+	if t.realSuperClass != nil {
+		t.realSuperClass.MarkReachable()
+	}
 	if t.superClass != nil {
 		t.superClass.MarkReachable()
 	}
 	for _, prop := range t.properties {
 		prop.Type.MarkReachable()
 	}
+}
+
+func (t *restClassType) ResolveRenderPropertyType() RestType {
+	if polyType, ok := t.realSuperClass.(*restPolymorphicBaseClassType); ok {
+		return polyType
+	}
+	return t
 }
 
 func (t *restClassType) Extends(typeName string) bool {

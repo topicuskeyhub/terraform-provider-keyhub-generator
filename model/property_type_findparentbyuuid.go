@@ -10,6 +10,9 @@ func NewFindParentByUUIDObjectType() RestPropertyType {
 	return &restFindParentByUUIDObjectType{}
 }
 
+func (t *restFindParentByUUIDObjectType) ResolveRenderPropertyType() {
+}
+
 func (t *restFindParentByUUIDObjectType) MarkReachable() {
 }
 

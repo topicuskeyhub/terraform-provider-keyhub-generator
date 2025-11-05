@@ -4,6 +4,7 @@
 package model
 
 import (
+	"log"
 	"strings"
 
 	"golang.org/x/exp/maps"
@@ -12,6 +13,7 @@ import (
 type restNestedObjectType struct {
 	property             *RestProperty
 	nestedType           RestType
+	originalNestedType   RestType
 	rsSchemaTemplateBase map[string]any
 }
 
@@ -20,6 +22,25 @@ func NewNestedObjectType(property *RestProperty, nestedType RestType, rsSchemaTe
 		property:             property,
 		nestedType:           nestedType,
 		rsSchemaTemplateBase: rsSchemaTemplateBase,
+	}
+}
+
+func newNestedObjectType(property *RestProperty, nestedType RestType, originalNestedType RestType, rsSchemaTemplateBase map[string]any) RestPropertyType {
+	return &restNestedObjectType{
+		property:             property,
+		nestedType:           nestedType,
+		originalNestedType:   originalNestedType,
+		rsSchemaTemplateBase: rsSchemaTemplateBase,
+	}
+}
+
+func (t *restNestedObjectType) ResolveRenderPropertyType() {
+	newNestedType := t.nestedType.ResolveRenderPropertyType()
+	if newNestedType != t.nestedType {
+		t.originalNestedType = t.nestedType
+		t.nestedType = newNestedType
+		log.Print("Replaced property type for " + t.property.Parent.APITypeName() + "." + t.property.Name + " " +
+			t.originalNestedType.APITypeName() + " with " + t.nestedType.APITypeName())
 	}
 }
 
@@ -165,8 +186,12 @@ func (t *restNestedObjectType) TFToTKH(planValue string, configValue string, lis
 		tfConfigVal = "toObjectValue(" + configValue + ")"
 	}
 
-	return "tfObjectToTKH" + t.nestedType.Suffix() + t.nestedType.GoTypeName() +
+	ret := "tfObjectToTKH" + t.nestedType.Suffix() + t.nestedType.GoTypeName() +
 		"(ctx, " + RecurseCutOff(t.property.Parent) + ", " + tfPlanVal + ", " + tfConfigVal + ")"
+	if t.originalNestedType != nil {
+		ret = "castTKHTo" + FirstCharToUpper(t.originalNestedType.APITypeName()) + "(" + ret + ")"
+	}
+	return ret
 }
 
 func (t *restNestedObjectType) TKHToTFGuard() string {
@@ -208,5 +233,9 @@ func (t *restNestedObjectType) RSSchemaTemplateData() map[string]any {
 }
 
 func (t *restNestedObjectType) DS() RestPropertyType {
-	return NewNestedObjectType(t.property.DS(), t.nestedType.DS(), t.rsSchemaTemplateBase)
+	var originalNestedTypeDS RestType = nil
+	if t.originalNestedType != nil {
+		originalNestedTypeDS = t.originalNestedType.DS()
+	}
+	return newNestedObjectType(t.property.DS(), t.nestedType.DS(), originalNestedTypeDS, t.rsSchemaTemplateBase)
 }

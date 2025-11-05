@@ -17,6 +17,9 @@ func NewAdditionalType(names []string) RestPropertyType {
 	}
 }
 
+func (t *restAdditionalType) ResolveRenderPropertyType() {
+}
+
 func (t *restAdditionalType) MarkReachable() {
 }
 

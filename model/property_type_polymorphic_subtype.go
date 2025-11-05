@@ -28,6 +28,9 @@ func NewPolymorphicSubtype(property *RestProperty, superType RestType, nestedTyp
 	}
 }
 
+func (t *restPolymorphicSubtype) ResolveRenderPropertyType() {
+}
+
 func (t *restPolymorphicSubtype) MarkReachable() {
 	t.superType.MarkReachable()
 	t.nestedType.MarkReachable()

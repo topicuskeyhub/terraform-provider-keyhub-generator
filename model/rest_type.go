@@ -6,6 +6,7 @@ package model
 type RestType interface {
 	Reachable() bool
 	MarkReachable()
+	ResolveRenderPropertyType() RestType
 	Extends(typeName string) bool
 	IsObject() bool
 	IsListOfFindByUuid() bool
