@@ -323,7 +323,7 @@ func castTKHToLaunchpadSsoApplicationLaunchpadTile(tkh keyhubmodels.LaunchpadLau
 	}
 	ret, ok := tkh.(keyhubmodels.LaunchpadSsoApplicationLaunchpadTileable)
 	if !ok {
-		diags.AddError("Conversion error", "Unable convert launchpad tile to LaunchpadSsoApplicationLaunchpadTilea")
+		diags.AddError("Conversion error", "Unable convert "+reflect.TypeOf(tkh).String()+" to LaunchpadSsoApplicationLaunchpadTileable")
 	}
 	return ret, diags
 }
@@ -334,7 +334,7 @@ func castTKHToLaunchpadVaultRecordLaunchpadTile(tkh keyhubmodels.LaunchpadLaunch
 	}
 	ret, ok := tkh.(keyhubmodels.LaunchpadSsoApplicationLaunchpadTileable)
 	if !ok {
-		diags.AddError("Conversion error", "Unable convert launchpad tile to LaunchpadVaultRecordLaunchpadTile")
+		diags.AddError("Conversion error", "Unable convert "+reflect.TypeOf(tkh).String()+" to LaunchpadSsoApplicationLaunchpadTileable")
 	}
 	return ret, diags
 }
@@ -345,7 +345,7 @@ func castTKHToClientOAuth2Client(tkh keyhubmodels.ClientClientApplicationable, d
 	}
 	ret, ok := tkh.(keyhubmodels.ClientOAuth2Clientable)
 	if !ok {
-		diags.AddError("Conversion error", "Unable convert client application to ClientOAuth2Client")
+		diags.AddError("Conversion error", "Unable convert "+reflect.TypeOf(tkh).String()+" to ClientOAuth2Clientable")
 	}
 	return ret, diags
 }
@@ -356,7 +356,7 @@ func castTKHToClientLdapClient(tkh keyhubmodels.ClientClientApplicationable, dia
 	}
 	ret, ok := tkh.(keyhubmodels.ClientLdapClientable)
 	if !ok {
-		diags.AddError("Conversion error", "Unable convert client application to ClientLdapClient")
+		diags.AddError("Conversion error", "Unable convert "+reflect.TypeOf(tkh).String()+" to ClientLdapClientable")
 	}
 	return ret, diags
 }
