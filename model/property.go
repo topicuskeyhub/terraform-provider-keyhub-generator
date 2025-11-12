@@ -19,6 +19,7 @@ type RestProperty struct {
 }
 
 type RestPropertyType interface {
+	ResolveRenderPropertyType()
 	MarkReachable()
 	PropertyNameSuffix() string
 	FlattenMode() string

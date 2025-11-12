@@ -286,6 +286,7 @@ func buildProperties(parent *restClassType, baseTypeName string, schema *openapi
 			WriteOnly:  is(property, writeOnly),
 		}
 		restProperty.Type = buildType(parent, baseTypeName, name, property, types, restProperty, rsSchemaTemplateBase, inReadOnlyContext)
+		restProperty.Type.ResolveRenderPropertyType()
 		ret = append(ret, restProperty)
 		if name == "additionalObjects" {
 			additionalObjectsProp = restProperty
@@ -327,7 +328,9 @@ func skipProperty(baseTypeName string, propertyName string) bool {
 	return false
 }
 
-func buildType(parentType *restClassType, baseTypeName string, propertyName string, ref *openapi3.SchemaRef, types map[string]map[bool]RestType, restProperty *RestProperty, rsSchemaTemplateBase map[string]any, inReadOnlyContext bool) RestPropertyType {
+func buildType(parentType *restClassType, baseTypeName string, propertyName string,
+	ref *openapi3.SchemaRef, types map[string]map[bool]RestType, restProperty *RestProperty,
+	rsSchemaTemplateBase map[string]any, inReadOnlyContext bool) RestPropertyType {
 	schema := ref.Value
 
 	log.Print("Building type for " + parentType.name + "." + propertyName + ", readonly: " + strconv.FormatBool(inReadOnlyContext))

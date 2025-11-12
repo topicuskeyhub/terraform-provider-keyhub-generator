@@ -23,6 +23,9 @@ func NewRestMapType(name string, itemType RestPropertyType, rsSchemaTemplateBase
 	}
 }
 
+func (t *restMapType) ResolveRenderPropertyType() {
+}
+
 func (t *restMapType) MarkReachable() {
 	t.itemType.MarkReachable()
 }

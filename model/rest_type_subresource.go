@@ -33,6 +33,10 @@ func (t *restSubresourceClassType) MarkReachable() {
 	t.nestedType.MarkReachable()
 }
 
+func (t *restSubresourceClassType) ResolveRenderPropertyType() RestType {
+	return t
+}
+
 func (t *restSubresourceClassType) Extends(typeName string) bool {
 	return t.nestedType.Extends(typeName)
 }

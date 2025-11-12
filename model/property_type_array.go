@@ -23,6 +23,9 @@ func NewRestArrayType(itemType RestPropertyType, setCollection bool, rsSchemaTem
 	}
 }
 
+func (t *restArrayType) ResolveRenderPropertyType() {
+}
+
 func (t *restArrayType) MarkReachable() {
 	t.itemType.MarkReachable()
 }

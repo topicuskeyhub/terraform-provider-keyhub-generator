@@ -42,6 +42,10 @@ func (t *restPolymorphicBaseClassType) MarkReachable() {
 	}
 }
 
+func (t *restPolymorphicBaseClassType) ResolveRenderPropertyType() RestType {
+	return t.nestedType.(*restClassType).realSuperClass
+}
+
 func (t *restPolymorphicBaseClassType) Extends(typeName string) bool {
 	return t.nestedType.Extends(typeName)
 }

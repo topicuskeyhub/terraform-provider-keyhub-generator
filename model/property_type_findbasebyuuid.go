@@ -18,6 +18,9 @@ func NewFindBaseByUUIDObjectType(baseType *restFindByUUIDClassType) RestProperty
 	}
 }
 
+func (t *restFindBaseByUUIDObjectType) ResolveRenderPropertyType() {
+}
+
 func (t *restFindBaseByUUIDObjectType) MarkReachable() {
 	t.baseType.MarkReachable()
 }

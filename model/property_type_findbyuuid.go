@@ -21,6 +21,9 @@ func NewFindByUUIDObjectType(nestedType RestPropertyType, rsSchemaTemplateBase m
 	}
 }
 
+func (t *restFindByUUIDObjectType) ResolveRenderPropertyType() {
+}
+
 func (t *restFindByUUIDObjectType) MarkReachable() {
 	t.nestedType.MarkReachable()
 }

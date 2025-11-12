@@ -27,6 +27,9 @@ func NewRestSimpleType(property *RestProperty, schema *openapi3.Schema, rsSchema
 	}
 }
 
+func (t *restSimpleType) ResolveRenderPropertyType() {
+}
+
 func (t *restSimpleType) MarkReachable() {
 }
 

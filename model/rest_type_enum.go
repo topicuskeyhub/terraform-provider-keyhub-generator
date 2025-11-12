@@ -28,6 +28,10 @@ func (t *restEnumType) MarkReachable() {
 	t.reachable = true
 }
 
+func (t *restEnumType) ResolveRenderPropertyType() RestType {
+	return t
+}
+
 func (t *restEnumType) Extends(typeName string) bool {
 	return false
 }

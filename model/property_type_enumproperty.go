@@ -24,6 +24,9 @@ func NewEnumPropertyType(property *RestProperty, enumType RestType, rsSchemaTemp
 	}
 }
 
+func (t *restEnumPropertyType) ResolveRenderPropertyType() {
+}
+
 func (t *restEnumPropertyType) MarkReachable() {
 	t.enumType.MarkReachable()
 }
