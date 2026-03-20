@@ -70,6 +70,9 @@ func (t *restClassType) IsObject() bool {
 }
 
 func (t *restClassType) IsListOfFindByUuid() bool {
+	if strings.HasSuffix(t.APITypeName(), "NonLinkableWrapper") {
+		return false
+	}
 	if strings.HasSuffix(t.APITypeName(), "LinkableWrapper") ||
 		strings.HasSuffix(t.APITypeName(), "LinkableWrapperWithCount") {
 		nestedProps := t.AllProperties()
