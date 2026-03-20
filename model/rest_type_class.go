@@ -70,13 +70,16 @@ func (t *restClassType) IsObject() bool {
 }
 
 func (t *restClassType) IsListOfFindByUuid() bool {
+	if strings.HasSuffix(t.APITypeName(), "NonLinkableWrapper") {
+		return false
+	}
 	if strings.HasSuffix(t.APITypeName(), "LinkableWrapper") ||
 		strings.HasSuffix(t.APITypeName(), "LinkableWrapperWithCount") {
 		nestedProps := t.AllProperties()
 		var itemsPropertyType RestPropertyType
-		if nestedProps[0].TFName() == "items" {
+		if len(nestedProps) > 0 && nestedProps[0].TFName() == "items" {
 			itemsPropertyType = nestedProps[0].Type.(*restArrayType).itemType
-		} else if nestedProps[1].TFName() == "items" {
+		} else if len(nestedProps) > 1 && nestedProps[1].TFName() == "items" {
 			itemsPropertyType = nestedProps[1].Type.(*restArrayType).itemType
 		}
 		_, ok := itemsPropertyType.(*restFindByUUIDObjectType)
