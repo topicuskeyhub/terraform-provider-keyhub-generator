@@ -38,6 +38,7 @@ type resourceTemplateParameters struct {
 	ReadIdentifierQuery                string
 	ReadIdentifierSchema               string
 	ReadIdentifierStruct               string
+	AzureGroupTypeFieldStruct          string
 	FullName                           string
 	FullNameUp                         string
 	BaseName                           string
@@ -155,6 +156,7 @@ var resourceTemplateConfigs = map[string]resourceTemplateParameters{
 		ReadIdentifierQuery:                "NameInSystem",
 		ReadIdentifierSchema:               "name_in_system",
 		ReadIdentifierStruct:               "NameInSystem",
+		AzureGroupTypeFieldStruct:          "ProvisioningGroupOnSystemPrimerType",
 		FullName:                           "nestedProvisioningGroupOnSystem",
 		FullNameUp:                         "NestedProvisioningGroupOnSystem",
 		BaseName:                           "provisioningGroupOnSystem",
