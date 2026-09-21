@@ -6,7 +6,7 @@
 {{- if .Property.Type.ToTKHCustomCode .Type }}
         {{ .Property.Type.ToTKHCustomCode .Type }}
 {{- else }}
-        tflog.Debug(ctx, "Setting " + litter.Sdump(val) + " using {{ .Property.TKHSetter }}")
+        tflog.Trace(ctx, "Setting {{ .Property.TKHSetter }}")
         tkh.{{ .Property.TKHSetter }}(val)
 {{- end }}
 {{- if .Property.IsDTypeRequired }}
@@ -16,7 +16,11 @@
 {{- end }}
     }
 {{- else }}
-    tflog.Debug(ctx, "Setting " + litter.Sdump({{ .Property.TFToTKH }}) + " using {{ .Property.TKHSetter }}")
+{{- if .Property.IsSensitive }}
+    tflog.Trace(ctx, "Setting {{ .Property.TKHSetter }}")
+{{- else }}
+    tflog.Trace(ctx, "Setting " + litter.Sdump({{ .Property.TFToTKH }}) + " using {{ .Property.TKHSetter }}")
+{{- end }}
     tkh.{{ .Property.TKHSetter }}({{ .Property.TFToTKH }})
 {{- end }}
 {{- end }}
@@ -41,9 +45,6 @@ func tfObjectToTKH{{ .Suffix }}{{ .GoTypeName }}(ctx context.Context, recurse bo
 
     // avoids the "declared but not used" compiler errors since we don't know beforehand which one we need
     _, _ = planAttrValues, configAttrValues
-    litter.Config.HidePrivateFields = false
-    tflog.Trace(ctx, "planAttrValues: "+litter.Sdump(planAttrValues))
-    tflog.Trace(ctx, "configAttrValues: "+litter.Sdump(configAttrValues))
 {{- end }}
     var tkh {{ .SDKInterfaceTypeName }}
     tkh = {{ .SDKTypeConstructor }}

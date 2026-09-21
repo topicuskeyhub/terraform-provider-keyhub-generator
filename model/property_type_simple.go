@@ -132,6 +132,11 @@ func (t *restSimpleType) Complex() bool {
 	return false
 }
 
+func (t *restSimpleType) sensitive() bool {
+	sensitive, ok := t.openapiSchema.Extensions["x-tkh-sensitive"].(bool)
+	return ok && sensitive
+}
+
 func (t *restSimpleType) RequiresReplace() bool {
 	return false
 }
@@ -341,12 +346,10 @@ func (t *restSimpleType) DSSchemaTemplateData() map[string]any {
 		log.Fatalf("Unknown simple type: %s", t.openapiType)
 		attrType = "error"
 	}
-	sensitive := t.openapiSchema.Extensions["x-tkh-sensitive"] != nil && t.openapiSchema.Extensions["x-tkh-sensitive"].(bool)
-
 	return map[string]any{
 		"Type":      attrType,
 		"Required":  t.property.Name == "uuid",
-		"Sensitive": sensitive,
+		"Sensitive": t.sensitive(),
 	}
 }
 
@@ -379,14 +382,12 @@ func (t *restSimpleType) RSSchemaTemplateData() map[string]any {
 		log.Fatalf("Unknown simple type: %s", t.openapiType)
 		attrType = "error"
 	}
-	sensitive := t.openapiSchema.Extensions["x-tkh-sensitive"] != nil && t.openapiSchema.Extensions["x-tkh-sensitive"].(bool)
-
 	ret := map[string]any{
 		"Type":             attrType,
 		"PlanModifierType": planModifierType,
 		"PlanModifierPkg":  planModifierPkg,
 		"DefaultVal":       defaultVal,
-		"Sensitive":        sensitive,
+		"Sensitive":        t.sensitive(),
 	}
 	maps.Copy(ret, t.rsSchemaTemplateBase)
 	return ret

@@ -146,6 +146,11 @@ func (p *RestProperty) IsRequired() bool {
 	return mode == "Required"
 }
 
+func (p *RestProperty) IsSensitive() bool {
+	sensitive, ok := p.Type.RSSchemaTemplateData()["Sensitive"].(bool)
+	return ok && sensitive
+}
+
 func (p *RestProperty) IsValueFromConfig() bool {
 	mode := p.Type.RSSchemaTemplateData()["Mode"]
 	return mode == "WriteOnly"
