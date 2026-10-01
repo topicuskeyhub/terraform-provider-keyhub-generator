@@ -152,7 +152,8 @@ func (t *restSimpleType) ToTFAttrWithDiag() bool {
 func (t *restSimpleType) ToTKHAttrWithDiag() bool {
 	openapiFormat := t.openapiSchema.Format
 	return t.openapiType.Is("string") &&
-		(openapiFormat == "date-time" || openapiFormat == "uuid" || openapiFormat == "date" || openapiFormat == "byte")
+		(openapiFormat == "date-time" || openapiFormat == "uuid" || openapiFormat == "date" ||
+			openapiFormat == "duration" || openapiFormat == "byte")
 }
 
 func (t *restSimpleType) ToTKHCustomCode(buildType RestType) string {
@@ -173,7 +174,7 @@ func (t *restSimpleType) TKHToTF(value string, listItem bool) string {
 			switch openapiFormat {
 			case "date-time":
 				return "timeToTF(" + value + ")"
-			case "uuid", "date":
+			case "uuid", "date", "duration":
 				return "types.StringValue(" + value + ".String())"
 			case "byte":
 				return "byteArrayToTfBase64(" + value + ")"
@@ -197,7 +198,7 @@ func (t *restSimpleType) TKHToTF(value string, listItem bool) string {
 			switch openapiFormat {
 			case "date-time":
 				return "timePointerToTF(" + value + ")"
-			case "uuid", "date":
+			case "uuid", "date", "duration":
 				return "stringerToTF(" + value + ")"
 			case "byte":
 				return "byteArrayToTfBase64(" + value + ")"
@@ -237,6 +238,8 @@ func (t *restSimpleType) TFToTKH(planValue string, configValue string, listItem 
 				return "parse(" + value + ".(basetypes.StringValue), uuid.Parse)"
 			case "date":
 				return "parse(" + value + ".(basetypes.StringValue), serialization.ParseDateOnly)"
+			case "duration":
+				return "parse(" + value + ".(basetypes.StringValue), serialization.ParseISODuration)"
 			case "byte":
 				return "tfBase64ToByteArray(" + value + ".(basetypes.StringValue))"
 			default:
@@ -263,6 +266,8 @@ func (t *restSimpleType) TFToTKH(planValue string, configValue string, listItem 
 				return "parsePointer(" + value + ".(basetypes.StringValue), uuid.Parse)"
 			case "date":
 				return "parsePointer2(" + value + ".(basetypes.StringValue), serialization.ParseDateOnly)"
+			case "duration":
+				return "parsePointer2(" + value + ".(basetypes.StringValue), serialization.ParseISODuration)"
 			case "byte":
 				return "tfBase64ToByteArray(" + value + ".(basetypes.StringValue))"
 			default:
@@ -304,6 +309,8 @@ func (t *restSimpleType) SDKInterfaceTypeName(listItem bool) string {
 			ret = "time.Time"
 		case "uuid":
 			ret = "uuid.UUID"
+		case "duration":
+			ret = "serialization.ISODuration"
 		case "byte":
 			ret = "[]byte"
 		default:
